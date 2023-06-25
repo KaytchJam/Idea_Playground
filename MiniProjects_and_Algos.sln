@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Turbine_Wind_Wake", "Turbine_Wind_Wake\Turbine_Wind_Wake.vcxproj", "{30813B4E-E54D-4C30-BD41-442AD638ECFC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SortAnimations", "SortAnimations\SortAnimations.vcxproj", "{244C5C81-5D54-42AC-AEAB-3D7EAB32733D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{30813B4E-E54D-4C30-BD41-442AD638ECFC}.Release|x64.Build.0 = Release|x64
 		{30813B4E-E54D-4C30-BD41-442AD638ECFC}.Release|x86.ActiveCfg = Release|Win32
 		{30813B4E-E54D-4C30-BD41-442AD638ECFC}.Release|x86.Build.0 = Release|Win32
+		{244C5C81-5D54-42AC-AEAB-3D7EAB32733D}.Debug|x64.ActiveCfg = Debug|x64
+		{244C5C81-5D54-42AC-AEAB-3D7EAB32733D}.Debug|x64.Build.0 = Debug|x64
+		{244C5C81-5D54-42AC-AEAB-3D7EAB32733D}.Debug|x86.ActiveCfg = Debug|Win32
+		{244C5C81-5D54-42AC-AEAB-3D7EAB32733D}.Debug|x86.Build.0 = Debug|Win32
+		{244C5C81-5D54-42AC-AEAB-3D7EAB32733D}.Release|x64.ActiveCfg = Release|x64
+		{244C5C81-5D54-42AC-AEAB-3D7EAB32733D}.Release|x64.Build.0 = Release|x64
+		{244C5C81-5D54-42AC-AEAB-3D7EAB32733D}.Release|x86.ActiveCfg = Release|Win32
+		{244C5C81-5D54-42AC-AEAB-3D7EAB32733D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

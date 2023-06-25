@@ -124,7 +124,7 @@ int playground() {
 	return 0;
 }
 
-int main() {
+int omain() {
 	std::cout << "Hello World!" << std::endl;
 	std::cout << playground() << std::endl;
 	return 0;

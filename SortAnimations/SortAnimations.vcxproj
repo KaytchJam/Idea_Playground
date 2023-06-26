@@ -133,6 +133,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="sorting_algos\SelectionSortAnim.cpp" />
+    <ClCompile Include="sorting_algos\SortAnim.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sorting_algos\SelectionSortAnim.h" />
+    <ClInclude Include="sorting_algos\SortAnim.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -195,28 +195,26 @@ int main() {
 			if (!MOVING_BLOCKS && index < nums.size()) {
 				if (jindex < nums.size()) {
 					search_func(window, nums, block_pair, index, jindex, min_idx, block_len);
-				} else {
+				}
+				else {
 					if (min_idx == index) {
 						std::printf("MIN_IDX(%d) == IDX(%d)\n", min_idx, index);
 					}
 					pre_move_func(nums, index, jindex, min_idx, DISTANCE, MOVING_BLOCKS, block_pair, values);
 					draw_vector(nums, window, block_len, window_dim.y, window_dim.x, PRINTED_ONCE);
 				}
-			}
-			else if (index <= nums.size()) {
+			} else if (index <= nums.size()) {
 				if (!SKIP && travelled < DISTANCE) {
 					//std::cout << "travelled: " << travelled << std::endl;
 					draw_vector(nums, window, block_len, window_dim.y, window_dim.x, PRINTED_ONCE);
 					draw_index(window, nums.size(), block_pair.first + travelled, values.first, block_len, window_dim.y, window_dim.x, sf::Color(0xBF, 0x57, 0x00));
 					draw_index(window, nums.size(), block_pair.second - travelled, values.second, block_len, window_dim.y, window_dim.x, sf::Color(0xCA, 0x80, 0xE9));
 					++travelled;
-				}
-				else {
+				} else {
 					swap_and_reset(nums, block_pair, values, index, travelled, DISTANCE, MOVING_BLOCKS);
 					draw_vector(nums, window, block_len, window_dim.y, window_dim.x, PRINTED_ONCE);
 				}
-			}
-			else {
+			} else {
 				draw_vector(nums, window, block_len, window_dim.y, window_dim.x, PRINTED_ONCE);
 			}
 		}

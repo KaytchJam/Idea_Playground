@@ -3,6 +3,7 @@
 
 // our basic SortAnimation object
 class SortAnim {
+public:
 	SortAnim() {}
 	virtual ~SortAnim() {}
 	virtual void onUpdate() {}

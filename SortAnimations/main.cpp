@@ -26,7 +26,7 @@ void printVector2i(sf::Vector2u& v) {
 int main() {
 	sf::RenderWindow window(sf::VideoMode(800, 600), "sort_animation");
 
-	const unsigned int NUM_ELEMENTS = 20;
+	const unsigned int NUM_ELEMENTS = 150;
 	std::vector<int> nums(NUM_ELEMENTS);
 	for (int i = 1; i <= NUM_ELEMENTS; i++)
 		nums[i - 1] = i;
@@ -37,7 +37,7 @@ int main() {
 	window.setFramerateLimit(30);
 	window.setKeyRepeatEnabled(false);
 
-	SelectionSortAnim s(window, nums);
+	SortAnim* s = new SelectionSortAnim(window, nums);
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -49,8 +49,8 @@ int main() {
 		}
 
 		window.clear();
-		s.onUpdate();
-		s.onRender();
+		s->onUpdate();
+		s->onRender();
 		window.display();
 	}
 

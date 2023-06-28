@@ -1,7 +1,8 @@
 #pragma once
+#include "SortAnim.h"
 #include <SFML/Graphics.hpp>
 
-static void draw_index(sf::RenderWindow& w, int n, int index, int value, float bl, float mh, float ml, sf::Color c) {
+static void draw_index(sf::RenderWindow& w, size_t n, int index, int value, float bl, float mh, float ml, sf::Color c) {
 	float bh = (float)value / n * mh;
 	sf::RectangleShape indexRect(sf::Vector2f(bl, bh));
 	sf::Vector2f shift((float)index / n * ml, mh - bh);
@@ -12,8 +13,8 @@ static void draw_index(sf::RenderWindow& w, int n, int index, int value, float b
 }
 
 static void draw_vector(std::vector<int>& v, sf::RenderWindow& w, float bl, float mh, float ml, bool print) {
-	int NUM_ELEMENTS = v.size();
-	int UPPER = NUM_ELEMENTS;
+	size_t NUM_ELEMENTS = v.size();
+	size_t UPPER = NUM_ELEMENTS;
 
 	for (int i = 0; i < v.size(); i++) {
 		float value = (float) v[i];
@@ -32,7 +33,7 @@ static void draw_vector(std::vector<int>& v, sf::RenderWindow& w, float bl, floa
 	}
 }
 
-class SelectionSortAnim {
+class SelectionSortAnim : public SortAnim {
 public:
 	SelectionSortAnim(sf::RenderWindow& w, std::vector<int>& v);
 	~SelectionSortAnim() {}

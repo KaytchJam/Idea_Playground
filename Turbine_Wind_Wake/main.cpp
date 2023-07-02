@@ -38,10 +38,86 @@ void direction_toggle(sf::Event& event, bool toggle) {
 	}
 }
 
+sf::VertexArray make_line_strip(sf::RenderWindow& w, float length, float height) {
+
+	float x = w.getSize().x / 2 - length / 2;
+	float y = w.getSize().y / 2 - height / 2;
+
+	sf::VertexArray gridborder(sf::LineStrip, 5);
+	gridborder[0].position = sf::Vector2f(x, y);
+	gridborder[1].position = sf::Vector2f(x + length, y);
+	gridborder[2].position = sf::Vector2f(x + length, y + height);
+	gridborder[3].position = sf::Vector2f(x, y + height);
+	gridborder[4].position = sf::Vector2f(x, y);
+	return gridborder;
+}
+
+sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float length, float height) {
+	float x = w.getSize().x / 2 - length / 2;
+	float y = w.getSize().y / 2 - height / 2;
+	float x_shift = length / cols;
+	float y_shift = height / rows;
+
+	/*std::cout << "x: " << x << ", y: " << y << std::endl;
+	std::cout << "length: " << length << ", height: " << height << std::endl;*/
+
+	sf::VertexArray gridlines(sf::Lines, (rows - 1) * (cols - 1) * 2);
+	// HORIZONTAL LINES
+	for (int i = 0; i < rows - 1; i++) {
+		float localized_yshift = y + y_shift * (i + 1);
+		int actual_index = i * 2;
+		gridlines[actual_index].position = sf::Vector2f(x, localized_yshift);
+		gridlines[actual_index + 1].position = sf::Vector2f(x + length, localized_yshift);
+		//std::printf("Line %d (%f, %f) - (%f, %f)\n", i, x, localized_yshift, x + length, localized_yshift);
+	}
+
+	for (int i = 0; i < cols - 1; i++) {
+		float localized_xshift = x + x_shift * (i + 1);
+		int actual_index = (rows - 1 + i) * 2;
+		gridlines[actual_index].position = sf::Vector2f(localized_xshift, y);
+		gridlines[actual_index + 1].position = sf::Vector2f(localized_xshift, y + height);
+	}
+
+	// change this to a while loop so I can do both vertical and horizontal lines in parallel
+		 
+	return gridlines;
+}
+
+sf::VertexArray make_simple_lines(sf::RenderWindow& w) {
+	sf::VertexArray gridlines(sf::Lines, 4);
+	gridlines[0].position = sf::Vector2f(200, 200);
+	gridlines[1].position = sf::Vector2f(500, 200);
+
+	gridlines[2].position = sf::Vector2f(200, 400);
+	gridlines[3].position = sf::Vector2f(500, 400);
+	return gridlines;
+
+}
+
+sf::VertexArray make_triangle_strip(sf::RenderWindow& w, float length, float height) {
+	float x = w.getSize().x / 2 - length / 2;
+	float y = w.getSize().y / 2 - height / 2;
+
+	sf::VertexArray gridborder(sf::TriangleStrip, 4);
+	gridborder[0].position = sf::Vector2f(x, y);
+	gridborder[1].position = sf::Vector2f(x + length, y);
+	gridborder[2].position = sf::Vector2f(x, y + height);
+	gridborder[3].position = sf::Vector2f(x + length, y + height);
+	return gridborder;
+}
+
 int main() {
-	sf::RenderWindow window(sf::VideoMode(800, 600), "SORT ANIMATION!");
-	sf::CircleShape shape(300.f);
-	shape.setFillColor(sf::Color(0xFF, 0xFF, 0xFF));
+	sf::RenderWindow window(sf::VideoMode(1280, 720), "SORT ANIMATION!");
+	///sf::CircleShape shape(300.f);
+	//sf::RectangleShape shape(sf::Vector2f(200.f, 200.f));
+	//shape.setFillColor(sf::Color(0xFF, 0xFF, 0xFF));
+	sf::VertexArray shape = make_line_strip(window, 800, 600);
+	//sf::VertexArray shape = make_triangle_strip(window, 800, 600);
+	sf::VertexArray lines = make_grid_lines(window, 3, 3, 800, 600);
+	//sf::VertexArray lines = make_simple_lines(window);
+	sf::Transform entity = sf::Transform::Identity;
+
+	sf::RenderStates states;
 	/*sf::Texture text;
 	sf::Sprite turbine;*/
 
@@ -68,19 +144,20 @@ int main() {
 		window.clear();
 
 		if (LEFT_HELD) {
-			shape.move(sf::Vector2f(-.1f, 0.f));
+			states.transform = entity.translate(sf::Vector2f(-.5f, 0.f));
 		}
 		if (RIGHT_HELD) {
-			shape.move(sf::Vector2f(.1f, 0.f));
+			states.transform = entity.translate(sf::Vector2f(.5f, 0.f));
 		}
 		if (DOWN_HELD) {
-			shape.move(sf::Vector2f(0.f, .1f));
+			states.transform = entity.translate(sf::Vector2f(0.f, .5f));
 		}
 		if (UP_HELD) {
-			shape.move(sf::Vector2f(0.f, -.1f));
+			states.transform = entity.translate(sf::Vector2f(0.f, -.5f));
 		}
 
-		window.draw(shape);
+		window.draw(shape, states);
+		window.draw(lines, states);
 		window.display();
 	}
 

@@ -58,27 +58,24 @@ sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float l
 	float x_shift = length / cols;
 	float y_shift = height / rows;
 
-	/*std::cout << "x: " << x << ", y: " << y << std::endl;
-	std::cout << "length: " << length << ", height: " << height << std::endl;*/
-
+	unsigned int i = 0;
 	sf::VertexArray gridlines(sf::Lines, (rows - 1) * (cols - 1) * 2);
-	// HORIZONTAL LINES
-	for (int i = 0; i < rows - 1; i++) {
-		float localized_yshift = y + y_shift * (i + 1);
-		int actual_index = i * 2;
-		gridlines[actual_index].position = sf::Vector2f(x, localized_yshift);
-		gridlines[actual_index + 1].position = sf::Vector2f(x + length, localized_yshift);
-		//std::printf("Line %d (%f, %f) - (%f, %f)\n", i, x, localized_yshift, x + length, localized_yshift);
-	}
+	while (i < rows - 1 || i < cols - 1) {
+		if (i < rows - 1) {
+			float localized_yshift = y + y_shift * (i + 1);
+			int actual_index = i << 1; // * 2
+			gridlines[actual_index].position = sf::Vector2f(x, localized_yshift);
+			gridlines[actual_index + 1].position = sf::Vector2f(x + length, localized_yshift);
+		}
 
-	for (int i = 0; i < cols - 1; i++) {
-		float localized_xshift = x + x_shift * (i + 1);
-		int actual_index = (rows - 1 + i) * 2;
-		gridlines[actual_index].position = sf::Vector2f(localized_xshift, y);
-		gridlines[actual_index + 1].position = sf::Vector2f(localized_xshift, y + height);
+		if (i < cols - 1) {
+			float localized_xshift = x + x_shift * (i + 1);
+			int actual_index = (rows - 1 + i) << 1; // * 2
+			gridlines[actual_index].position = sf::Vector2f(localized_xshift, y);
+			gridlines[actual_index + 1].position = sf::Vector2f(localized_xshift, y + height);
+		}
+		i++;
 	}
-
-	// change this to a while loop so I can do both vertical and horizontal lines in parallel
 		 
 	return gridlines;
 }
@@ -111,10 +108,13 @@ int main() {
 	///sf::CircleShape shape(300.f);
 	//sf::RectangleShape shape(sf::Vector2f(200.f, 200.f));
 	//shape.setFillColor(sf::Color(0xFF, 0xFF, 0xFF));
+
+	sf::Vector2i dim(5, 10);
+	/*
 	sf::VertexArray shape = make_line_strip(window, 800, 600);
-	//sf::VertexArray shape = make_triangle_strip(window, 800, 600);
-	sf::VertexArray lines = make_grid_lines(window, 3, 3, 800, 600);
-	//sf::VertexArray lines = make_simple_lines(window);
+	sf::VertexArray lines = make_grid_lines(window, dim.x, dim.y, 800, 600);
+	*/
+
 	sf::Transform entity = sf::Transform::Identity;
 
 	sf::RenderStates states;
@@ -156,8 +156,8 @@ int main() {
 			states.transform = entity.translate(sf::Vector2f(0.f, -.5f));
 		}
 
-		window.draw(shape, states);
-		window.draw(lines, states);
+		//window.draw(shape, states);
+		//window.draw(lines, states);
 		window.display();
 	}
 

@@ -103,6 +103,17 @@ sf::VertexArray make_triangle_strip(sf::RenderWindow& w, float length, float hei
 	return gridborder;
 }
 
+sf::Vector2f getCircleCenter(sf::CircleShape c) {
+	sf::Vector2f pt = c.getPoint(0);
+	std::cout << pt.x << " " << pt.y << std::endl;
+	return sf::Vector2f(c.getPoint(0).x, c.getPoint(0).y + c.getRadius());
+}
+
+sf::Vector2f getCircleCenter2(sf::CircleShape c) {
+	sf::Vector2f pos = c.getPosition();
+	return pos + sf::Vector2f(c.getRadius(), c.getRadius());
+}
+
 int main() {
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "SORT ANIMATION!");
 	///sf::CircleShape shape(300.f);
@@ -110,13 +121,24 @@ int main() {
 	//shape.setFillColor(sf::Color(0xFF, 0xFF, 0xFF));
 
 	sf::Vector2i dim(5, 10);
-	/*
-	sf::VertexArray shape = make_line_strip(window, 800, 600);
-	sf::VertexArray lines = make_grid_lines(window, dim.x, dim.y, 800, 600);
-	*/
+	
+	/*sf::VertexArray shape = make_line_strip(window, 800, 600);
+	sf::VertexArray lines = make_grid_lines(window, dim.x, dim.y, 800, 600);*/
+	sf::CircleShape circ(300.0f);
+	circ.setOutlineThickness(10.f);
+	circ.setFillColor(sf::Color::Transparent);
+	circ.setOutlineColor(sf::Color::Red);
+
+	//circ.scale(sf::Vector2f(5.f, 5.f));
+
+	circ.move(sf::Vector2f(10.f, 10.f));
+	circ.move(sf::Vector2f(window.getSize().x / 2 - circ.getRadius() - circ.getOutlineThickness(), window.getSize().y / 2 - circ.getRadius() - circ.getOutlineThickness()));
+	sf::Vector2f center = getCircleCenter2(circ);
+	std::printf("Origin: (%f, %f)\n", circ.getOrigin().x, circ.getOrigin().y);
+	std::printf("Pos: (%f, %f)\n", circ.getPosition().x, circ.getPosition().y);
+	std::printf("circle center: (%f,%f)\n", center.x, center.y);
 
 	sf::Transform entity = sf::Transform::Identity;
-
 	sf::RenderStates states;
 	/*sf::Texture text;
 	sf::Sprite turbine;*/
@@ -141,7 +163,7 @@ int main() {
 			}
 		}
 
-		window.clear();
+		window.clear(sf::Color(0xFF, 0xFF, 0xFF));
 
 		if (LEFT_HELD) {
 			states.transform = entity.translate(sf::Vector2f(-.5f, 0.f));
@@ -156,8 +178,9 @@ int main() {
 			states.transform = entity.translate(sf::Vector2f(0.f, -.5f));
 		}
 
-		//window.draw(shape, states);
-		//window.draw(lines, states);
+		/*window.draw(shape, states);
+		window.draw(lines, states);*/
+		window.draw(circ, states);
 		window.display();
 	}
 

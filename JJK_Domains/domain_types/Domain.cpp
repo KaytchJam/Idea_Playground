@@ -62,7 +62,7 @@ void ClosedDomain::consume(ClosedDomain& other) {
 }
 
 void ClosedDomain::onUpdate(float deltaTime) {
-	std::cout << "degree: " << degree << std::endl;
+	//std::cout << "degree: " << degree << std::endl;
 	if (IDLE) {
 		float offset = std::sin(deg2rad(degree));
 		circle.setRadius(base_radius + offset);

@@ -209,7 +209,7 @@ int main() {
 		window.draw(lines, states);*/
 
 		sf::Time elapsed = dtClock.restart();
-		std::cout << "deltaTime: " << elapsed.asSeconds() << std::endl;
+		//std::cout << "deltaTime: " << elapsed.asSeconds() << std::endl;
 		window.draw(grid);
 		// Update domains & render them
 		for (int i = 0; i < domainList.size(); i++) {

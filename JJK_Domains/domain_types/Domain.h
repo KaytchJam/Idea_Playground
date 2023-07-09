@@ -6,7 +6,7 @@ class ClosedDomain : public sf::Drawable {
 private:
 	// ANIMATION
 	float degree = 0;
-	const float DEGREES_PER_FRAME = 0.1f;
+	const float DEGREES_PER_FRAME = 100.f;
 	sf::Color line_color;
 	sf::Vector2f base_origin_position = sf::Vector2f(0, 0);
 

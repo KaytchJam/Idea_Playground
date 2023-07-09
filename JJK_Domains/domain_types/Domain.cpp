@@ -62,13 +62,13 @@ void ClosedDomain::consume(ClosedDomain& other) {
 }
 
 void ClosedDomain::onUpdate(float deltaTime) {
-
+	std::cout << "degree: " << degree << std::endl;
 	if (IDLE) {
 		float offset = std::sin(deg2rad(degree));
 		circle.setRadius(base_radius + offset);
 		circle.setPosition(base_origin_position + sf::Vector2f(-1 * offset, -1 * offset));
 		//std::cout << "OFFSET: " << offset << std::endl;
-		degree = degree < 360 ? degree + DEGREES_PER_FRAME : 0;
+		degree = degree < 360 ? degree + (DEGREES_PER_FRAME) * deltaTime : 0;
 	}
 }
 

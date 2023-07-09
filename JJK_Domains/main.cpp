@@ -163,6 +163,9 @@ int main() {
 	domainList[0] = &circ;
 	domainList[1] = &d2;
 
+	sf::Clock dtClock;
+
+
 	while (window.isOpen()) {
 		sf::Event event;
 		while (window.pollEvent(event)) {
@@ -205,10 +208,12 @@ int main() {
 		/*window.draw(shape, states);
 		window.draw(lines, states);*/
 
+		sf::Time elapsed = dtClock.restart();
+		std::cout << "deltaTime: " << elapsed.asSeconds() << std::endl;
 		window.draw(grid);
 		// Update domains & render them
 		for (int i = 0; i < domainList.size(); i++) {
-			domainList[i]->onUpdate(0);
+			domainList[i]->onUpdate(elapsed.asSeconds());
 			window.draw(*domainList[i]);
 		}
 		window.display();

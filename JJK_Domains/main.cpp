@@ -63,8 +63,36 @@ bool coordsOnCircle(sf::CircleShape c, sf::Vector2i coord) {
 	return withinRange(c.getRadius() + c.getOutlineThickness() / 2, c.getOutlineThickness() * 2, radius);
 }
 
+sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float length, float height) {
+	float x = 0;
+	float y = 0;
+	float x_shift = length / cols;
+	float y_shift = height / rows;
+
+	unsigned int i = 0;
+	sf::VertexArray gridlines(sf::Lines, (rows - 1) * (cols - 1) * 2);
+	while (i < rows - 1 || i < cols - 1) {
+		if (i < rows - 1) {
+			float localized_yshift = y + y_shift * (i + 1);
+			int actual_index = i << 1; // * 2
+			gridlines[actual_index].position = sf::Vector2f(x, localized_yshift);
+			gridlines[actual_index + 1].position = sf::Vector2f(x + length, localized_yshift);
+		}
+
+		if (i < cols - 1) {
+			float localized_xshift = x + x_shift * (i + 1);
+			int actual_index = (rows - 1 + i) << 1; // * 2
+			gridlines[actual_index].position = sf::Vector2f(localized_xshift, y);
+			gridlines[actual_index + 1].position = sf::Vector2f(localized_xshift, y + height);
+		}
+		i++;
+	}
+
+	return gridlines;
+}
+
 int main() {
-	sf::RenderWindow window(sf::VideoMode(1280, 720), "SORT ANIMATION!");
+	sf::RenderWindow window(sf::VideoMode(1280, 720), "Domains.proj");
 	///sf::CircleShape shape(300.f);
 	//sf::RectangleShape shape(sf::Vector2f(200.f, 200.f));
 	//shape.setFillColor(sf::Color(0xFF, 0xFF, 0xFF));
@@ -89,13 +117,18 @@ int main() {
 	
 	/*sf::VertexArray shape = make_line_strip(window, 800, 600);
 	sf::VertexArray lines = make_grid_lines(window, dim.x, dim.y, 800, 600);*/
+
+	// GRID INITIALIZATION
+	sf::VertexArray grid = make_grid_lines(window, 20, 20, window.getSize().x, window.getSize().y);
+
+	// DOMAIN INITIALIZATION
 	ClosedDomain circ(150.f, sf::Color::Blue, 0.5f);
 	circ.setOutlineThickness(10.f);
-	circ.setPosition(sf::Vector2f(window.getSize().x / 2 - circ.getRadius() - circ.getOutlineThickness(), window.getSize().y / 2 - circ.getRadius() - circ.getOutlineThickness()));
+	circ.setCenterPosition(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2));
 
 	ClosedDomain d2(100.f, sf::Color::Red, 0.5f);
 	d2.setOutlineThickness(10.f);
-	d2.setPosition(circ.getCenterCoords() + sf::Vector2f(circ.getRadius() + circ.getOutlineThickness() + d2.getOutlineThickness(), -1 * d2.getRadius()));
+	d2.setCenterPosition(circ.getCenterCoords() + sf::Vector2f(circ.getRadius() + circ.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius(), 0));
 
 	//circ.circle.move(sf::Vector2f(10.f, 10.f));
 	///circ.circle.move(sf::Vector2f(window.getSize().x / 2 - circ.getRadius() - circ.circle.getOutlineThickness(), window.getSize().y / 2 - circ.getRadius() - circ.circle.getOutlineThickness()));
@@ -172,9 +205,10 @@ int main() {
 		/*window.draw(shape, states);
 		window.draw(lines, states);*/
 
+		window.draw(grid);
 		// Update domains & render them
 		for (int i = 0; i < domainList.size(); i++) {
-			domainList[i]->onUpdate();
+			domainList[i]->onUpdate(0);
 			window.draw(*domainList[i]);
 		}
 		window.display();

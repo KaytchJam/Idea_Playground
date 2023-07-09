@@ -6,7 +6,9 @@ class ClosedDomain : public sf::Drawable {
 private:
 	// ANIMATION
 	float degree = 0;
-	const float DEGREES_PER_FRAME = 1.f;
+	const float DEGREES_PER_FRAME = 0.1f;
+	sf::Color line_color;
+	sf::Vector2f base_origin_position = sf::Vector2f(0, 0);
 
 	// PARAMS
 	float refinement;
@@ -32,7 +34,8 @@ public:
 	// Setters
 	void setColor(sf::Color color) { circle.setOutlineColor(color); }
 	void setOutlineThickness(float val) { circle.setOutlineThickness(val); }
-	void setPosition(sf::Vector2f pos) { circle.setPosition(pos); }
+	void setOriginPosition(sf::Vector2f pos) { circle.setPosition(pos); base_origin_position = pos; }
+	void setCenterPosition(sf::Vector2f pos);
 
 	// Relational
 	float distance(ClosedDomain& other);
@@ -40,7 +43,7 @@ public:
 	void consume(ClosedDomain& other);
 
 	// Render Loop
-	void onUpdate();
+	void onUpdate(float deltaTime);
 };
 
 std::ostream& operator<<(std::ostream& stream, const ClosedDomain& d);

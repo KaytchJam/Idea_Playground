@@ -53,5 +53,6 @@ int main() {
 		window.display();
 	}
 
+	delete(s);
 	return 0;
 }

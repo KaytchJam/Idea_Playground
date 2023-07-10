@@ -6,7 +6,8 @@
 
 class DomainManager {
 private:
-	std::vector<ClosedDomain>* domainList = nullptr;
+
+	std::vector<ClosedDomain*> domainList;
 public:
 	// INSTANTIATION
 	DomainManager();

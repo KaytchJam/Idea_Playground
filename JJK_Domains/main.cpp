@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "domain_types/Domain.h"
+#include "domain_types/DomainManager.h"
 #include "globals/UserListener.h"
 
 // USER LISTENER external variables
@@ -93,11 +94,6 @@ sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float l
 
 int main() {
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "Domains.proj");
-	///sf::CircleShape shape(300.f);
-	//sf::RectangleShape shape(sf::Vector2f(200.f, 200.f));
-	//shape.setFillColor(sf::Color(0xFF, 0xFF, 0xFF));
-
-	sf::Vector2i dim(5, 10);
 
 	sf::Font font;
 	if (!font.loadFromFile("assets/fonts/ShareTechMono-Regular.ttf"))
@@ -113,28 +109,30 @@ int main() {
 	sf::VertexArray grid = make_grid_lines(window, 20, 20, (float) window.getSize().x, (float) window.getSize().y);
 
 	// DOMAIN INITIALIZATION
-	ClosedDomain circ(150.f, sf::Color::Blue, 0.5f);
-	circ.setOutlineThickness(10.f);
-	circ.setCenterPosition(sf::Vector2f((float) window.getSize().x / 2, (float) window.getSize().y / 2));
+	ClosedDomain d1(150.f, sf::Color::Blue, 0.5f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2),150.f));
+	d1.setCenterPosition(sf::Vector2f((float) window.getSize().x / 2, (float) window.getSize().y / 2));
 
 	ClosedDomain d2(100.f, sf::Color::Red, 0.5f);
-	d2.setOutlineThickness(10.f);
-	d2.setCenterPosition(circ.getCenterCoords() + sf::Vector2f(circ.getRadius() + circ.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius(), 0));
+	d2.setCenterPosition(d1.getCenterCoords() + sf::Vector2f(d1.getRadius() + d1.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius(), 0));
 
-	ClosedDomain d3(50.f, sf::Color::Black, 0.5f);
-	d3.setOutlineThickness(10.f);
+	/*ClosedDomain d3(50.f, sf::Color::Black, 0.5f);
+	d3.setOutlineThickness(10.f);*/
+
+	DomainManager dList;
+	dList.add(d1);
+	dList.add(d2);
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
 
 	std::cout << "window dimensions: " << "(" << window.getSize().x << "," << window.getSize().y << ")" << std::endl;
-	std::cout << "domain 1: " << circ << std::endl;
+	std::cout << "domain 1: " << d1 << std::endl;
 	std::cout << "domain 2: " << d2 << std::endl;
-	std::cout << "distance: " << circ.distance(d2) << std::endl;
-	std::cout << "in range? " << circ.inRange(d2) << std::endl;
+	std::cout << "distance: " << d1.distance(d2) << std::endl;
+	std::cout << "in range? " << d1.inRange(d2) << std::endl;
 
 	std::vector<ClosedDomain*> domainList(2);
-	domainList[0] = &circ;
+	domainList[0] = &d1;
 	domainList[1] = &d2;
 
 	std::vector<sf::Text> domainText(domainList.size());

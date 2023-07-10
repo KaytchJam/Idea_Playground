@@ -19,7 +19,6 @@ private:
 	bool IDLE = true;
 	bool SELECTED = false;
 
-	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
 	sf::CircleShape circle;
 	// Construction / Destruction
@@ -33,6 +32,7 @@ public:
 	float getTrueRadius() const { return base_radius + circle.getOutlineThickness(); }
 	float getOutlineThickness() const { return circle.getOutlineThickness(); }
 	sf::Color getColor() const { return line_color; }
+	float getRefinement() const { return refinement; }
 
 	// Setters
 	void setColor(sf::Color color) { circle.setOutlineColor(color); }
@@ -47,6 +47,10 @@ public:
 
 	// Render Loop
 	void onUpdate(float deltaTime);
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
+	// Misc
+	static sf::Vector2f centerToOriginCoords(sf::Vector2f pos, float radius) { return  pos - sf::Vector2f(radius, radius); }
 };
 
 std::ostream& operator<<(std::ostream& stream, const ClosedDomain& d);

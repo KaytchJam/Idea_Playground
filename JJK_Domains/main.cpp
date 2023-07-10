@@ -121,6 +121,9 @@ int main() {
 	d2.setOutlineThickness(10.f);
 	d2.setCenterPosition(circ.getCenterCoords() + sf::Vector2f(circ.getRadius() + circ.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius(), 0));
 
+	ClosedDomain d3(50.f, sf::Color::Black, 0.5f);
+	d3.setOutlineThickness(10.f);
+
 	//circ.scale(sf::Vector2f(5.f, 5.f));
 	/*sf::Vector2f center = getCircleCenter2(circ.circle);
 	std::printf("Origin: (%f, %f)\n", circ.circle.getOrigin().x, circ.circle.getOrigin().y);
@@ -136,9 +139,10 @@ int main() {
 	std::cout << "distance: " << circ.distance(d2) << std::endl;
 	std::cout << "in range? " << circ.inRange(d2) << std::endl;
 
-	std::vector<ClosedDomain*> domainList(2);
+	std::vector<ClosedDomain*> domainList(3);
 	domainList[0] = &circ;
 	domainList[1] = &d2;
+	domainList[2] = &d3;
 
 	std::vector<sf::Text> domainText(domainList.size());
 	int index = 0;
@@ -181,8 +185,8 @@ int main() {
 		}
 
 		user_mouse.position = sf::Mouse::getPosition(window);
-		sf::Vector2i localPosition = sf::Mouse::getPosition(window);
-		printVector2i(localPosition);
+		//sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+		//printVector2i(localPosition);
 
 		window.clear(sf::Color(0xE1, 0xE1, 0xE1));
 

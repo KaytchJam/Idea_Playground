@@ -78,11 +78,14 @@ void ClosedDomain::onUpdate(float deltaTime) {
 
 	if (user_mouse.MOUSE_HELD && (!user_mouse.HOLDING_OBJECT || this->SELECTED)) {
 		// distance between mouse and circle center
-		sf::Vector2f mouse_pos = sf::Vector2f((float) user_mouse.position.x, (float) user_mouse.position.y);
-		sf::Vector2f thisCenter = getCenterCoords();
-		float distance = std::sqrtf(std::powf(mouse_pos.x - thisCenter.x, 2) + std::powf(mouse_pos.y - thisCenter.y, 2));
+		float distance = 0;
+		sf::Vector2f mouse_pos = sf::Vector2f((float)user_mouse.position.x, (float)user_mouse.position.y);
+		if (!SELECTED) {
+			sf::Vector2f thisCenter = getCenterCoords();
+			distance = std::sqrtf(std::powf(mouse_pos.x - thisCenter.x, 2) + std::powf(mouse_pos.y - thisCenter.y, 2));
+		}
 
-		if (distance < base_radius / 4) {
+		if (SELECTED || distance < base_radius / 4 ) {
 			setCenterPosition(mouse_pos);
 			circle.setRadius(base_radius);
 
@@ -99,6 +102,7 @@ void ClosedDomain::onUpdate(float deltaTime) {
 		line_color.a = 0xFF;
 		circle.setOutlineColor(line_color);
 		SELECTED = false;
+		user_mouse.HOLDING_OBJECT = false;
 	}
 
 

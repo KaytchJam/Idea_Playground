@@ -15,6 +15,8 @@ ClosedDomain::ClosedDomain(float radius, sf::Color color, float refine_val, sf::
 	circle.setOutlineColor(color);
 	circle.setScale(sf::Vector2f(1, 1));
 	base_origin_position = circle.getPosition();
+
+	// randomize degree
 }
 
 void ClosedDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -34,7 +36,7 @@ void ClosedDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	circLines[3].position = circle.getPosition() + circle.getPoint(0) + sf::Vector2f(0, circle.getRadius());
 	circLines[3].color = line_color;
 
-	target.draw(circLines);
+	target.draw(circLines, states);
 }
 
 sf::Vector2f ClosedDomain::getCenterCoords() const {
@@ -62,7 +64,15 @@ void ClosedDomain::consume(ClosedDomain& other) {
 }
 
 void ClosedDomain::onUpdate(float deltaTime) {
-	//std::cout << "degree: " << degree << std::endl;
+	/*
+	 if (distance(mouse, this_domain) < radius / 4) {
+		line_color.a = 0x0F;
+		circle.setOutlineColor(line_color);
+		setCenterPosition(mouse.position);
+	 } else {
+		line_color.a = 0xFF;
+	*/
+
 	if (IDLE) {
 		float offset = std::sin(deg2rad(degree));
 		circle.setRadius(base_radius + offset);

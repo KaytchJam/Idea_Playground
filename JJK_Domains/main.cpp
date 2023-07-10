@@ -6,11 +6,10 @@
 #include <utility>
 
 #include "domain_types/Domain.h"
+#include "globals/UserListener.h"
 
-bool LEFT_HELD = false;
-bool RIGHT_HELD = false;
-bool UP_HELD = false;
-bool DOWN_HELD = false;
+extern kay::keystates user_keys;
+extern kay::mousestates user_mouse;
 
 void printVector2f(sf::Vector2f& v) {
 	std::printf("{%f,%f}\n", v.x, v.y);
@@ -27,16 +26,16 @@ void printVector2i(sf::Vector2u& v) {
 void direction_toggle(sf::Event& event, bool toggle) {
 	switch (event.key.scancode) {
 	case sf::Keyboard::Scan::Left:
-		LEFT_HELD = toggle;
+		user_keys.LEFT_HELD = toggle;
 		break;
 	case sf::Keyboard::Scan::Right:
-		RIGHT_HELD = toggle;
+		user_keys.RIGHT_HELD = toggle;
 		break;
 	case sf::Keyboard::Scan::Up:
-		UP_HELD = toggle;
+		user_keys.UP_HELD = toggle;
 		break;
 	case sf::Keyboard::Scan::Down:
-		DOWN_HELD = toggle;
+		user_keys.DOWN_HELD = toggle;
 	}
 }
 
@@ -69,7 +68,7 @@ sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float l
 	float x_shift = length / cols;
 	float y_shift = height / rows;
 
-	unsigned int i = 0;
+	int i = 0;
 	sf::VertexArray gridlines(sf::Lines, (rows - 1) * (cols - 1) * 2);
 	while (i < rows - 1 || i < cols - 1) {
 		if (i < rows - 1) {
@@ -100,7 +99,7 @@ int main() {
 	sf::Vector2i dim(5, 10);
 
 	sf::Font font;
-	if (!font.loadFromFile("assets/fonts/arial.ttf"))
+	if (!font.loadFromFile("assets/fonts/ShareTechMono-Regular.ttf"))
 	{
 		// error...
 		std::cout << "couldn't load font" << std::endl;
@@ -140,7 +139,7 @@ int main() {
 	std::printf("circle center: (%f,%f)\n", center.x, center.y);
 
 	sf::Transform entity = sf::Transform::Identity;
-	sf::RenderStates states;
+	sf::RenderStates camera;
 	/*sf::Texture text;
 	sf::Sprite turbine;*/
 
@@ -163,6 +162,22 @@ int main() {
 	domainList[0] = &circ;
 	domainList[1] = &d2;
 
+	std::vector<sf::Text> domainText(domainList.size());
+	int index = 0;
+	for (sf::Text& dText : domainText) {
+		ClosedDomain*& cur = domainList[index];
+		dText.setFont(font);
+		dText.setCharacterSize(24);
+		dText.setFillColor(cur->getColor());
+		dText.setPosition(cur->getCenterCoords() + sf::Vector2f(0, cur->getRadius() + cur->getOutlineThickness() + 10));
+		dText.setString("Domain " + std::to_string(index + 1));
+
+		std::cout << "Letter spacing: " << dText.getLetterSpacing() << std::endl;
+		std::cout << "Bound Size : (" << dText.getGlobalBounds().getSize().x << "," << dText.getGlobalBounds().getSize().y << ")" << std::endl;
+
+		++index;
+	}
+
 	sf::Clock dtClock;
 
 
@@ -183,38 +198,29 @@ int main() {
 
 		window.clear(sf::Color(0xE1, 0xE1, 0xE1));
 
-		if (LEFT_HELD) {
-			states.transform = entity.translate(sf::Vector2f(-.5f, 0.f));
+		if (user_keys.LEFT_HELD) {
+			camera.transform = entity.translate(sf::Vector2f(-.05f, 0.f));
 		}
-		if (RIGHT_HELD) {
-			states.transform = entity.translate(sf::Vector2f(.5f, 0.f));
+		if (user_keys.RIGHT_HELD) {
+			camera.transform = entity.translate(sf::Vector2f(.05f, 0.f));
 		}
-		if (DOWN_HELD) {
-			states.transform = entity.translate(sf::Vector2f(0.f, .5f));
+		if (user_keys.DOWN_HELD) {
+			camera.transform = entity.translate(sf::Vector2f(0.f, .05f));
 		}
-		if (UP_HELD) {
-			states.transform = entity.translate(sf::Vector2f(0.f, -.5f));
+		if (user_keys.UP_HELD) {
+			camera.transform = entity.translate(sf::Vector2f(0.f, -.05f));
 		}
-
-
-		// fade in fade out effect
-		/*if (coordsOnCircle(circ.circle, localPosition)) opacity = opacity < 0xFF ? opacity + 1 : 0xFF;
-		else opacity = opacity > 0 ? opacity - 1 : 0;
-
-		if (opacity > 0xFF) opacity = 0xFF;
-		else if (opacity < 0x0) opacity = 0x0;
-		text.setFillColor(sf::Color(0xFF, 0xFF, 0xFF, opacity));*/
-
-		/*window.draw(shape, states);
-		window.draw(lines, states);*/
 
 		sf::Time elapsed = dtClock.restart();
 		//std::cout << "deltaTime: " << elapsed.asSeconds() << std::endl;
 		window.draw(grid);
 		// Update domains & render them
 		for (int i = 0; i < domainList.size(); i++) {
-			domainList[i]->onUpdate(elapsed.asSeconds());
-			window.draw(*domainList[i]);
+			ClosedDomain* cur = domainList[i];
+			cur->onUpdate(elapsed.asSeconds());
+			window.draw(*cur, camera);
+			domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1  * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
+			window.draw(domainText[i], camera);
 		}
 		window.display();
 	}

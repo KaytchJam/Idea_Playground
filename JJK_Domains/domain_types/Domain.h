@@ -17,6 +17,7 @@ private:
 	// STATES
 	bool TUG_OF_WAR = false;
 	bool IDLE = true;
+	bool SELECTED = false;
 
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
@@ -27,9 +28,11 @@ public:
 
 	// Getters
 	sf::Vector2f getCenterCoords() const;
-	float getRadius() const { return base_radius; }
+	float getRadius() const { return circle.getRadius(); }
+	float getBaseRadius() const { return base_radius; }
 	float getTrueRadius() const { return base_radius + circle.getOutlineThickness(); }
 	float getOutlineThickness() const { return circle.getOutlineThickness(); }
+	sf::Color getColor() const { return line_color; }
 
 	// Setters
 	void setColor(sf::Color color) { circle.setOutlineColor(color); }

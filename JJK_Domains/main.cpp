@@ -17,6 +17,10 @@ void printVector2f(sf::Vector2f& v) {
 	std::printf("{%f,%f}\n", v.x, v.y);
 }
 
+void printVector2f(sf::Vector2f v) {
+	std::printf("{%f,%f}\n", v.x, v.y);
+}
+
 void printVector2u(sf::Vector2u& v) {
 	std::printf("{%d,%d}\n", v.x, v.y);
 }
@@ -107,11 +111,8 @@ int main() {
 
 	// GRID INITIALIZATION
 	sf::VertexArray grid = make_grid_lines(window, 20, 20, (float) window.getSize().x, (float) window.getSize().y);
-
 	// DOMAIN INITIALIZATION
-	ClosedDomain d1(150.f, sf::Color::Blue, 0.5f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2),150.f));
-	d1.setCenterPosition(sf::Vector2f((float) window.getSize().x / 2, (float) window.getSize().y / 2));
-
+	ClosedDomain d1(150.f, sf::Color::Blue, 0.5f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2), 150.f));
 	ClosedDomain d2(100.f, sf::Color::Red, 0.5f);
 	d2.setCenterPosition(d1.getCenterCoords() + sf::Vector2f(d1.getRadius() + d1.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius(), 0));
 
@@ -121,6 +122,7 @@ int main() {
 	DomainManager dList;
 	dList.add(d1);
 	dList.add(d2);
+	dList.add(100.f, sf::Color::Magenta, 1.f);
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
@@ -131,14 +133,10 @@ int main() {
 	std::cout << "distance: " << d1.distance(d2) << std::endl;
 	std::cout << "in range? " << d1.inRange(d2) << std::endl;
 
-	std::vector<ClosedDomain*> domainList(2);
-	domainList[0] = &d1;
-	domainList[1] = &d2;
-
-	std::vector<sf::Text> domainText(domainList.size());
+	std::vector<sf::Text> domainText(dList.size());
 	int index = 0;
 	for (sf::Text& dText : domainText) {
-		ClosedDomain*& cur = domainList[index];
+		ClosedDomain* cur = dList.get(index);
 		dText.setFont(font);
 		dText.setCharacterSize(24);
 		dText.setFillColor(cur->getColor());
@@ -154,7 +152,11 @@ int main() {
 	sf::Clock dtClock;
 
 	window.setFramerateLimit(30);
-	//window.setKeyRepeatEnabled(false);
+	window.setKeyRepeatEnabled(false);
+
+	for (int i = 0; i < dList.size(); i++) {
+		printVector2f(dList.get(i)->circle.getPosition());
+	}
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -172,6 +174,7 @@ int main() {
 			}
 			if (event.type == sf::Event::MouseButtonReleased) {
 				user_mouse.MOUSE_HELD = false;
+				user_mouse.HOLDING_OBJECT = false;
 			}
 		}
 
@@ -180,6 +183,8 @@ int main() {
 		//printVector2i(localPosition);
 
 		window.clear(sf::Color(0xE1, 0xE1, 0xE1));
+
+		//std::cout << "Holding Object: " << user_mouse.HOLDING_OBJECT << std::endl;
 
 		if (user_keys.LEFT_HELD) {
 			camera.transform = entity.translate(sf::Vector2f(-5.f, 0.f));
@@ -202,11 +207,16 @@ int main() {
 		//std::cout << "deltaTime: " << elapsed.asSeconds() << std::endl;
 		window.draw(grid);
 		// Update domains & render them
-		for (int i = 0; i < domainList.size(); i++) {
-			ClosedDomain* cur = domainList[i];
+		for (unsigned int i = 0; i < dList.size(); i++) {
+			ClosedDomain* cur = dList.get(i);
 			cur->onUpdate(elapsed.asSeconds());
-			window.draw(*cur, camera);
 			domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1  * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
+
+			std::string dname = domainText[i].getString();
+			std::cout << dname << std::endl;
+			dList.overlapSearch(i);
+
+			window.draw(*cur, camera);
 			window.draw(domainText[i], camera);
 		}
 		window.display();

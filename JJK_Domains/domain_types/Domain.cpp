@@ -95,15 +95,14 @@ void ClosedDomain::onUpdate(float deltaTime) {
 
 			user_mouse.HOLDING_OBJECT = true;
 			this->SELECTED = true;
+			this->IDLE = false;
 		}
 
-	}
-	else {
+	} else {
 		IDLE = true;
 		line_color.a = 0xFF;
 		circle.setOutlineColor(line_color);
 		SELECTED = false;
-		user_mouse.HOLDING_OBJECT = false;
 	}
 
 

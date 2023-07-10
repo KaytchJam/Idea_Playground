@@ -27,11 +27,13 @@ public:
 
 	// Getters
 	sf::Vector2f getCenterCoords() const;
+	sf::Vector2f getOriginCoords() const { return circle.getPosition(); }
+	sf::Vector2f getBaseOriginCoords() const { return base_origin_position; }
+	sf::Color getColor() const { return line_color; }
 	float getRadius() const { return circle.getRadius(); }
 	float getBaseRadius() const { return base_radius; }
 	float getTrueRadius() const { return base_radius + circle.getOutlineThickness(); }
 	float getOutlineThickness() const { return circle.getOutlineThickness(); }
-	sf::Color getColor() const { return line_color; }
 	float getRefinement() const { return refinement; }
 
 	// Setters
@@ -50,7 +52,9 @@ public:
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 	// Misc
-	static sf::Vector2f centerToOriginCoords(sf::Vector2f pos, float radius) { return  pos - sf::Vector2f(radius, radius); }
+	static sf::Vector2f centerToOriginCoords(sf::Vector2f pos, float radius) { 
+		return  pos - sf::Vector2f(radius, radius); 
+	}
 };
 
 std::ostream& operator<<(std::ostream& stream, const ClosedDomain& d);

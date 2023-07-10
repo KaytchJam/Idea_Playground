@@ -110,12 +110,12 @@ int main() {
 	uint8_t opacity = 0x0;
 
 	// GRID INITIALIZATION
-	sf::VertexArray grid = make_grid_lines(window, 20, 20, window.getSize().x, window.getSize().y);
+	sf::VertexArray grid = make_grid_lines(window, 20, 20, (float) window.getSize().x, (float) window.getSize().y);
 
 	// DOMAIN INITIALIZATION
 	ClosedDomain circ(150.f, sf::Color::Blue, 0.5f);
 	circ.setOutlineThickness(10.f);
-	circ.setCenterPosition(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2));
+	circ.setCenterPosition(sf::Vector2f((float) window.getSize().x / 2, (float) window.getSize().y / 2));
 
 	ClosedDomain d2(100.f, sf::Color::Red, 0.5f);
 	d2.setOutlineThickness(10.f);
@@ -123,12 +123,6 @@ int main() {
 
 	ClosedDomain d3(50.f, sf::Color::Black, 0.5f);
 	d3.setOutlineThickness(10.f);
-
-	//circ.scale(sf::Vector2f(5.f, 5.f));
-	/*sf::Vector2f center = getCircleCenter2(circ.circle);
-	std::printf("Origin: (%f, %f)\n", circ.circle.getOrigin().x, circ.circle.getOrigin().y);
-	std::printf("Pos: (%f, %f)\n", circ.circle.getPosition().x, circ.circle.getPosition().y);
-	std::printf("circle center: (%f,%f)\n", center.x, center.y);*/
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
@@ -139,10 +133,9 @@ int main() {
 	std::cout << "distance: " << circ.distance(d2) << std::endl;
 	std::cout << "in range? " << circ.inRange(d2) << std::endl;
 
-	std::vector<ClosedDomain*> domainList(3);
+	std::vector<ClosedDomain*> domainList(2);
 	domainList[0] = &circ;
 	domainList[1] = &d2;
-	domainList[2] = &d3;
 
 	std::vector<sf::Text> domainText(domainList.size());
 	int index = 0;

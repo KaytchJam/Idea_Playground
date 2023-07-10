@@ -24,12 +24,18 @@
     <ClCompile Include="globals\UserListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="domain_types\DomainManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="domain_types\Domain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="globals\UserListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="domain_types\DomainManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

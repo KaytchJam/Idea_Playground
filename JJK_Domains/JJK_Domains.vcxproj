@@ -131,11 +131,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="domain_types\Domain.cpp" />
+    <ClCompile Include="domain_types\DomainManager.cpp" />
     <ClCompile Include="globals\UserListener.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="domain_types\Domain.h" />
+    <ClInclude Include="domain_types\DomainManager.h" />
     <ClInclude Include="globals\UserListener.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

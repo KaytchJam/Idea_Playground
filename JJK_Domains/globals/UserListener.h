@@ -11,7 +11,8 @@ namespace kay {
 
 	struct mousestates {
 		bool MOUSE_HELD = false;
-		sf::Vector2f position = sf::Vector2f(0, 0);
+		bool HOLDING_OBJECT = false;
+		sf::Vector2i position = sf::Vector2i(0, 0);
 	};
 
 	extern struct keystates user_keys;

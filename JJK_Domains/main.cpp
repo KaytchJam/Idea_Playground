@@ -8,6 +8,7 @@
 #include "domain_types/Domain.h"
 #include "globals/UserListener.h"
 
+// USER LISTENER external variables
 extern kay::keystates user_keys;
 extern kay::mousestates user_mouse;
 
@@ -19,7 +20,7 @@ void printVector2u(sf::Vector2u& v) {
 	std::printf("{%d,%d}\n", v.x, v.y);
 }
 
-void printVector2i(sf::Vector2u& v) {
+void printVector2i(sf::Vector2i& v) {
 	std::printf("{%d,%d}\n", v.x, v.y);
 }
 
@@ -108,15 +109,6 @@ int main() {
 
 	uint8_t opacity = 0x0;
 
-	/*sf::Text text;
-	text.setFont(font);
-	text.setString("Simple Domain");
-	text.setCharacterSize(36);
-	text.setFillColor(sf::Color(0xFF, 0xFF, 0xFF, opacity));*/
-	
-	/*sf::VertexArray shape = make_line_strip(window, 800, 600);
-	sf::VertexArray lines = make_grid_lines(window, dim.x, dim.y, 800, 600);*/
-
 	// GRID INITIALIZATION
 	sf::VertexArray grid = make_grid_lines(window, 20, 20, window.getSize().x, window.getSize().y);
 
@@ -129,28 +121,14 @@ int main() {
 	d2.setOutlineThickness(10.f);
 	d2.setCenterPosition(circ.getCenterCoords() + sf::Vector2f(circ.getRadius() + circ.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius(), 0));
 
-	//circ.circle.move(sf::Vector2f(10.f, 10.f));
-	///circ.circle.move(sf::Vector2f(window.getSize().x / 2 - circ.getRadius() - circ.circle.getOutlineThickness(), window.getSize().y / 2 - circ.getRadius() - circ.circle.getOutlineThickness()));
-
 	//circ.scale(sf::Vector2f(5.f, 5.f));
-	sf::Vector2f center = getCircleCenter2(circ.circle);
+	/*sf::Vector2f center = getCircleCenter2(circ.circle);
 	std::printf("Origin: (%f, %f)\n", circ.circle.getOrigin().x, circ.circle.getOrigin().y);
 	std::printf("Pos: (%f, %f)\n", circ.circle.getPosition().x, circ.circle.getPosition().y);
-	std::printf("circle center: (%f,%f)\n", center.x, center.y);
+	std::printf("circle center: (%f,%f)\n", center.x, center.y);*/
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
-	/*sf::Texture text;
-	sf::Sprite turbine;*/
-
-	/*if (!text.loadFromFile("assets/sprites/Wind_Turbine.png")) {
-		std::cout << "failed to load." << std::endl;
-	}*/
-
-	/*turbine.setTexture(text);
-	turbine.scale(sf::Vector2f(5.f, 5.f));*/
-
-	//text.move(sf::Vector2f(window.getSize().x / 2 - circ.getRadius() - circ.getOutlineThickness(), window.getSize().y / 2 - circ.getRadius() - circ.getOutlineThickness()));
 
 	std::cout << "window dimensions: " << "(" << window.getSize().x << "," << window.getSize().y << ")" << std::endl;
 	std::cout << "domain 1: " << circ << std::endl;
@@ -180,6 +158,8 @@ int main() {
 
 	sf::Clock dtClock;
 
+	window.setFramerateLimit(30);
+	//window.setKeyRepeatEnabled(false);
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -192,23 +172,35 @@ int main() {
 			if (event.type == sf::Event::KeyReleased) {
 				direction_toggle(event, false);
 			}
+			if (event.type == sf::Event::MouseButtonPressed) {
+				user_mouse.MOUSE_HELD = true;
+			}
+			if (event.type == sf::Event::MouseButtonReleased) {
+				user_mouse.MOUSE_HELD = false;
+			}
 		}
 
+		user_mouse.position = sf::Mouse::getPosition(window);
 		sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+		printVector2i(localPosition);
 
 		window.clear(sf::Color(0xE1, 0xE1, 0xE1));
 
 		if (user_keys.LEFT_HELD) {
-			camera.transform = entity.translate(sf::Vector2f(-.05f, 0.f));
+			camera.transform = entity.translate(sf::Vector2f(-5.f, 0.f));
+			std::cout << "<" << std::endl;
 		}
 		if (user_keys.RIGHT_HELD) {
-			camera.transform = entity.translate(sf::Vector2f(.05f, 0.f));
+			camera.transform = entity.translate(sf::Vector2f(5.f, 0.f));
+			std::cout << ">" << std::endl;
 		}
 		if (user_keys.DOWN_HELD) {
-			camera.transform = entity.translate(sf::Vector2f(0.f, .05f));
+			camera.transform = entity.translate(sf::Vector2f(0.f, 5.f));
+			std::cout << "v" << std::endl;
 		}
 		if (user_keys.UP_HELD) {
-			camera.transform = entity.translate(sf::Vector2f(0.f, -.05f));
+			camera.transform = entity.translate(sf::Vector2f(0.f, -5.f));
+			std::cout << "^" << std::endl;
 		}
 
 		sf::Time elapsed = dtClock.restart();

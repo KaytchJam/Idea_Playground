@@ -1,8 +1,11 @@
 #include "Domain.h"
+#include "../globals/UserListener.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream>
+
+extern kay::mousestates user_mouse;
 
 static float deg2rad(float val) {
 	return (float) (val / 360.f * 2 * M_PI);
@@ -73,11 +76,36 @@ void ClosedDomain::onUpdate(float deltaTime) {
 		line_color.a = 0xFF;
 	*/
 
+	if (user_mouse.MOUSE_HELD && (!user_mouse.HOLDING_OBJECT || this->SELECTED)) {
+		// distance between mouse and circle center
+		sf::Vector2f mouse_pos = sf::Vector2f((float) user_mouse.position.x, (float) user_mouse.position.y);
+		sf::Vector2f thisCenter = getCenterCoords();
+		float distance = std::sqrtf(std::powf(mouse_pos.x - thisCenter.x, 2) + std::powf(mouse_pos.y - thisCenter.y, 2));
+
+		if (distance < base_radius / 4) {
+			setCenterPosition(mouse_pos);
+			circle.setRadius(base_radius);
+
+			line_color.a = 0x0F;
+			circle.setOutlineColor(line_color);
+
+			user_mouse.HOLDING_OBJECT = true;
+			this->SELECTED = true;
+		}
+
+	}
+	else {
+		IDLE = true;
+		line_color.a = 0xFF;
+		circle.setOutlineColor(line_color);
+		SELECTED = false;
+	}
+
+
 	if (IDLE) {
 		float offset = std::sin(deg2rad(degree));
 		circle.setRadius(base_radius + offset);
 		circle.setPosition(base_origin_position + sf::Vector2f(-1 * offset, -1 * offset));
-		//std::cout << "OFFSET: " << offset << std::endl;
 		degree = degree < 360 ? degree + (DEGREES_PER_FRAME) * deltaTime : 0;
 	}
 }

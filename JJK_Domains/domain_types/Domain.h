@@ -18,6 +18,7 @@ private:
 	bool TUG_OF_WAR = false;
 	bool IDLE = true;
 	bool SELECTED = false;
+	bool CONSUMED = false;
 
 public:
 	sf::CircleShape circle;
@@ -46,6 +47,8 @@ public:
 	float distance(ClosedDomain& other);
 	bool inRange(ClosedDomain& other);
 	void consume(ClosedDomain& other);
+	bool isConsumed() const { return CONSUMED;  }
+	bool isSelected() const { return SELECTED;  }
 
 	// Render Loop
 	void onUpdate(float deltaTime);

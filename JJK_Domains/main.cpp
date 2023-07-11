@@ -112,9 +112,9 @@ int main() {
 	// GRID INITIALIZATION
 	sf::VertexArray grid = make_grid_lines(window, 20, 20, (float) window.getSize().x, (float) window.getSize().y);
 	// DOMAIN INITIALIZATION
-	ClosedDomain d1(150.f, sf::Color::Blue, 0.5f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2), 150.f));
-	ClosedDomain d2(100.f, sf::Color::Red, 0.5f);
-	d2.setCenterPosition(d1.getCenterCoords() + sf::Vector2f(d1.getRadius() + d1.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius(), 0));
+	ClosedDomain d1(100.f, sf::Color::Blue, 1.3f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2), 150.f));
+	ClosedDomain d2(100.f, sf::Color::Red, 0.9f);
+	d2.setCenterPosition(d1.getCenterCoords() + sf::Vector2f(d1.getRadius() + d1.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius() + 20, 0));
 
 	/*ClosedDomain d3(50.f, sf::Color::Black, 0.5f);
 	d3.setOutlineThickness(10.f);*/
@@ -123,6 +123,7 @@ int main() {
 	dList.add(d1);
 	dList.add(d2);
 	dList.add(100.f, sf::Color::Magenta, 1.f);
+	dList.add(100.f, sf::Color::Black, 1.4f, sf::Vector2f(200, 500));
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
@@ -141,7 +142,7 @@ int main() {
 		dText.setCharacterSize(24);
 		dText.setFillColor(cur->getColor());
 		dText.setPosition(cur->getCenterCoords() + sf::Vector2f(0, cur->getRadius() + cur->getOutlineThickness() + 10));
-		dText.setString("Domain " + std::to_string(index + 1));
+		dText.setString("Domain " + std::to_string(index + 1) + "\nRef: " + std::to_string(cur->getRefinement()));
 
 		std::cout << "Letter spacing: " << dText.getLetterSpacing() << std::endl;
 		std::cout << "Bound Size : (" << dText.getGlobalBounds().getSize().x << "," << dText.getGlobalBounds().getSize().y << ")" << std::endl;
@@ -209,15 +210,22 @@ int main() {
 		// Update domains & render them
 		for (unsigned int i = 0; i < dList.size(); i++) {
 			ClosedDomain* cur = dList.get(i);
-			cur->onUpdate(elapsed.asSeconds());
-			domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1  * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
 
-			std::string dname = domainText[i].getString();
-			std::cout << dname << std::endl;
-			dList.overlapSearch(i);
+			if (cur->isConsumed()) {
+				dList.remove(i);
+				domainText.erase(domainText.begin() + i--);
+			} else {
+				cur->onUpdate(elapsed.asSeconds());
+				domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
+				domainText[i].setFillColor(cur->getColor());
 
-			window.draw(*cur, camera);
-			window.draw(domainText[i], camera);
+				std::string dname = domainText[i].getString();
+				std::cout << dname << std::endl;
+				dList.overlapSearch(i);
+				window.draw(*cur, camera);
+				window.draw(domainText[i], camera);
+			}
+
 		}
 		window.display();
 	}

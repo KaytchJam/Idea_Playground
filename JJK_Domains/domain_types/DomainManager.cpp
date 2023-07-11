@@ -31,11 +31,24 @@ bool DomainManager::add(float radius, sf::Color color, float refine_val, sf::Vec
 	return true;
 }
 
+void DomainManager::remove(int index) {
+	ClosedDomain* d = domainList[index];
+	delete d;
+	domainList.erase(domainList.begin() + index);
+	this->domainList = domainList;
+}
+
 void DomainManager::overlapSearch(int index) {
 	ClosedDomain* d = domainList[index];
-	for (int i = 0; i < domainList.size(); i++) {
-		if (i != index && d->inRange(*domainList[i])) {
-			std::cout << *domainList[i] << std::endl;
+	if (!d->isSelected()) {
+		for (int i = 0; i < domainList.size(); i++) {
+			ClosedDomain* other = domainList[i];
+			if (i != index && !other->isSelected() && !(other->isConsumed()) && d->inRange(*other)) {
+				std::cout << *other << std::endl;
+				d->consume(*other);
+				d->setOriginPosition(d->getOriginCoords());
+			}
 		}
 	}
+
 }

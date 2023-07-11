@@ -63,20 +63,21 @@ bool ClosedDomain::inRange(ClosedDomain& other) {
 	return (distance(other) - other.getTrueRadius()) <= this->getTrueRadius();
 }
 
+const int REDUCTION_FACTOR = 5;
 void ClosedDomain::consume(ClosedDomain& other) {
+	if (!CONSUMED) {
+		float refine_diff = this->refinement - other.refinement;
+		std::cout << refine_diff << std::endl;
+		float factor = refine_diff * 10;
+		base_radius += factor;
+		circle.setRadius(base_radius);
+		circle.setPosition(base_origin_position - sf::Vector2f(factor, factor));
+	}
 
+	CONSUMED = base_radius <= 0 ? true : false;
 }
 
 void ClosedDomain::onUpdate(float deltaTime) {
-	/*
-	 if (distance(mouse, this_domain) < radius / 4) {
-		line_color.a = 0x0F;
-		circle.setOutlineColor(line_color);
-		setCenterPosition(mouse.position);
-	 } else {
-		line_color.a = 0xFF;
-	*/
-
 	if (user_mouse.MOUSE_HELD && (!user_mouse.HOLDING_OBJECT || this->SELECTED)) {
 		// distance between mouse and circle center
 		float distance = 0;
@@ -106,10 +107,10 @@ void ClosedDomain::onUpdate(float deltaTime) {
 	}
 
 
-	if (IDLE) {
+	if (IDLE && !CONSUMED) {
 		float offset = std::sin(deg2rad(degree));
 		circle.setRadius(base_radius + offset);
-		circle.setPosition(base_origin_position + sf::Vector2f(-1 * offset, -1 * offset));
+		circle.setPosition(base_origin_position - sf::Vector2f(offset, offset));
 		degree = degree < 360 ? degree + (DEGREES_PER_FRAME) * deltaTime : 0;
 	}
 }

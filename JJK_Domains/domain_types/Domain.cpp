@@ -3,7 +3,6 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <iostream>
 
 extern kay::mousestates user_mouse;
 
@@ -67,7 +66,7 @@ const int REDUCTION_FACTOR = 5;
 void ClosedDomain::consume(ClosedDomain& other) {
 	if (!CONSUMED) {
 		float refine_diff = this->refinement - other.refinement;
-		std::cout << refine_diff << std::endl;
+		//std::cout << refine_diff << std::endl;
 		float factor = refine_diff * 10;
 		base_radius += factor;
 		circle.setRadius(base_radius);

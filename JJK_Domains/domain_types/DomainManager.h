@@ -19,6 +19,7 @@ public:
 	// REMOVAL
 	void remove(int index);
 
+	// GETTERS
 	size_t size() { return domainList.size(); }
 	ClosedDomain* get(unsigned int index) const { return domainList[index]; }
 

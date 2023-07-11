@@ -44,7 +44,7 @@ void DomainManager::overlapSearch(int index) {
 		for (int i = 0; i < domainList.size(); i++) {
 			ClosedDomain* other = domainList[i];
 			if (i != index && !other->isSelected() && !(other->isConsumed()) && d->inRange(*other)) {
-				std::cout << *other << std::endl;
+				//std::cout << *other << std::endl;
 				d->consume(*other);
 				d->setOriginPosition(d->getOriginCoords());
 			}

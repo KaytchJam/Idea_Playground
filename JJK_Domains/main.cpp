@@ -45,29 +45,6 @@ void direction_toggle(sf::Event& event, bool toggle) {
 	}
 }
 
-sf::Vector2f getCircleCenter(sf::CircleShape c) {
-	sf::Vector2f pt = c.getPoint(0);
-	std::cout << pt.x << " " << pt.y << std::endl;
-	return sf::Vector2f(c.getPoint(0).x, c.getPoint(0).y + c.getRadius());
-}
-
-sf::Vector2f getCircleCenter2(sf::CircleShape c) {
-	sf::Vector2f pos = c.getPosition();
-	return pos + sf::Vector2f(c.getRadius(), c.getRadius());
-}
-
-bool withinRange(float target, float error, float value) {
-	return std::abs(value - target) <= error;
-}
-
-bool coordsOnCircle(sf::CircleShape c, sf::Vector2i coord) {
-	sf::Vector2f center = getCircleCenter2(c);
-	float radius = (std::sqrt(std::powf(coord.x - center.x, 2) + std::powf(coord.y - center.y, 2))) + c.getOutlineThickness() / 2;
-	/*std::cout << "calced: " << radius << std::endl;
-	std::cout << "actual: " << c.getRadius() + c.getOutlineThickness() << std::endl;*/
-	return withinRange(c.getRadius() + c.getOutlineThickness() / 2, c.getOutlineThickness() * 2, radius);
-}
-
 sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float length, float height) {
 	float x = 0;
 	float y = 0;
@@ -219,8 +196,6 @@ int main() {
 				domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
 				domainText[i].setFillColor(cur->getColor());
 
-				std::string dname = domainText[i].getString();
-				std::cout << dname << std::endl;
 				dList.overlapSearch(i);
 				window.draw(*cur, camera);
 				window.draw(domainText[i], camera);

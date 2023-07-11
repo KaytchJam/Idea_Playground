@@ -8,15 +8,11 @@ SelectionSortAnim::SelectionSortAnim(sf::RenderWindow& w, std::vector<int>& v) :
 	max_length = (float) w.getSize().x;
 	max_height = (float) w.getSize().y;
 	box_length =  (float) 1 / v.size() * max_length;
-	/*std::printf("Object constructed.\n");
-	std::printf("max_len: %f max_height: %f box_length: %f\n", max_length, max_height, box_length);*/
 }
 
 void SelectionSortAnim::update_min_index() {
 	SEARCHING = true;
 	jindex++;
-
-	//std::cout << "jindex: " << jindex << ", size: " << v.size() << std::endl;
 
 	if (v[jindex] < v[mindex]) {
 		mindex = jindex;
@@ -38,13 +34,8 @@ void SelectionSortAnim::onUpdate() {
 	if (mouse_states.MOUSE_HELD) START_SORT = true; 
 
 	if (START_SORT && index < v.size()) {
-		if (jindex < v.size() - 1) {
-			//std::cout << "update min index" << std::endl;
-			update_min_index();
-		} else {
-			//std::cout << "swap and reset" << std::endl;
-			swap_and_reset();
-		}
+		if (jindex < v.size() - 1) update_min_index();
+		else swap_and_reset();
 	} else {
 		SEARCHING = false;
 	}

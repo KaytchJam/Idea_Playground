@@ -54,10 +54,8 @@ public:
 	void onUpdate(float deltaTime);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-	// Misc
-	static sf::Vector2f centerToOriginCoords(sf::Vector2f pos, float radius) { 
-		return  pos - sf::Vector2f(radius, radius); 
-	}
+	// Misc + Utility
+	static sf::Vector2f centerToOriginCoords(sf::Vector2f pos, float radius) { return  pos - sf::Vector2f(radius, radius); }
 };
 
 std::ostream& operator<<(std::ostream& stream, const ClosedDomain& d);

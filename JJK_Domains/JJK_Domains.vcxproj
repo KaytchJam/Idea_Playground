@@ -133,6 +133,7 @@
     <ClCompile Include="domain_types\ClosedDomain.cpp" />
     <ClCompile Include="domain_types\Domain.cpp" />
     <ClCompile Include="domain_types\DomainManager.cpp" />
+    <ClCompile Include="domain_types\OpenDomain.cpp" />
     <ClCompile Include="globals\UserListener.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

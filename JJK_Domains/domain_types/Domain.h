@@ -26,11 +26,12 @@ protected:
 	bool IDLE = true;
 	bool SELECTED = false;
 	bool CONSUMED = false;
+	bool SURE_HIT_ACTIVE = true;
 
 public:
 	sf::CircleShape circle;
 	// Construction / Destruction
-	Domain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f centerCoords = sf::Vector2f(0.f, 0.f));
+	Domain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f));
 	~Domain() {}
 
 	// Getters
@@ -69,10 +70,25 @@ public:
 
 class ClosedDomain : public Domain {
 public:
-	ClosedDomain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f centerCoords = sf::Vector2f(0.f, 0.f));
+	ClosedDomain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f));
 	~ClosedDomain();
 
 	void consume(Domain& other);
+};
+
+class OpenDomain : public Domain {
+public:
+	OpenDomain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f));
+	~OpenDomain() {}
+
+	void consume(Domain& other) {}
+};
+
+class SimpleDomain : public Domain {
+	SimpleDomain(float radius = 30.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f)) {}
+	~SimpleDomain() {}
+
+	void consume(Domain& other) {}
 };
 
 std::ostream& operator<<(std::ostream& stream, const Domain& d);

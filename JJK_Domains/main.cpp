@@ -95,12 +95,16 @@ int main() {
 
 	/*ClosedDomain d3(50.f, sf::Color::Black, 0.5f);
 	d3.setOutlineThickness(10.f);*/
+	
+	sf::RectangleShape rect(sf::Vector2f(200.f, 100.f));
+	rect.setPosition(50.f, window.getSize().y - 150);
+	rect.setFillColor(sf::Color::Black);
 
 	DomainManager dList;
 	dList.add(d1);
 	dList.add(d2);
-	dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Magenta, 1.f);
-	dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Black, 1.4f, sf::Vector2f(200, 500));
+	//dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Magenta, 1.f);
+	//dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Black, 1.4f, sf::Vector2f(200, 500));
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
@@ -137,6 +141,7 @@ int main() {
 	}
 
 	while (window.isOpen()) {
+		user_mouse.MOUSE_RELEASED = false;
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed)
@@ -153,6 +158,7 @@ int main() {
 			if (event.type == sf::Event::MouseButtonReleased) {
 				user_mouse.MOUSE_HELD = false;
 				user_mouse.HOLDING_OBJECT = false;
+				user_mouse.MOUSE_RELEASED = true;
 			}
 		}
 
@@ -181,7 +187,15 @@ int main() {
 			std::cout << "^" << std::endl;
 		}
 
+		sf::Vector2f rPos = rect.getPosition();
+		if (user_mouse.position.x > rPos.x && user_mouse.position.y > rPos.y && user_mouse.position.x < rPos.x + rect.getSize().x && user_mouse.position.y < rPos.y + rect.getSize().y) {
+			if (user_mouse.MOUSE_RELEASED) {
+				dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Black);
+			}
+		}
+
 		sf::Time elapsed = dtClock.restart();
+
 		//std::cout << "deltaTime: " << elapsed.asSeconds() << std::endl;
 		window.draw(grid);
 		// Update domains & render them
@@ -190,18 +204,20 @@ int main() {
 
 			if (cur->isConsumed()) {
 				dList.remove(i);
-				domainText.erase(domainText.begin() + i--);
+				//domainText.erase(domainText.begin() + i--);
 			} else {
 				cur->onUpdate(elapsed.asSeconds());
-				domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
-				domainText[i].setFillColor(cur->getColor());
+				/*domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
+				domainText[i].setFillColor(cur->getColor());*/
 
 				dList.overlapSearch(i);
 				window.draw(*cur, camera);
-				window.draw(domainText[i], camera);
+				//window.draw(domainText[i], camera);
 			}
 
 		}
+
+		window.draw(rect);
 		window.display();
 	}
 

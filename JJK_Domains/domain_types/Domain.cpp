@@ -12,12 +12,6 @@ static float deg2rad(float val) {
 
 Domain::Domain(float radius, sf::Color color, float refine_val, sf::Vector2f originCoords) : refinement(refine_val), base_radius(radius), line_color(color) {
 	circle = sf::CircleShape(radius);
-	circle.setPosition(originCoords);
-	circle.setFillColor(sf::Color::Transparent);
-	circle.setOutlineColor(color);
-	circle.setOutlineThickness(10.f);
-	circle.setScale(sf::Vector2f(1, 1));
-	base_origin_position = circle.getPosition();
 
 	// randomize degree
 }

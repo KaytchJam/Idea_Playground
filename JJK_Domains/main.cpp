@@ -99,8 +99,8 @@ int main() {
 	DomainManager dList;
 	dList.add(d1);
 	dList.add(d2);
-	dList.add(100.f, sf::Color::Magenta, 1.f);
-	dList.add(100.f, sf::Color::Black, 1.4f, sf::Vector2f(200, 500));
+	dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Magenta, 1.f);
+	dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Black, 1.4f, sf::Vector2f(200, 500));
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
@@ -114,7 +114,7 @@ int main() {
 	std::vector<sf::Text> domainText(dList.size());
 	int index = 0;
 	for (sf::Text& dText : domainText) {
-		ClosedDomain* cur = dList.get(index);
+		Domain* cur = dList.get(index);
 		dText.setFont(font);
 		dText.setCharacterSize(24);
 		dText.setFillColor(cur->getColor());
@@ -186,7 +186,7 @@ int main() {
 		window.draw(grid);
 		// Update domains & render them
 		for (unsigned int i = 0; i < dList.size(); i++) {
-			ClosedDomain* cur = dList.get(i);
+			Domain* cur = dList.get(i);
 
 			if (cur->isConsumed()) {
 				dList.remove(i);

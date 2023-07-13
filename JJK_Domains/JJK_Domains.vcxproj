@@ -130,6 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="domain_types\ClosedDomain.cpp" />
     <ClCompile Include="domain_types\Domain.cpp" />
     <ClCompile Include="domain_types\DomainManager.cpp" />
     <ClCompile Include="globals\UserListener.cpp" />

@@ -27,6 +27,9 @@
     <ClCompile Include="domain_types\DomainManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="domain_types\ClosedDomain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="domain_types\Domain.h">

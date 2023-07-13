@@ -10,7 +10,7 @@ static float deg2rad(float val) {
 	return (float) (val / 360.f * 2 * M_PI);
 }
 
-ClosedDomain::ClosedDomain(float radius, sf::Color color, float refine_val, sf::Vector2f originCoords) : refinement(refine_val), base_radius(radius), line_color(color) {
+Domain::Domain(float radius, sf::Color color, float refine_val, sf::Vector2f originCoords) : refinement(refine_val), base_radius(radius), line_color(color) {
 	circle = sf::CircleShape(radius);
 	circle.setPosition(originCoords);
 	circle.setFillColor(sf::Color::Transparent);
@@ -22,7 +22,7 @@ ClosedDomain::ClosedDomain(float radius, sf::Color color, float refine_val, sf::
 	// randomize degree
 }
 
-void ClosedDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+void Domain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	target.draw(circle, states);
 
 	sf::VertexArray circLines(sf::Lines, 4);
@@ -42,41 +42,27 @@ void ClosedDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	target.draw(circLines, states);
 }
 
-sf::Vector2f ClosedDomain::getCenterCoords() const {
+sf::Vector2f Domain::getCenterCoords() const {
 	sf::Vector2f pos = circle.getPosition();
 	return pos + sf::Vector2f(circle.getRadius(), circle.getRadius());
 }
 
-float ClosedDomain::distance(ClosedDomain& other) {
+float Domain::distance(Domain& other) {
 	sf::Vector2f oCenter = other.getCenterCoords();
 	sf::Vector2f thisCenter = this->getCenterCoords();
 	return std::sqrtf(std::powf(oCenter.x - thisCenter.x, 2) + std::powf(oCenter.y - thisCenter.y, 2));
 }
 
-void ClosedDomain::setCenterPosition(sf::Vector2f pos) {
+void Domain::setCenterPosition(sf::Vector2f pos) {
 	circle.setPosition(pos - sf::Vector2f(base_radius, base_radius));
 	base_origin_position = circle.getPosition();
 }
 
-bool ClosedDomain::inRange(ClosedDomain& other) {
+bool Domain::inRange(Domain& other) {
 	return (distance(other) - other.getTrueRadius()) <= this->getTrueRadius();
 }
 
-const int REDUCTION_FACTOR = 5;
-void ClosedDomain::consume(ClosedDomain& other) {
-	if (!CONSUMED) {
-		float refine_diff = this->refinement - other.refinement;
-		//std::cout << refine_diff << std::endl;
-		float factor = refine_diff * 10;
-		base_radius += factor;
-		circle.setRadius(base_radius);
-		circle.setPosition(base_origin_position - sf::Vector2f(factor, factor));
-	}
-
-	CONSUMED = base_radius <= 0 ? true : false;
-}
-
-void ClosedDomain::onUpdate(float deltaTime) {
+void Domain::onUpdate(float deltaTime) {
 	if (user_mouse.MOUSE_HELD && (!user_mouse.HOLDING_OBJECT || this->SELECTED)) {
 		// distance between mouse and circle center
 		float distance = 0;
@@ -114,7 +100,7 @@ void ClosedDomain::onUpdate(float deltaTime) {
 	}
 }
 
-std::ostream& operator<<(std::ostream& stream, const ClosedDomain& d) {
+std::ostream& operator<<(std::ostream& stream, const Domain& d) {
 	sf::Vector2f center = d.getCenterCoords();
 	return stream << "(x: " << center.x << ", y: " << center.y << ", r: " << d.getRadius() << ")";
 }

@@ -1,9 +1,15 @@
 #pragma once
 #include "SFML/Graphics.hpp"
 
+enum DomainType {
+	CLOSED_DOMAIN = 0,
+	OPEN_DOMAIN = 1,
+	SIMPLE_DOMAIN = 2,
+	ENUM_SIZE = SIMPLE_DOMAIN + 1
+};
 
-class ClosedDomain : public sf::Drawable {
-private:
+class Domain : public sf::Drawable {
+protected:
 	// ANIMATION
 	float degree = 0;
 	const float DEGREES_PER_FRAME = 100.f;
@@ -11,8 +17,9 @@ private:
 	sf::Vector2f base_origin_position = sf::Vector2f(0, 0);
 
 	// PARAMS
-	float refinement;
-	float base_radius; 
+	float refinement = 0.0f;
+	float base_radius = 0.0f;
+	DomainType type = DomainType::ENUM_SIZE;
 
 	// STATES
 	bool TUG_OF_WAR = false;
@@ -23,14 +30,16 @@ private:
 public:
 	sf::CircleShape circle;
 	// Construction / Destruction
-	ClosedDomain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f centerCoords = sf::Vector2f(0.f, 0.f));
-	~ClosedDomain() {}
+	Domain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f centerCoords = sf::Vector2f(0.f, 0.f));
+	~Domain() {}
 
 	// Getters
 	sf::Vector2f getCenterCoords() const;
 	sf::Vector2f getOriginCoords() const { return circle.getPosition(); }
 	sf::Vector2f getBaseOriginCoords() const { return base_origin_position; }
 	sf::Color getColor() const { return line_color; }
+	DomainType getDomainType() const { return type;  }
+
 	float getRadius() const { return circle.getRadius(); }
 	float getBaseRadius() const { return base_radius; }
 	float getTrueRadius() const { return base_radius + circle.getOutlineThickness(); }
@@ -44,11 +53,11 @@ public:
 	void setCenterPosition(sf::Vector2f pos);
 
 	// Relational
-	float distance(ClosedDomain& other);
-	bool inRange(ClosedDomain& other);
-	void consume(ClosedDomain& other);
-	bool isConsumed() const { return CONSUMED;  }
-	bool isSelected() const { return SELECTED;  }
+	float distance(Domain& other);
+	bool inRange(Domain& other);
+	virtual void consume(Domain& other) {}
+	bool isConsumed() const { return CONSUMED; }
+	bool isSelected() const { return SELECTED; }
 
 	// Render Loop
 	void onUpdate(float deltaTime);
@@ -58,4 +67,12 @@ public:
 	static sf::Vector2f centerToOriginCoords(sf::Vector2f pos, float radius) { return  pos - sf::Vector2f(radius, radius); }
 };
 
-std::ostream& operator<<(std::ostream& stream, const ClosedDomain& d);
+class ClosedDomain : public Domain {
+public:
+	ClosedDomain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f centerCoords = sf::Vector2f(0.f, 0.f));
+	~ClosedDomain();
+
+	void consume(Domain& other);
+};
+
+std::ostream& operator<<(std::ostream& stream, const Domain& d);

@@ -1,4 +1,4 @@
-#include "DomainManager.h"
+#include "Domain.h"
 
 ClosedDomain::ClosedDomain(float radius, sf::Color color, float refine_val, sf::Vector2f originCoords) : Domain(radius, color, refine_val, originCoords) {
 	type = DomainType::CLOSED_DOMAIN;

@@ -84,6 +84,11 @@ int main() {
 		return 0;
 	}
 
+	if (!sf::Shader::isAvailable()) {
+		std::cout << "shaders not available on device." << std::endl;
+		return false;
+	}
+
 	uint8_t opacity = 0x0;
 
 	// GRID INITIALIZATION
@@ -97,7 +102,7 @@ int main() {
 	d3.setOutlineThickness(10.f);*/
 	
 	sf::RectangleShape rect(sf::Vector2f(200.f, 100.f));
-	rect.setPosition(50.f, window.getSize().y - 150);
+	rect.setPosition(50.f, (float) window.getSize().y - 150);
 	rect.setFillColor(sf::Color::Black);
 
 	DomainManager dList;

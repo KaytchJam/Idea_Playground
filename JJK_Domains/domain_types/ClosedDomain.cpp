@@ -27,3 +27,23 @@ void ClosedDomain::consume(Domain& other) {
 
 	CONSUMED = base_radius <= 0 ? true : false;
 }
+
+void ClosedDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+	target.draw(circle, states);
+
+	sf::VertexArray circLines(sf::Lines, 4);
+
+	// VERTICAL LINE
+	circLines[0].position = circle.getPosition() + circle.getPoint(0);
+	circLines[0].color = line_color;
+	circLines[1].position = circle.getPosition() + circle.getPoint(0) + sf::Vector2f(0, circle.getRadius());
+	circLines[1].color = line_color;
+
+	// HORIZONTAL LINE
+	circLines[2].position = circle.getPosition() + sf::Vector2f(0, circle.getRadius());
+	circLines[2].color = line_color;
+	circLines[3].position = circle.getPosition() + circle.getPoint(0) + sf::Vector2f(0, circle.getRadius());
+	circLines[3].color = line_color;
+
+	target.draw(circLines, states);
+}

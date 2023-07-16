@@ -62,20 +62,23 @@ public:
 
 	// Render Loop
 	void onUpdate(float deltaTime);
-	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 	// Misc + Utility
 	static sf::Vector2f centerToOriginCoords(sf::Vector2f pos, float radius) { return  pos - sf::Vector2f(radius, radius); }
 };
 
+// CLOSED DOMAIN
 class ClosedDomain : public Domain {
 public:
 	ClosedDomain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f));
 	~ClosedDomain();
 
 	void consume(Domain& other);
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
 
+// OPEN DOMAIN
 class OpenDomain : public Domain {
 private:
 	static sf::Shader* odShader;
@@ -84,13 +87,16 @@ public:
 	~OpenDomain() {}
 
 	void consume(Domain& other) {}
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
 
+// SIMPLE DOMAIN
 class SimpleDomain : public Domain {
 	SimpleDomain(float radius = 30.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f)) {}
 	~SimpleDomain() {}
 
 	void consume(Domain& other) {}
+	//void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Domain& d);

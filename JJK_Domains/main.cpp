@@ -95,7 +95,7 @@ int main() {
 	sf::VertexArray grid = make_grid_lines(window, 20, 20, (float) window.getSize().x, (float) window.getSize().y);
 	// DOMAIN INITIALIZATION
 	ClosedDomain d1(100.f, sf::Color::Blue, 1.3f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2), 150.f));
-	ClosedDomain d2(100.f, sf::Color::Red, 0.9f);
+	ClosedDomain d2(100.f, sf::Color::Red, 1.1f);
 	d2.setCenterPosition(d1.getCenterCoords() + sf::Vector2f(d1.getRadius() + d1.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius() + 20, 0));
 
 	/*ClosedDomain d3(50.f, sf::Color::Black, 0.5f);
@@ -106,19 +106,21 @@ int main() {
 	rect.setFillColor(sf::Color::Black);
 
 	DomainManager dList;
-	dList.add(d1);
-	dList.add(d2);
+	//dList.add(d1);
+	//dList.add(d2);
+	dList.add(DomainType::OPEN_DOMAIN, 100.f, sf::Color::Black, 2.f);
+	//dList.add(DomainType::OPEN_DOMAIN, 50.f, sf::Color::Green, 1.1f, sf::Vector2f(800.f, 500.f));
 	//dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Magenta, 1.f);
 	//dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Black, 1.4f, sf::Vector2f(200, 500));
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
 
-	std::cout << "window dimensions: " << "(" << window.getSize().x << "," << window.getSize().y << ")" << std::endl;
+	/*std::cout << "window dimensions: " << "(" << window.getSize().x << "," << window.getSize().y << ")" << std::endl;
 	std::cout << "domain 1: " << d1 << std::endl;
 	std::cout << "domain 2: " << d2 << std::endl;
 	std::cout << "distance: " << d1.distance(d2) << std::endl;
-	std::cout << "in range? " << d1.inRange(d2) << std::endl;
+	std::cout << "in range? " << d1.inRange(d2) << std::endl;*/
 
 	std::vector<sf::Text> domainText(dList.size());
 	int index = 0;
@@ -149,17 +151,10 @@ int main() {
 		user_mouse.MOUSE_RELEASED = false;
 		sf::Event event;
 		while (window.pollEvent(event)) {
-			if (event.type == sf::Event::Closed)
-				window.close();
-			if (event.type == sf::Event::KeyPressed) {
-				direction_toggle(event, true);
-			}
-			if (event.type == sf::Event::KeyReleased) {
-				direction_toggle(event, false);
-			}
-			if (event.type == sf::Event::MouseButtonPressed) {
-				user_mouse.MOUSE_HELD = true;
-			}
+			if (event.type == sf::Event::Closed) window.close();
+			if (event.type == sf::Event::KeyPressed) { direction_toggle(event, true); }
+			if (event.type == sf::Event::KeyReleased) { direction_toggle(event, false); }
+			if (event.type == sf::Event::MouseButtonPressed) { user_mouse.MOUSE_HELD = true; }
 			if (event.type == sf::Event::MouseButtonReleased) {
 				user_mouse.MOUSE_HELD = false;
 				user_mouse.HOLDING_OBJECT = false;
@@ -195,7 +190,7 @@ int main() {
 		sf::Vector2f rPos = rect.getPosition();
 		if (user_mouse.position.x > rPos.x && user_mouse.position.y > rPos.y && user_mouse.position.x < rPos.x + rect.getSize().x && user_mouse.position.y < rPos.y + rect.getSize().y) {
 			if (user_mouse.MOUSE_RELEASED) {
-				dList.add(CLOSED_DOMAIN, 100.f, sf::Color::Black);
+				dList.add(DomainType::CLOSED_DOMAIN, 100.f, sf::Color::Black, 1.f);
 			}
 		}
 

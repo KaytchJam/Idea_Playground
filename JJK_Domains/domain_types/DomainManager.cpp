@@ -49,7 +49,7 @@ bool DomainManager::add(DomainType type, float radius, sf::Color color, float re
 		newmain = new ClosedDomain(radius, color, refine_val, centerCoords);
 		break;
 	case OPEN_DOMAIN:
-		newmain = new Domain(radius, color, refine_val, centerCoords);
+		newmain = new OpenDomain(radius, color, refine_val, centerCoords);
 		// newmain = new OpenDomain(d.getBaseRadius(), d.getColor(), d.getRefinement(), d.getOriginCoords());
 		break;
 	case SIMPLE_DOMAIN:

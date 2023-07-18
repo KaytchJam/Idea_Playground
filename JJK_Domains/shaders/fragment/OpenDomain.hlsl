@@ -15,6 +15,6 @@ void main() {
         gl_FragColor = vec4(0.f, 0.f, 0.f, 0.f);
         return;
     }
-    
+    float filler = thickness + 1;
     gl_FragColor = line_color;
 }

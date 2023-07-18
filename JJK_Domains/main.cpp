@@ -13,9 +13,9 @@
 extern kay::keystates user_keys;
 extern kay::mousestates user_mouse;
 
-void printVector2f(sf::Vector2f& v) {
-	std::printf("{%f,%f}\n", v.x, v.y);
-}
+//void printVector2f(sf::Vector2f& v) {
+//	std::printf("{%f,%f}\n", v.x, v.y);
+//}
 
 void printVector2f(sf::Vector2f v) {
 	std::printf("{%f,%f}\n", v.x, v.y);
@@ -116,6 +116,8 @@ int main() {
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
 
+	OpenDomain d(50.f, sf::Color::Black, 1.f, sf::Vector2f(300.f, 300.f));
+
 	/*std::cout << "window dimensions: " << "(" << window.getSize().x << "," << window.getSize().y << ")" << std::endl;
 	std::cout << "domain 1: " << d1 << std::endl;
 	std::cout << "domain 2: " << d2 << std::endl;
@@ -138,6 +140,8 @@ int main() {
 		++index;
 	}
 
+	std::cout << std::endl;
+
 	sf::Clock dtClock;
 
 	window.setFramerateLimit(30);
@@ -146,6 +150,8 @@ int main() {
 	for (int i = 0; i < dList.size(); i++) {
 		printVector2f(dList.get(i)->circle.getPosition());
 	}
+
+	bool once = false;
 
 	while (window.isOpen()) {
 		user_mouse.MOUSE_RELEASED = false;
@@ -187,37 +193,76 @@ int main() {
 			std::cout << "^" << std::endl;
 		}
 
-		sf::Vector2f rPos = rect.getPosition();
+		/*sf::Vector2f rPos = rect.getPosition();
 		if (user_mouse.position.x > rPos.x && user_mouse.position.y > rPos.y && user_mouse.position.x < rPos.x + rect.getSize().x && user_mouse.position.y < rPos.y + rect.getSize().y) {
 			if (user_mouse.MOUSE_RELEASED) {
 				dList.add(DomainType::CLOSED_DOMAIN, 100.f, sf::Color::Black, 1.f);
 			}
-		}
+		}*/
 
 		sf::Time elapsed = dtClock.restart();
 
 		//std::cout << "deltaTime: " << elapsed.asSeconds() << std::endl;
 		window.draw(grid);
-		// Update domains & render them
-		for (unsigned int i = 0; i < dList.size(); i++) {
-			Domain* cur = dList.get(i);
+		d.onUpdate(elapsed.asSeconds());
 
-			if (cur->isConsumed()) {
-				dList.remove(i);
-				//domainText.erase(domainText.begin() + i--);
-			} else {
-				cur->onUpdate(elapsed.asSeconds());
-				/*domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
-				domainText[i].setFillColor(cur->getColor());*/
+		if (!once) {
+			std::vector<sf::Vector2f> pts = d.getPointPairs();
+			for (int i = 0; i < pts.size(); i += 2) {
+				sf::Vector2f ep1 = pts[i];
+				sf::Vector2f center = sf::Vector2f(d.getRadius(), d.getRadius());
 
-				dList.overlapSearch(i);
-				window.draw(*cur, camera);
-				//window.draw(domainText[i], camera);
+				float x_diff = ep1.x - center.x;
+				float y_diff = ep1.y - center.y;
+				float slope = (y_diff) / (x_diff);
+
+				float x_val = -1 * x_diff + d.getRadius();
+				float calc = slope * (-1 * x_diff) + d.getRadius();
+
+				float x_value = -x_diff; // distance from center
+				float approx = slope * ((d.getRadius() + x_value) - d.getRadius()) + d.getRadius();
+
+
+				std::printf("Center: (%f,%f)\n", center.x, center.y);
+				std::cout << "slope: " << slope << std::endl;
+				std::printf("Real: (%f,%f)\n", ep1.x, ep1.y);
+				std::printf("Approximation: (%f,%f)\n", x_value, approx);
+				//std::printf("(%f,%f)\n", x_val, calc);
+				std::cout << std::endl;
+
+				sf::VertexArray c_line(sf::Lines, 2);
+				c_line[0].position = d.getOriginCoords() + ep1;
+				c_line[0].color = sf::Color::Black;
+				c_line[1].position = d.getOriginCoords() + sf::Vector2f(d.getRadius() + x_value, approx);
+				c_line[1].color = sf::Color::Black;
+
+				window.draw(c_line);
+
 			}
-
+			//once = true;
 		}
 
-		window.draw(rect);
+		window.draw(d);
+		// Update domains & render them
+		//for (unsigned int i = 0; i < dList.size(); i++) {
+		//	Domain* cur = dList.get(i);
+
+		//	if (cur->isConsumed()) {
+		//		dList.remove(i);
+		//		//domainText.erase(domainText.begin() + i--);
+		//	} else {
+		//		cur->onUpdate(elapsed.asSeconds());
+		//		/*domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
+		//		domainText[i].setFillColor(cur->getColor());*/
+
+		//		dList.overlapSearch(i);
+		//		window.draw(*cur, camera);
+		//		//window.draw(domainText[i], camera);
+		//	}
+
+		//}
+
+		//window.draw(rect);
 		window.display();
 	}
 

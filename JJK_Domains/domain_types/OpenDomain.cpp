@@ -11,7 +11,7 @@ OpenDomain::OpenDomain(float radius, sf::Color color, float refine_val, sf::Vect
 	circle.setPosition(originCoords);
 	circle.setFillColor(sf::Color::Transparent);
 	circle.setOutlineColor(color);
-	circle.setOutlineThickness(5.f);
+	circle.setOutlineThickness(10.f);
 	circle.setScale(sf::Vector2f(1, 1));
 	base_origin_position = circle.getPosition();
 
@@ -31,56 +31,60 @@ OpenDomain::~OpenDomain() {
 	if (!od_count) delete odShader;
 }
 
-std::vector<sf::Vector2f> OpenDomain::getPointPairs() {
-	std::vector<sf::Vector2f> points(2);
+std::vector<sf::Vector2f> OpenDomain::getPointPairs() const {
+	std::vector<sf::Vector2f> points(4);
 	int total_points = circle.getPointCount();
-	int inverse_shift = total_points / 2;
 
 	int cur = 0;
-	/*points[0] = circle.getPoint(cur);
-	points[1] = circle.getPoint(inverse_shift);*/
-
-	/*cur = (int)(total_points * .125f);
-	points[2] = circle.getPoint(cur);
-	points[3] = circle.getPoint(cur + inverse_shift);*/
-
-	float index_approx = total_points * .125f;
-	/*std::cout << "total_points * .25: " << index_approx << std::endl;
-	std::cout << "index: " << std::ceil(index_approx) << std::endl;
-	std::printf("ceil (%f,%f)\n", circle.getPoint(std::ceil(index_approx)).x, circle.getPoint(std::ceil(index_approx)).y);*/
-	cur = (int) (total_points * .125f);
-
 	points[0] = circle.getPoint(cur);
-	points[1] = circle.getPoint(cur + inverse_shift);
-
-	/*std::printf("no ceil (%f,%f)\n", points[0].x, points[0].y);
-	std::printf("no ceil inverse shift (%f,%f)\n", points[1].x, points[1].y);*/
-
+	cur = (int)(total_points * .125f);
+	points[1] = circle.getPoint(cur);
+	cur = (int) (total_points * .25f);
+	points[2] = circle.getPoint(cur);
+	cur = (int)(total_points * .375f);
+	points[3] = circle.getPoint(cur);
 	return points;
 }
 
+
+
 void OpenDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	sf::Vector2f center = getCenterCoords();
+	float radius = getRadius();
+
 	odShader->setUniform("center", sf::Vector2f(0.f, target.getSize().y) - sf::Vector2f(-1 * center.x, center.y));
 	odShader->setUniform("radius", getRadius());
 	odShader->setUniform("thickness", getOutlineThickness());
 	odShader->setUniform("line_color", sf::Glsl::Vec4(line_color));
 
-	sf::VertexArray circLines(sf::Lines, 4);
+	std::vector<sf::Vector2f> points = getPointPairs();
+	sf::Vector2f p1 = points[0];
+
+	float x_diff = p1.x - center.x;
+	float y_diff = p1.y - center.y;
+	float slope = (y_diff) / (x_diff);
+
+	float x_value = -x_diff; // distance from center
+	float approx = slope * (x_value) + radius;
+	sf::Vector3f standard(-1 * x_value, 1, -1 * radius);
+
+	odShader->setUniform("standard", standard);
+
+	//sf::VertexArray circLines(sf::Lines, 4);
 
 	// VERTICAL LINE
-	circLines[0].position = circle.getPosition() + circle.getPoint(0);
-	circLines[0].color = line_color;
-	circLines[1].position = circle.getPosition() + circle.getPoint(0) + sf::Vector2f(0, circle.getRadius());
-	circLines[1].color = line_color;
+	//circLines[0].position = circle.getPosition() + circle.getPoint(0);
+	//circLines[0].color = line_color;
+	//circLines[1].position = circle.getPosition() + circle.getPoint(0) + sf::Vector2f(0, circle.getRadius());
+	//circLines[1].color = line_color;
 
-	// HORIZONTAL LINE
-	circLines[2].position = circle.getPosition() + sf::Vector2f(0, circle.getRadius());
-	circLines[2].color = line_color;
-	circLines[3].position = circle.getPosition() + circle.getPoint(0) + sf::Vector2f(0, circle.getRadius());
-	circLines[3].color = line_color;
+	//// HORIZONTAL LINE
+	//circLines[2].position = circle.getPosition() + sf::Vector2f(0, circle.getRadius());
+	//circLines[2].color = line_color;
+	//circLines[3].position = circle.getPosition() + circle.getPoint(0) + sf::Vector2f(0, circle.getRadius());
+	//circLines[3].color = line_color;
 
-	target.draw(circLines, states);
+	//target.draw(circLines, states);
 	states.shader = odShader;
 	target.draw(circle, states);
 }

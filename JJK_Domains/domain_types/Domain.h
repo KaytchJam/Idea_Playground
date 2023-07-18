@@ -87,7 +87,7 @@ public:
 	OpenDomain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f));
 	~OpenDomain();
 
-	std::vector<sf::Vector2f> getPointPairs();
+	std::vector<sf::Vector2f> getPointPairs() const;
 	void consume(Domain& other) {}
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };

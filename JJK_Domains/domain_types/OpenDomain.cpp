@@ -51,24 +51,48 @@ std::vector<sf::Vector2f> OpenDomain::getPointPairs() const {
 void OpenDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	sf::Vector2f center = getCenterCoords();
 	float radius = getRadius();
+	sf::Vector2f local_center = sf::Vector2f(radius, radius);
 
-	odShader->setUniform("center", sf::Vector2f(0.f, target.getSize().y) - sf::Vector2f(-1 * center.x, center.y));
+	odShader->setUniform("center", sf::Vector2f(0.f, (float) target.getSize().y) - sf::Vector2f(-1 * center.x, center.y));
 	odShader->setUniform("radius", getRadius());
 	odShader->setUniform("thickness", getOutlineThickness());
 	odShader->setUniform("line_color", sf::Glsl::Vec4(line_color));
+	odShader->setUniform("resolution", sf::Vector2f( (float) target.getSize().x, (float) target.getSize().y));
 
 	std::vector<sf::Vector2f> points = getPointPairs();
-	sf::Vector2f p1 = points[0];
+	//sf::Vector2f p1 = points[1];
+	sf::Vector2f p1(10.f, 20.f);
 
-	float x_diff = p1.x - center.x;
-	float y_diff = p1.y - center.y;
+	std::printf("(%f,%f)\n", p1.x, p1.y);
+	float x_diff = p1.x - local_center.x;
+	float y_diff = p1.y - local_center.y;
 	float slope = (y_diff) / (x_diff);
+	std::cout << "slope: " << slope << std::endl;
 
 	float x_value = -x_diff; // distance from center
 	float approx = slope * (x_value) + radius;
-	sf::Vector3f standard(-1 * x_value, 1, -1 * radius);
 
-	odShader->setUniform("standard", standard);
+	float intercept = p1.y - (slope * p1.x);
+	float approx_2 = slope * (p1.x) + intercept;
+	std::cout << "intercept: " << intercept << std::endl;
+	std::printf("Approx: (%f,%f)\n", radius + x_diff, approx_2);
+	std::cout << std::endl;
+
+	float true_intercept = (p1.y + getOriginCoords().y) - (slope * (p1.x + getOriginCoords().x));
+	sf::Vector3f standard(-1 * slope, 1, -1 * intercept);
+	sf::Vector3f true_standard(-1 * slope, 1, -1 * true_intercept);
+	// reference point
+	sf::Vector2f ref = getOriginCoords() + sf::Vector2f(90.f, 80.f);
+
+	std::printf("Standard form: (%f * x) + (%f * y) + (%f)\n", true_standard.x, true_standard.y, true_standard.z);
+	float numerator = std::abs(true_standard.x * ref.x + true_standard.y * ref.y + true_standard.z);
+	float denominator = std::sqrtf(std::powf(true_standard.x, 2) + std::powf(true_standard.y, 2));
+	float distance = numerator / denominator;
+
+	std::printf("Reference point: (%f,%f)\n", ref.x, ref.y);
+	std::printf("Distance from line: %f\n", distance);
+
+	odShader->setUniform("standard", true_standard);
 
 	//sf::VertexArray circLines(sf::Lines, 4);
 

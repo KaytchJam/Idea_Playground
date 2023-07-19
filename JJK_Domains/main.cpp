@@ -116,7 +116,7 @@ int main() {
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
 
-	OpenDomain d(300.f, sf::Color::Black, 1.f, sf::Vector2f(300.f, 300.f));
+	OpenDomain d(50.f, sf::Color::Black, 1.f, sf::Vector2f(300.f, 300.f));
 
 	/*std::cout << "window dimensions: " << "(" << window.getSize().x << "," << window.getSize().y << ")" << std::endl;
 	std::cout << "domain 1: " << d1 << std::endl;
@@ -206,38 +206,39 @@ int main() {
 		window.draw(grid);
 		d.onUpdate(elapsed.asSeconds());
 
-		if (!once) {
-			std::vector<sf::Vector2f> pts = d.getPointPairs();
-			///std::cout << pts.size() << std::endl;
-			for (int i = 0; i < pts.size(); i++) {
-				sf::Vector2f ep1 = pts[i];
-				sf::Vector2f center = sf::Vector2f(d.getRadius(), d.getRadius());
+		//if (!once) {
+		//	std::vector<sf::Vector2f> pts = d.getPointPairs();
+		//	///std::cout << pts.size() << std::endl;
+		//	for (int i = 0; i < pts.size(); i++) {
+		//		sf::Vector2f ep1 = pts[i];
+		//		sf::Vector2f center = sf::Vector2f(d.getRadius(), d.getRadius());
 
-				float x_diff = ep1.x - center.x;
-				float y_diff = ep1.y - center.y;
-				float slope = (y_diff) / (x_diff);
+		//		float x_diff = ep1.x - center.x;
+		//		float y_diff = ep1.y - center.y;
+		//		float slope = (y_diff) / (x_diff);
+		//		std::cout << "slope: " << slope << std::endl;
 
-				float x_value = -x_diff; // distance from center
-				float approx = slope * ((x_value)) + d.getRadius();
+		//		float x_value = -x_diff; // distance from center
+		//		float approx = slope * ((x_value)) + d.getRadius();
 
 
-				//std::printf("Center: (%f,%f)\n", center.x, center.y);
-				//std::cout << "slope: " << slope << std::endl;
-				//std::printf("Real: (%f,%f)\n", ep1.x, ep1.y);
-				//std::printf("Approximation: (%f,%f)\n", x_value, approx);
-				////std::printf("(%f,%f)\n", x_val, calc);
-				//std::cout << std::endl;
+		//		//std::printf("Center: (%f,%f)\n", center.x, center.y);
+		//		//std::cout << "slope: " << slope << std::endl;
+		//		//std::printf("Real: (%f,%f)\n", ep1.x, ep1.y);
+		//		//std::printf("Approximation: (%f,%f)\n", x_value, approx);
+		//		////std::printf("(%f,%f)\n", x_val, calc);
+		//		//std::cout << std::endl;
 
-				sf::VertexArray c_line(sf::Lines, 2);
-				c_line[0].position = d.getOriginCoords() + ep1;
-				c_line[0].color = sf::Color::Black;
-				c_line[1].position = d.getOriginCoords() + sf::Vector2f(d.getRadius() + x_value, approx);
-				c_line[1].color = sf::Color::Black;
+		//		sf::VertexArray c_line(sf::Lines, 2);
+		//		c_line[0].position = d.getOriginCoords() + ep1;
+		//		c_line[0].color = sf::Color::Black;
+		//		c_line[1].position = d.getOriginCoords() + sf::Vector2f(d.getRadius() + x_value, approx);
+		//		c_line[1].color = sf::Color::Black;
 
-				window.draw(c_line);
-			}
-			//once = true;
-		}
+		//		window.draw(c_line);
+		//	}
+		//	//once = true;
+		//}
 
 		window.draw(d);
 		// Update domains & render them

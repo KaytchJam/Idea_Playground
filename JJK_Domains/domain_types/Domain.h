@@ -28,7 +28,7 @@ protected:
 	bool CONSUMED = false;
 	bool SURE_HIT_ACTIVE = true;
 
-	virtual void idleStates() {}
+	virtual void idleStates(float deltaTime) {}
 	virtual void neutralStates() {}
 	virtual void deactivateStates() {}
 
@@ -86,16 +86,16 @@ public:
 class OpenDomain : public Domain {
 private:
 	static sf::Shader* odShader;
-	float cycle_point;
+	float point_indices[4];
 
-	void idleStates();
+	void idleStates(float deltaTime);
 
 public:
 	OpenDomain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f));
 	~OpenDomain();
 
 	std::vector<sf::Vector2f> getPointPairs() const;
-	void consume(Domain& other) {}
+	void consume(Domain& other);
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
 

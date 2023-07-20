@@ -94,7 +94,7 @@ void Domain::onUpdate(float deltaTime) {
 		circle.setRadius(base_radius + offset);
 		circle.setPosition(base_origin_position - sf::Vector2f(offset, offset));
 		degree = degree < 360 ? degree + (DEGREES_PER_FRAME) * deltaTime : 0;
-		idleStates();
+		idleStates(deltaTime);
 	}
 }
 

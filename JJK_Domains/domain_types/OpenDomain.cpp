@@ -6,7 +6,7 @@ const char* shader_path = "shaders/fragment/OpenDomain.hlsl";
 sf::Shader* OpenDomain::odShader = NULL;
 static long od_count = 0; // keep track of how many open domains currently exist
 
-OpenDomain::OpenDomain(float radius, sf::Color color, float refine_val, sf::Vector2f originCoords) : Domain(radius, color, refine_val, originCoords), cycle_point(0) {
+OpenDomain::OpenDomain(float radius, sf::Color color, float refine_val, sf::Vector2f originCoords) : Domain(radius, color, refine_val, originCoords) {
 	type = DomainType::OPEN_DOMAIN;
 	circle.setPosition(originCoords);
 	circle.setFillColor(sf::Color::Transparent);
@@ -15,12 +15,17 @@ OpenDomain::OpenDomain(float radius, sf::Color color, float refine_val, sf::Vect
 	circle.setScale(sf::Vector2f(1, 1));
 	base_origin_position = circle.getPosition();
 
+	float total_points = (float) circle.getPointCount();
+	point_indices[0] = 0;
+	point_indices[1] = total_points * .125f;
+	point_indices[2] = total_points * .25f;
+	point_indices[3] = total_points * .375f;
+
 	if (odShader == NULL) {
 		odShader = new sf::Shader();
 		odShader->loadFromFile(shader_path, sf::Shader::Fragment);
 		std::cout << "Shader loaded." << std::endl;
-	}
-	else {
+	} else {
 		std::cout << "Shader already loaded" << std::endl;
 	}
 	od_count++;
@@ -31,23 +36,10 @@ OpenDomain::~OpenDomain() {
 	if (!od_count) delete odShader;
 }
 
-std::vector<sf::Vector2f> OpenDomain::getPointPairs() const {
-	std::vector<sf::Vector2f> points(4);
-	size_t total_points = circle.getPointCount();
-
-	int cur = 0;
-	points[0] = circle.getPoint(cur);
-	cur = (int)(total_points * .125f);
-	points[1] = circle.getPoint(cur);
-	cur = (int) (total_points * .25f);
-	points[2] = circle.getPoint(cur);
-	cur = (int)(total_points * .375f);
-	points[3] = circle.getPoint(cur);
-	return points;
-}
-
-void OpenDomain::idleStates() {
-	cycle_point = cycle_point >= circle.getPointCount() - 1 ? 0 : cycle_point + 0.5f;
+void OpenDomain::idleStates(float deltaTime) {
+	for (int i = 0; i < 4; i++) {
+		point_indices[i] = point_indices[i] >= circle.getPointCount() - 1 ? 0 : point_indices[i] + 7.5f * deltaTime;
+	}
 }
 
 static sf::Vector3f getStandardCoefs(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f offset) {
@@ -57,17 +49,40 @@ static sf::Vector3f getStandardCoefs(sf::Vector2f p1, sf::Vector2f p2, sf::Vecto
 
 }
 
+void OpenDomain::consume(Domain& other) {
+	if (!CONSUMED) {
+		float refine_diff = this->refinement - other.getRefinement();
+		//std::cout << refine_diff << std::endl;
+		float factor = refine_diff * 10;
+		base_radius += factor;
+		circle.setRadius(base_radius);
+		circle.setPosition(base_origin_position - sf::Vector2f(factor, factor));
+	}
+
+	CONSUMED = base_radius <= 0 ? true : false;
+}
+
 void OpenDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	sf::Vector2f center = getCenterCoords();
 	float radius = getRadius();
 	sf::Vector2f local_center = sf::Vector2f(radius, radius);
-	sf::Vector2f p1 = circle.getPoint((int) cycle_point);
+	sf::Vector3f standardList[4];
+
+	sf::CircleShape totem(radius / 10);
+	totem.setFillColor(line_color);
+	totem.setPosition(centerToOriginCoords(center, totem.getRadius()));
+	target.draw(totem, states);
+
+	for (int i = 0; i < 4; i++) {
+		standardList[i] = getStandardCoefs(local_center, circle.getPoint((int)point_indices[i]), getOriginCoords());
+	}
 
 	odShader->setUniform("center", sf::Vector2f(0.f, (float) target.getSize().y) - sf::Vector2f(-1 * center.x, center.y));
 	odShader->setUniform("radius", getRadius());
 	odShader->setUniform("line_color", sf::Glsl::Vec4(line_color));
 	odShader->setUniform("resolution", sf::Vector2f( (float) target.getSize().x, (float) target.getSize().y));
-	odShader->setUniform("standard", getStandardCoefs(local_center, p1, getOriginCoords()));
+	odShader->setUniformArray("standard", standardList, 4);
+
 
 	//sf::VertexArray circLines(sf::Lines, 4);
 

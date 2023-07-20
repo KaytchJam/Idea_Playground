@@ -76,6 +76,8 @@ void Domain::onUpdate(float deltaTime) {
 			user_mouse.HOLDING_OBJECT = true;
 			this->SELECTED = true;
 			this->IDLE = false;
+			
+			deactivateStates();
 		}
 
 	} else {
@@ -83,6 +85,7 @@ void Domain::onUpdate(float deltaTime) {
 		line_color.a = 0xFF;
 		circle.setOutlineColor(line_color);
 		SELECTED = false;
+		neutralStates();
 	}
 
 
@@ -91,6 +94,7 @@ void Domain::onUpdate(float deltaTime) {
 		circle.setRadius(base_radius + offset);
 		circle.setPosition(base_origin_position - sf::Vector2f(offset, offset));
 		degree = degree < 360 ? degree + (DEGREES_PER_FRAME) * deltaTime : 0;
+		idleStates();
 	}
 }
 

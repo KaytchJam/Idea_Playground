@@ -7,31 +7,23 @@ uniform vec4 line_color;
 uniform vec3 standard;
 uniform vec2 resolution;
 
+float threshold = radius * .1f;
+
 float distanceFromCenter(vec4 fragcoord, vec2 center) {
     return sqrt(pow(fragcoord.x - center.x, 2) + pow(fragcoord.y - center.y, 2));
 }
 
 float distanceFromLine(vec3 line_coefs, vec2 fragcoord) {
     float numerator = abs(line_coefs.x * fragcoord.x + line_coefs.y * fragcoord.y + line_coefs.z);
-    float denom = distanceFromCenter(vec4(line_coefs.x, line_coefs.y, 0.f, 0.f), vec2(0.f, 0.f));
+    float denom = sqrt(line_coefs.x * line_coefs.x + line_coefs.y + line_coefs.y);
     return numerator / denom;
 }
 
 void main() {    
-    float threshold = radius * .1f;
-    float thresh_2 = radius * .1f;
-    float distance = distanceFromCenter(gl_FragCoord, center);
-    if (distance < radius) {
-        gl_FragColor = vec4(0.f, 0.f, 0.f, 0.f);
-        //return;
-    }
-    
-    //vec2 origin = center - vec2(radius, radius);
     vec2 frag_coord = vec2(gl_FragCoord.x, resolution.y - gl_FragCoord.y);
-    float d = distanceFromLine(standard, frag_coord);
     
-    if (d <= thresh_2) {
-        gl_FragColor = vec4(0.f, 0.f, 1.f, 1.f);
+    if (distanceFromCenter(gl_FragCoord, center) < radius || distanceFromLine(standard, frag_coord) <= threshold) {
+        gl_FragColor = vec4(0.f, 0.f, 0.f, 0.f);
         return;
     }
     

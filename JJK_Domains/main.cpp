@@ -104,6 +104,14 @@ int main() {
 	rect.setPosition(50.f, (float) window.getSize().y - 150);
 	rect.setFillColor(sf::Color::Black);
 
+	sf::Text uiText;
+	uiText.setFont(font);
+	uiText.setCharacterSize(24);
+	uiText.setFillColor(sf::Color::White);
+	uiText.setPosition(rect.getPosition() + sf::Vector2f(rect.getSize().x / 15, rect.getSize().y / 10));
+	uiText.setString("Create Domain");
+
+
 	DomainManager dList;
 	dList.add(d1);
 	//dList.add(d2);
@@ -221,6 +229,7 @@ int main() {
 		}
 
 		window.draw(rect);
+		window.draw(uiText);
 		window.display();
 	}
 

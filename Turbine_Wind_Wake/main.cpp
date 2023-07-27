@@ -103,6 +103,34 @@ sf::VertexArray make_triangle_strip(sf::RenderWindow& w, float length, float hei
 	return gridborder;
 }
 
+float calc_long_bar_length(int frac, int x) {
+	return (1 - frac - frac) * x;
+}
+
+std::vector<sf::RectangleShape> make_rectangle_border(sf::RenderWindow &w) {
+	std::vector<sf::RectangleShape> border(4);
+	float win_length = w.getSize().x;
+	float win_height = w.getSize().y;
+	float bar_thickness = 20.f / 720.f * win_height;
+
+	border[0] = sf::RectangleShape(sf::Vector2f((win_length * 18 / 20), bar_thickness));
+	border[0].setPosition(sf::Vector2f(win_length * 1 / 20, win_height * 1 / 10));
+
+	border[1] = sf::RectangleShape(sf::Vector2f(bar_thickness, win_height * 8 / 10));
+	border[1].setPosition(sf::Vector2f(win_length * 19 / 20 - border[1].getSize().x, win_height * 1 / 10));
+	//border[1].setFillColor(sf::Color::Red);
+		
+	border[2] = border[0];
+	border[2].setPosition(sf::Vector2f(win_length * 1 / 20, win_height * 9 / 10 - border[0].getSize().y));
+	//border[2].setFillColor(sf::Color::Blue);
+
+	border[3] = border[1];
+	border[3].setPosition(sf::Vector2f(win_length * 1 / 20, win_height * 1 / 10));
+	//border[3].setFillColor(sf::Color::Green);
+
+	return border;
+}
+
 int main() {
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "SORT ANIMATION!");
 	///sf::CircleShape shape(300.f);
@@ -110,23 +138,67 @@ int main() {
 	//shape.setFillColor(sf::Color(0xFF, 0xFF, 0xFF));
 
 	sf::Vector2i dim(5, 10);
-	/*
-	sf::VertexArray shape = make_line_strip(window, 800, 600);
+	sf::VertexArray strip = make_line_strip(window, 800, 600);
 	sf::VertexArray lines = make_grid_lines(window, dim.x, dim.y, 800, 600);
-	*/
+
 
 	sf::Transform entity = sf::Transform::Identity;
-
 	sf::RenderStates states;
-	/*sf::Texture text;
-	sf::Sprite turbine;*/
+	sf::Texture stemTxt, bladeTxt;
+	sf::Sprite stemSprite, bladeSprite;
 
-	/*if (!text.loadFromFile("assets/sprites/Wind_Turbine.png")) {
-		std::cout << "failed to load." << std::endl;
-	}*/
+	if (!stemTxt.loadFromFile("assets/sprites/WindTurbineStem.png")) {
+		std::cout << "failed to load: WindTurbineStem.png" << std::endl;
+	}
 
-	/*turbine.setTexture(text);
-	turbine.scale(sf::Vector2f(5.f, 5.f));*/
+	if (!bladeTxt.loadFromFile("assets/sprites/WindTurbineBlades.png")) {
+		std::cout << "failed to laod: WindTurbineBlades.png" << std::endl;
+	}
+
+
+
+	std::vector<sf::RectangleShape> border = make_rectangle_border(window);
+
+	float BLADE_OFFSET_X = 114.007f;
+	float BLADE_OFFSET_Y = 427.352f;
+	float BLADE_TO_CENTER_X = 325.015;
+	float BLADE_TO_CENTER_Y = 369.495f;
+	sf::Vector2f centerOffset(167.383f, 190.564f);
+	float ORIGINAL_LENGTH = 638.965f;
+	float ORIGINAL_HEIGHT = 591.076f;
+
+	float XFACTOR = BLADE_TO_CENTER_X / ORIGINAL_LENGTH;
+	float YFACTOR = BLADE_TO_CENTER_Y / ORIGINAL_HEIGHT;
+
+	stemSprite.setTexture(stemTxt);
+	stemSprite.scale(sf::Vector2f(0.25f, 0.25f));
+	stemSprite.setPosition(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2) + sf::Vector2f(200.f, -25.f));
+
+	std::cout << "Blade sprite scale: (" << bladeSprite.getScale().x << "," << bladeSprite.getScale().y << ")" << std::endl;
+	bladeSprite.setTexture(bladeTxt);
+	bladeSprite.scale(sf::Vector2f(0.25f, 0.25f));
+	bladeSprite.setPosition(stemSprite.getPosition() + sf::Vector2f(BLADE_OFFSET_X / 2, 0.f));
+
+	std::cout << "Blade texture size: (" << bladeTxt.getSize().x << "," << bladeTxt.getSize().y << ")" << std::endl;
+	std::cout << "Blade sprite position: (" << bladeSprite.getPosition().x << "," << bladeSprite.getPosition().y << ")" << std::endl;
+	std::cout << "Blade sprite size: (" << bladeTxt.getSize().x * bladeSprite.getScale().x << "," << bladeTxt.getSize().y * bladeSprite.getScale().y << ")" << std::endl;
+	std::cout << "Blade sprite scale: (" << bladeSprite.getScale().x << "," << bladeSprite.getScale().y << ")" << std::endl;
+	std::cout << "Blade sprite origin: (" << bladeSprite.getOrigin().x << "," << bladeSprite.getOrigin().y << ")" << std::endl;
+
+	sf::Vector2f base_position = bladeSprite.getPosition();
+
+	sf::RectangleShape test(sf::Vector2f(10.f, 10.f));
+	test.setPosition(bladeSprite.getPosition() + centerOffset);
+	test.setFillColor(sf::Color::Red);
+
+	test.setOrigin(test.getSize() - sf::Vector2f(test.getSize().x / 2, test.getSize().y / 2));
+	bladeSprite.setOrigin(XFACTOR * bladeTxt.getSize().x, YFACTOR * bladeTxt.getSize().y);
+	///bladeSprite.setOrigin(bladeSprite.getOrigin().x + centerOffset.x * 2, bladeSprite.getOrigin().y + centerOffset.y * 2);
+
+	sf::Clock dtClock;
+
+	window.setFramerateLimit(30);
+	window.setKeyRepeatEnabled(false);
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -156,8 +228,21 @@ int main() {
 			states.transform = entity.translate(sf::Vector2f(0.f, -.5f));
 		}
 
-		//window.draw(shape, states);
+		sf::Time elapsed = dtClock.restart();
+		float deltaTime = elapsed.asSeconds();
+
+		bladeSprite.rotate(50.f * deltaTime);
+
+
+		//window.draw(strip, states);
 		//window.draw(lines, states);
+		window.draw(stemSprite);
+		window.draw(bladeSprite);
+
+		for (int i = border.size() - 1; i >= 0; i--) {
+			window.draw(border[i]);
+		}
+
 		window.display();
 	}
 

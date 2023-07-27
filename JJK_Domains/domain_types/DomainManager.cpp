@@ -23,8 +23,7 @@ bool DomainManager::add(Domain& d) {
 		newmain = new ClosedDomain(d.getBaseRadius(), d.getColor(), d.getRefinement(), d.getOriginCoords());
 		break;
 	case DomainType::OPEN_DOMAIN:
-		newmain = new Domain(d.getBaseRadius(), d.getColor(), d.getRefinement(), d.getOriginCoords());
-		// newmain = new OpenDomain(d.getBaseRadius(), d.getColor(), d.getRefinement(), d.getOriginCoords());
+		newmain = new OpenDomain(d.getBaseRadius(), d.getColor(), d.getRefinement(), d.getOriginCoords());
 		break;
 	case DomainType::SIMPLE_DOMAIN:
 		newmain = new Domain(d.getBaseRadius(), d.getColor(), d.getRefinement(), d.getOriginCoords());
@@ -74,6 +73,8 @@ void DomainManager::remove(int index) {
 
 void DomainManager::overlapSearch(int index) {
 	Domain* d = domainList[index];
+
+	bool t = false;
 	if (!d->isSelected()) {
 		for (int i = 0; i < domainList.size(); i++) {
 			Domain* other = domainList[i];
@@ -81,8 +82,19 @@ void DomainManager::overlapSearch(int index) {
 				//std::cout << *other << std::endl;
 				d->consume(*other);
 				d->setOriginPosition(d->getOriginCoords());
+				t = true;
 			}
 		}
-	}
 
+		sf::Color line_color = d->getColor();
+		if (!t) { 
+			d->circle.setFillColor(sf::Color(line_color.r, line_color.g, line_color.b, 51)); 
+			d->TUG_OF_WAR = false;
+		}
+		else {
+			d->circle.setFillColor(sf::Color(line_color.r, line_color.g, line_color.b, 0));
+			d->TUG_OF_WAR = true;
+		}
+			
+	}
 }

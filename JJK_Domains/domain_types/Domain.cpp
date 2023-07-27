@@ -1,5 +1,6 @@
 #include "Domain.h"
 #include "../globals/UserListener.h"
+#include <iostream>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -76,6 +77,7 @@ void Domain::onUpdate(float deltaTime) {
 			user_mouse.HOLDING_OBJECT = true;
 			this->SELECTED = true;
 			this->IDLE = false;
+			this->TUG_OF_WAR = false;
 			
 			deactivateStates();
 		}

@@ -4,6 +4,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <utility>
+#include <sstream>
+#include <iomanip>
 
 #include "domain_types/Domain.h"
 #include "domain_types/DomainManager.h"
@@ -96,8 +98,10 @@ int main() {
 
 	// DOMAIN INITIALIZATION
 	ClosedDomain d1(100.f, sf::Color::Blue, 1.3f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2), 150.f));
-	ClosedDomain d2(100.f, sf::Color::Red, 1.1f);
-	d2.setCenterPosition(d1.getCenterCoords() + sf::Vector2f(d1.getRadius() + d1.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius() + 20, 0));
+	OpenDomain d2(120.f, sf::Color::Red, 1.3f, Domain::centerToOriginCoords(d1.getCenterCoords(), 120));
+	//d2.setCenterPosition(d1.getCenterCoords() + sf::Vector2f(d1.getRadius() + d1.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius() + 20, 0));
+
+	Domain* d0 = &d2;
 	
 	// UI INITIALIZATION
 	sf::RectangleShape rect(sf::Vector2f(200.f, 100.f));
@@ -113,14 +117,14 @@ int main() {
 
 
 	DomainManager dList;
+	dList.add(d2);
 	dList.add(d1);
-	//dList.add(d2);
-	dList.add(DomainType::OPEN_DOMAIN, 80.f, sf::Color::Magenta, 2.f, Domain::centerToOriginCoords(sf::Vector2f((float) window.getSize().x / 2, (float) window.getSize().y / 2 - 250), 100.f));
+	//dList.add(DomainType::OPEN_DOMAIN, 80.f, sf::Color::Magenta, 1.3f, Domain::centerToOriginCoords(sf::Vector2f((float) window.getSize().x / 2, (float) window.getSize().y / 2 - 250), 100.f));
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
 
-	OpenDomain d(100.f, sf::Color::Black, 1.f, sf::Vector2f(300.f, 300.f));
+	OpenDomain d(100.f, sf::Color::Black, 2.f, sf::Vector2f(300.f, 300.f));
 
 	/*std::cout << "window dimensions: " << "(" << window.getSize().x << "," << window.getSize().y << ")" << std::endl;
 	std::cout << "domain 1: " << d1 << std::endl;
@@ -136,7 +140,10 @@ int main() {
 		dText.setCharacterSize(24);
 		dText.setFillColor(cur->getColor());
 		dText.setPosition(cur->getCenterCoords() + sf::Vector2f(0, cur->getRadius() + cur->getOutlineThickness() + 10));
-		dText.setString("Domain " + std::to_string(index + 1) + "\nRef: " + std::to_string(cur->getRefinement()));
+		//dText.setString("D " + std::to_string(index + 1) /*+ "\nRef: " + std::to_string(cur->getRefinement())*/);
+		std::ostringstream oss;
+		oss << std::setprecision(2) << cur->getRefinement();
+		dText.setString("r: " + oss.str());
 
 		std::cout << "Letter spacing: " << dText.getLetterSpacing() << std::endl;
 		std::cout << "Bound Size : (" << dText.getGlobalBounds().getSize().x << "," << dText.getGlobalBounds().getSize().y << ")" << std::endl;
@@ -215,19 +222,20 @@ int main() {
 
 			if (cur->isConsumed()) {
 				dList.remove(i);
-		//		//domainText.erase(domainText.begin() + i--);
+				domainText.erase(domainText.begin() + i--);
 			} else {
 				cur->onUpdate(elapsed.asSeconds());
-				/*domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
-				domainText[i].setFillColor(cur->getColor());*/
+				domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
+				domainText[i].setFillColor(cur->getColor());
 
 				dList.overlapSearch(i);
 				window.draw(*cur, camera);
-				//window.draw(domainText[i], camera);
+				window.draw(domainText[i], camera);
 			}
 
 		}
 
+		//window.draw(*d0);
 		window.draw(rect);
 		window.draw(uiText);
 		window.display();

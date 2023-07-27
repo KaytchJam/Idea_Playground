@@ -81,6 +81,7 @@ void OpenDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	odShader->setUniform("radius", getRadius());
 	odShader->setUniform("line_color", sf::Glsl::Vec4(line_color));
 	odShader->setUniform("resolution", sf::Vector2f( (float) target.getSize().x, (float) target.getSize().y));
+	odShader->setUniform("TUG_OF_WAR", TUG_OF_WAR);
 	odShader->setUniformArray("standard", standardList, 4);
 
 

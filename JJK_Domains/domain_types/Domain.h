@@ -22,7 +22,6 @@ protected:
 	DomainType type = DomainType::ENUM_SIZE;
 
 	// STATES
-	bool TUG_OF_WAR = false;
 	bool IDLE = true;
 	bool SELECTED = false;
 	bool CONSUMED = false;
@@ -33,6 +32,7 @@ protected:
 	virtual void deactivateStates() {}
 
 public:
+	bool TUG_OF_WAR = false;
 	sf::CircleShape circle;
 	// Construction / Destruction
 	Domain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f));
@@ -66,7 +66,7 @@ public:
 
 	// Render Loop
 	void onUpdate(float deltaTime);
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 	// Misc + Utility
 	static sf::Vector2f centerToOriginCoords(sf::Vector2f pos, float radius) { return  pos - sf::Vector2f(radius, radius); }
@@ -96,7 +96,7 @@ public:
 
 	std::vector<sf::Vector2f> getPointPairs() const;
 	void consume(Domain& other);
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
 
 // SIMPLE DOMAIN

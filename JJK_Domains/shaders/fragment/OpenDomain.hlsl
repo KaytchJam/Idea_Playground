@@ -8,6 +8,8 @@ uniform vec2 resolution;
 uniform float radius;
 uniform float thickness;
 
+uniform bool TUG_OF_WAR = false;
+
 float THRESHOLD = radius * .1f;
 vec4 TRANSPARENT = vec4(0.f, 0.f, 0.f, 0.f);
 
@@ -24,7 +26,8 @@ float distanceFromLine(vec3 line_coefs, vec2 fragcoord) {
 void main() {    
     
     if (distanceFromCenter(gl_FragCoord, center) < radius) {
-        gl_FragColor = TRANSPARENT;
+        if (TUG_OF_WAR) gl_FragColor = TRANSPARENT;
+        else gl_FragColor = vec4(line_color.x, line_color.y, line_color.z, 0.2f);
         return;
     }
     

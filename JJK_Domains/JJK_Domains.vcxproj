@@ -136,14 +136,16 @@
     <ClCompile Include="domain_types\OpenDomain.cpp" />
     <ClCompile Include="globals\UserListener.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ui_stuffs\UIButton.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="domain_types\Domain.h" />
     <ClInclude Include="domain_types\DomainManager.h" />
     <ClInclude Include="globals\UserListener.h" />
+    <ClInclude Include="ui_stuffs\UIButton.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\fragment\OpenDomain.hlsl" />
+    <None Include="shaders\fragment\OpenDomain.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

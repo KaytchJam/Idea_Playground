@@ -58,7 +58,7 @@ bool Domain::inRange(Domain& other) {
 }
 
 void Domain::onUpdate(float deltaTime) {
-	if (user_mouse.MOUSE_HELD && (!user_mouse.HOLDING_OBJECT || this->SELECTED)) {
+	if (user_mouse.LEFT_HELD && (!user_mouse.HOLDING_OBJECT || this->SELECTED)) {
 		// distance between mouse and circle center
 		float distance = 0;
 		sf::Vector2f mouse_pos = sf::Vector2f((float)user_mouse.position.x, (float)user_mouse.position.y);

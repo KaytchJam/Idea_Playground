@@ -2,7 +2,7 @@
 #include <iostream>
 
 // initializations (other)
-const char* shader_path = "shaders/fragment/OpenDomain.hlsl";
+const char* shader_path = "shaders/fragment/OpenDomain.frag";
 sf::Shader* OpenDomain::odShader = NULL;
 static long od_count = 0; // keep track of how many open domains currently exist
 
@@ -38,7 +38,7 @@ OpenDomain::~OpenDomain() {
 
 void OpenDomain::idleStates(float deltaTime) {
 	for (int i = 0; i < 4; i++) {
-		point_indices[i] = point_indices[i] >= circle.getPointCount() - 1 ? 0 : point_indices[i] + 7.5f * deltaTime;
+		point_indices[i] = point_indices[i] >= circle.getPointCount() - 1 ? 0 : point_indices[i] + 10.f * deltaTime;
 	}
 }
 

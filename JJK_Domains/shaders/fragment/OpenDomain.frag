@@ -19,7 +19,7 @@ float distanceFromCenter(vec4 fragcoord, vec2 center) {
 
 float distanceFromLine(vec3 line_coefs, vec2 fragcoord) {
     float numerator = abs(line_coefs.x * fragcoord.x + line_coefs.y * fragcoord.y + line_coefs.z);
-    float denominator = sqrt(line_coefs.x * line_coefs.x + line_coefs.y + line_coefs.y);
+    float denominator = sqrt(line_coefs.x * line_coefs.x + line_coefs.y * line_coefs.y);
     return numerator / denominator;
 }
 

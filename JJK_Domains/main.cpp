@@ -47,6 +47,22 @@ void direction_toggle(sf::Event& event, bool toggle) {
 	}
 }
 
+void mouse_toggle(sf::Event& event, bool held, bool released) {
+	switch (event.mouseButton.button) {
+	case sf::Mouse::Left:
+		user_mouse.LEFT_HELD = held;
+		user_mouse.LEFT_RELEASED = released;
+		break;
+	case sf::Mouse::Right:
+		user_mouse.RIGHT_HELD = held;
+		user_mouse.RIGHT_RELEASED = released;
+		break;
+	}
+
+	user_mouse.MOUSE_HELD = held;
+	user_mouse.MOUSE_RELEASED = released;
+}
+
 sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float length, float height) {
 	float x = 0;
 	float y = 0;
@@ -166,15 +182,29 @@ int main() {
 
 	while (window.isOpen()) {
 		user_mouse.MOUSE_RELEASED = false;
+		user_mouse.LEFT_RELEASED = false;
+		user_mouse.RIGHT_RELEASED = false;
+
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) window.close();
 			if (event.type == sf::Event::KeyPressed) { direction_toggle(event, true); }
 			if (event.type == sf::Event::KeyReleased) { direction_toggle(event, false); }
-			if (event.type == sf::Event::MouseButtonPressed) { user_mouse.MOUSE_HELD = true; }
+			if (event.type == sf::Event::MouseButtonPressed) { 
+				if (event.mouseButton.button == sf::Mouse::Left) user_mouse.LEFT_HELD = true;
+				if (event.mouseButton.button == sf::Mouse::Right) user_mouse.RIGHT_HELD = true;
+				user_mouse.MOUSE_HELD = true;
+			}
 			if (event.type == sf::Event::MouseButtonReleased) {
-				user_mouse.MOUSE_HELD = false;
-				user_mouse.HOLDING_OBJECT = false;
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					user_mouse.LEFT_HELD = false;
+					user_mouse.LEFT_RELEASED = true;
+					user_mouse.HOLDING_OBJECT = false;
+				}
+				if (event.mouseButton.button == sf::Mouse::Right) {
+					user_mouse.RIGHT_HELD = false;
+					user_mouse.RIGHT_RELEASED = true;
+				}
 				user_mouse.MOUSE_RELEASED = true;
 			}
 		}
@@ -187,7 +217,7 @@ int main() {
 
 		//std::cout << "Holding Object: " << user_mouse.HOLDING_OBJECT << std::endl;
 
-		if (user_keys.LEFT_HELD) {
+		/*if (user_keys.LEFT_HELD) {
 			camera.transform = entity.translate(sf::Vector2f(-5.f, 0.f));
 			std::cout << "<" << std::endl;
 		}
@@ -202,11 +232,11 @@ int main() {
 		if (user_keys.UP_HELD) {
 			camera.transform = entity.translate(sf::Vector2f(0.f, -5.f));
 			std::cout << "^" << std::endl;
-		}
+		}*/
 
 		sf::Vector2f rPos = rect.getPosition();
 		if (user_mouse.position.x > rPos.x && user_mouse.position.y > rPos.y && user_mouse.position.x < rPos.x + rect.getSize().x && user_mouse.position.y < rPos.y + rect.getSize().y) {
-			if (user_mouse.MOUSE_RELEASED) {
+			if (user_mouse.LEFT_RELEASED) {
 				dList.add(DomainType::CLOSED_DOMAIN, 100.f, sf::Color::Black, 1.f);
 			}
 		}

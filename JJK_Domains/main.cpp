@@ -11,6 +11,8 @@
 #include "domain_types/DomainManager.h"
 #include "globals/UserListener.h"
 
+#include "ui_stuffs/UIButton.h"
+
 // USER LISTENER external variables
 extern kay::keystates user_keys;
 extern kay::mousestates user_mouse;
@@ -47,11 +49,12 @@ void direction_toggle(sf::Event& event, bool toggle) {
 	}
 }
 
-void mouse_toggle(sf::Event& event, bool held, bool released) {
+void mouse_toggle(sf::Event& event, bool held, bool released, bool holding) {
 	switch (event.mouseButton.button) {
 	case sf::Mouse::Left:
 		user_mouse.LEFT_HELD = held;
 		user_mouse.LEFT_RELEASED = released;
+		user_mouse.HOLDING_OBJECT = holding;
 		break;
 	case sf::Mouse::Right:
 		user_mouse.RIGHT_HELD = held;
@@ -59,8 +62,8 @@ void mouse_toggle(sf::Event& event, bool held, bool released) {
 		break;
 	}
 
-	user_mouse.MOUSE_HELD = held;
-	user_mouse.MOUSE_RELEASED = released;
+	user_mouse.MOUSE_HELD = user_mouse.LEFT_HELD || user_mouse.RIGHT_HELD;
+	//user_mouse.MOUSE_RELEASED = user_mouse.RIGHT_RELEASED && user_mouse.LEFT_RELEASED;
 }
 
 sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float length, float height) {
@@ -95,7 +98,7 @@ int main() {
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "Domains.proj");
 
 	sf::Font font;
-	if (!font.loadFromFile("assets/fonts/ShareTechMono-Regular.ttf"))
+	if (!font.loadFromFile("assets/fonts/georgia.ttf"))
 	{
 		// error...
 		std::cout << "couldn't load font" << std::endl;
@@ -124,12 +127,15 @@ int main() {
 	rect.setPosition(50.f, (float) window.getSize().y - 150);
 	rect.setFillColor(sf::Color::Black);
 
-	sf::Text uiText;
+	UIButton button1(sf::Vector2f(200.f, 100.f), font, "CREATE", sf::Vector2f(50.f, (float) window.getSize().y - 150));
+	std::cout << "button initialized" << std::endl;
+
+	/*sf::Text uiText;
 	uiText.setFont(font);
 	uiText.setCharacterSize(24);
 	uiText.setFillColor(sf::Color::White);
 	uiText.setPosition(rect.getPosition() + sf::Vector2f(rect.getSize().x / 15, rect.getSize().y / 10));
-	uiText.setString("Create Domain");
+	uiText.setString("Create Domain");*/
 
 
 	DomainManager dList;
@@ -234,12 +240,12 @@ int main() {
 			std::cout << "^" << std::endl;
 		}*/
 
-		sf::Vector2f rPos = rect.getPosition();
+		/*sf::Vector2f rPos = rect.getPosition();
 		if (user_mouse.position.x > rPos.x && user_mouse.position.y > rPos.y && user_mouse.position.x < rPos.x + rect.getSize().x && user_mouse.position.y < rPos.y + rect.getSize().y) {
 			if (user_mouse.LEFT_RELEASED) {
 				dList.add(DomainType::CLOSED_DOMAIN, 100.f, sf::Color::Black, 1.f);
 			}
-		}
+		}*/
 
 		sf::Time elapsed = dtClock.restart();
 
@@ -266,8 +272,8 @@ int main() {
 		}
 
 		//window.draw(*d0);
-		window.draw(rect);
-		window.draw(uiText);
+		//window.draw(rect);
+		window.draw(button1);
 		window.display();
 	}
 

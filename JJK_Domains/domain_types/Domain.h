@@ -27,6 +27,7 @@ protected:
 	bool CONSUMED = false;
 	bool SURE_HIT_ACTIVE = true;
 
+	// onUpdate virtual functions (OVERLOAD THESE)
 	virtual void idleStates(float deltaTime) {}
 	virtual void neutralStates() {}
 	virtual void deactivateStates() {}

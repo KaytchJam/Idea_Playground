@@ -130,17 +130,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="domain_types\ClosedDomain.cpp" />
-    <ClCompile Include="domain_types\Domain.cpp" />
-    <ClCompile Include="domain_types\DomainManager.cpp" />
-    <ClCompile Include="domain_types\OpenDomain.cpp" />
+    <ClCompile Include="entity\domain_types\ClosedDomain.cpp" />
+    <ClCompile Include="entity\domain_types\Domain.cpp" />
+    <ClCompile Include="entity\domain_types\DomainManager.cpp" />
+    <ClCompile Include="entity\domain_types\OpenDomain.cpp" />
+    <ClCompile Include="entity\WorldEntity.cpp" />
     <ClCompile Include="globals\UserListener.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ui_stuffs\UIButton.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="domain_types\Domain.h" />
-    <ClInclude Include="domain_types\DomainManager.h" />
+    <ClInclude Include="entity\domain_types\Domain.h" />
+    <ClInclude Include="entity\domain_types\DomainManager.h" />
+    <ClInclude Include="entity\WorldEntity.h" />
     <ClInclude Include="globals\UserListener.h" />
     <ClInclude Include="ui_stuffs\UIButton.h" />
   </ItemGroup>

@@ -1,5 +1,6 @@
 #pragma once
 #include "SFML/Graphics.hpp"
+#include "../WorldEntity.h"
 
 enum DomainType {
 	CLOSED_DOMAIN = 0,
@@ -8,7 +9,7 @@ enum DomainType {
 	ENUM_SIZE = SIMPLE_DOMAIN + 1
 };
 
-class Domain : public sf::Drawable {
+class Domain : public sf::Drawable, public  WorldEntity {
 protected:
 	// ANIMATION
 	float degree = 0;

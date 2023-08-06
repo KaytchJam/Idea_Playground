@@ -7,8 +7,8 @@
 #include <sstream>
 #include <iomanip>
 
-#include "domain_types/Domain.h"
-#include "domain_types/DomainManager.h"
+#include "entity/domain_types/Domain.h"
+#include "entity/domain_types/DomainManager.h"
 #include "globals/UserListener.h"
 
 #include "ui_stuffs/UIButton.h"
@@ -47,6 +47,21 @@ void direction_toggle(sf::Event& event, bool toggle) {
 	case sf::Keyboard::Scan::Down:
 		user_keys.DOWN_HELD = toggle;
 	}
+}
+
+void held_toggle(sf::Event& event) {
+	switch (event.mouseButton.button) {
+	case sf::Mouse::Button::Left:
+		user_mouse.LEFT_HELD = true;
+		user_mouse.LEFT_CLICK_POSITION = user_mouse.position;
+		break;
+	case sf::Mouse::Button::Right:
+		user_mouse.RIGHT_HELD = true;
+		user_mouse.RIGHT_CLICK_POSITION = user_mouse.position;
+		break;
+	}
+
+	user_mouse.MOUSE_HELD = true;
 }
 
 void mouse_toggle(sf::Event& event, bool held, bool released, bool holding) {
@@ -120,39 +135,29 @@ int main() {
 	OpenDomain d2(120.f, sf::Color::Red, 1.3f, Domain::centerToOriginCoords(d1.getCenterCoords(), 120));
 	//d2.setCenterPosition(d1.getCenterCoords() + sf::Vector2f(d1.getRadius() + d1.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius() + 20, 0));
 
-	Domain* d0 = &d2;
 	
 	// UI INITIALIZATION
 	sf::RectangleShape rect(sf::Vector2f(200.f, 100.f));
 	rect.setPosition(50.f, (float) window.getSize().y - 150);
 	rect.setFillColor(sf::Color::Black);
 
-	UIButton button1(sf::Vector2f(200.f, 100.f), font, "CREATE", sf::Vector2f(50.f, (float) window.getSize().y - 150));
-	std::cout << "button initialized" << std::endl;
-
-	/*sf::Text uiText;
-	uiText.setFont(font);
-	uiText.setCharacterSize(24);
-	uiText.setFillColor(sf::Color::White);
-	uiText.setPosition(rect.getPosition() + sf::Vector2f(rect.getSize().x / 15, rect.getSize().y / 10));
-	uiText.setString("Create Domain");*/
-
-
-	DomainManager dList;
+	DomainManager dList; // the domain manager has a HARD COPY of whatever domain is added to it, so different IDs
 	dList.add(d2);
 	dList.add(d1);
 	//dList.add(DomainType::OPEN_DOMAIN, 80.f, sf::Color::Magenta, 1.3f, Domain::centerToOriginCoords(sf::Vector2f((float) window.getSize().x / 2, (float) window.getSize().y / 2 - 250), 100.f));
+	UIButton button1(dList, ButtonType::BUTTON_ADD, sf::Vector2f(200.f, 100.f), font, "CREATE", sf::Vector2f(50.f, (float) window.getSize().y - 150));
+	std::cout << "button initialized" << std::endl;
 
 	sf::Transform entity = sf::Transform::Identity;
 	sf::RenderStates camera;
 
 	OpenDomain d(100.f, sf::Color::Black, 2.f, sf::Vector2f(300.f, 300.f));
 
-	/*std::cout << "window dimensions: " << "(" << window.getSize().x << "," << window.getSize().y << ")" << std::endl;
-	std::cout << "domain 1: " << d1 << std::endl;
-	std::cout << "domain 2: " << d2 << std::endl;
-	std::cout << "distance: " << d1.distance(d2) << std::endl;
-	std::cout << "in range? " << d1.inRange(d2) << std::endl;*/
+	std::cout << "EXPECTED IDS: 1 2 5" << std::endl;
+	Domain* dArray[] = {&d1, &d2, &d};
+	for (int i = 0; i < 3; i++) {
+		std::cout << dArray[i]->getID() << std::endl;
+	}
 
 	std::vector<sf::Text> domainText(dList.size());
 	int index = 0;
@@ -190,24 +195,20 @@ int main() {
 		user_mouse.MOUSE_RELEASED = false;
 		user_mouse.LEFT_RELEASED = false;
 		user_mouse.RIGHT_RELEASED = false;
+		user_mouse.position = sf::Mouse::getPosition(window);
 
 		sf::Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) window.close();
-			if (event.type == sf::Event::KeyPressed) { direction_toggle(event, true); }
-			if (event.type == sf::Event::KeyReleased) { direction_toggle(event, false); }
-			if (event.type == sf::Event::MouseButtonPressed) { 
-				if (event.mouseButton.button == sf::Mouse::Left) user_mouse.LEFT_HELD = true;
-				if (event.mouseButton.button == sf::Mouse::Right) user_mouse.RIGHT_HELD = true;
-				user_mouse.MOUSE_HELD = true;
-			}
-			if (event.type == sf::Event::MouseButtonReleased) {
+			else if (event.type == sf::Event::KeyPressed) { direction_toggle(event, true); }
+			else if (event.type == sf::Event::KeyReleased) { direction_toggle(event, false); }
+			else if (event.type == sf::Event::MouseButtonPressed) { held_toggle(event); }
+			else if (event.type == sf::Event::MouseButtonReleased) {
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					user_mouse.LEFT_HELD = false;
 					user_mouse.LEFT_RELEASED = true;
 					user_mouse.HOLDING_OBJECT = false;
-				}
-				if (event.mouseButton.button == sf::Mouse::Right) {
+				} else if (event.mouseButton.button == sf::Mouse::Right) {
 					user_mouse.RIGHT_HELD = false;
 					user_mouse.RIGHT_RELEASED = true;
 				}
@@ -215,7 +216,6 @@ int main() {
 			}
 		}
 
-		user_mouse.position = sf::Mouse::getPosition(window);
 		//sf::Vector2i localPosition = sf::Mouse::getPosition(window);
 		//printVector2i(localPosition);
 
@@ -251,6 +251,7 @@ int main() {
 
 		//std::cout << "deltaTime: " << elapsed.asSeconds() << std::endl;
 		window.draw(grid);
+		button1.onUpdate(elapsed.asSeconds());
 
 		// Update domains & render them
 		for (unsigned int i = 0; i < dList.size(); i++) {

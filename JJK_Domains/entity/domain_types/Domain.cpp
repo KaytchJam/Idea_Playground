@@ -1,5 +1,5 @@
 #include "Domain.h"
-#include "../globals/UserListener.h"
+#include "../../globals/UserListener.h"
 #include <iostream>
 
 #define _USE_MATH_DEFINES
@@ -13,8 +13,6 @@ static float deg2rad(float val) {
 
 Domain::Domain(float radius, sf::Color color, float refine_val, sf::Vector2f originCoords) : refinement(refine_val), base_radius(radius), line_color(color) {
 	circle = sf::CircleShape(radius);
-
-	// randomize degree
 }
 
 void Domain::draw(sf::RenderTarget& target, sf::RenderStates states) const {

@@ -16,6 +16,12 @@ DomainManager::~DomainManager() {
 	}
 }
 
+bool DomainManager::add(Domain* d) {
+	if (d == NULL || d->getDomainType() == DomainType::ENUM_SIZE) return false;
+	domainList.push_back(d);
+	return true;
+}
+
 bool DomainManager::add(Domain& d) {
 	sf::Color dColor = d.getColor();
 	dColor.a = 0xFF;
@@ -44,12 +50,27 @@ bool DomainManager::add(DomainType type, float radius, sf::Color color, float re
 	return true;
 }
 
-void DomainManager::remove(int index) {
+bool DomainManager::remove(int index) {
+	if (index >= domainList.size()) return false;
+
 	Domain* d = domainList[index];
 	delete d;
 	domainList.erase(domainList.begin() + index);
 	this->domainList = domainList;
+	return true;
 }
+
+//bool DomainManager::remove(size_t entity_id) {
+//	if (domainList.size() <= 0) return false;
+//
+//	int index = 0;
+//	Domain* d = domainList[index];
+//	while (index < domainList.size() && d->getID() != entity_id) { index++;  }
+//	delete d;
+//	domainList.erase(domainList.begin() + index);
+//	this->domainList = domainList;
+//	return true;
+//}
 
 void DomainManager::overlapSearch(int index) {
 	Domain* d = domainList[index];

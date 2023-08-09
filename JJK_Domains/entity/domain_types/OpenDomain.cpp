@@ -73,9 +73,7 @@ void OpenDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	totem.setPosition(centerToOriginCoords(center, totem.getRadius()));
 	target.draw(totem, states);
 
-	for (int i = 0; i < 4; i++) {
-		standardList[i] = getStandardCoefs(local_center, circle.getPoint((int)point_indices[i]), getOriginCoords());
-	}
+	for (int i = 0; i < 4; i++) standardList[i] = getStandardCoefs(local_center, circle.getPoint((int)point_indices[i]), getOriginCoords());
 
 	odShader->setUniform("center", sf::Vector2f(0.f, (float) target.getSize().y) - sf::Vector2f(-1 * center.x, center.y));
 	odShader->setUniform("radius", getRadius());

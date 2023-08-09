@@ -145,6 +145,7 @@
     <ClInclude Include="entity\WorldEntity.h" />
     <ClInclude Include="globals\UserListener.h" />
     <ClInclude Include="ui_stuffs\UIButton.h" />
+    <ClInclude Include="ui_stuffs\UIGroup.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragment\OpenDomain.frag" />

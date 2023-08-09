@@ -133,19 +133,51 @@ int main() {
 	// DOMAIN INITIALIZATION
 	ClosedDomain d1(100.f, sf::Color::Blue, 1.3f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2), 150.f));
 	OpenDomain d2(120.f, sf::Color::Red, 1.3f, Domain::centerToOriginCoords(d1.getCenterCoords(), 120));
-	//d2.setCenterPosition(d1.getCenterCoords() + sf::Vector2f(d1.getRadius() + d1.getOutlineThickness() + d2.getOutlineThickness() + d2.getRadius() + 20, 0));
 
 	
 	// UI INITIALIZATION
-	sf::RectangleShape rect(sf::Vector2f(200.f, 100.f));
+	/*sf::RectangleShape rect(sf::Vector2f(200.f, 100.f));
 	rect.setPosition(50.f, (float) window.getSize().y - 150);
-	rect.setFillColor(sf::Color::Black);
+	rect.setFillColor(sf::Color::Black);*/
 
 	DomainManager dList; // the domain manager has a HARD COPY of whatever domain is added to it, so different IDs
 	dList.add(d2);
 	dList.add(d1);
-	//dList.add(DomainType::OPEN_DOMAIN, 80.f, sf::Color::Magenta, 1.3f, Domain::centerToOriginCoords(sf::Vector2f((float) window.getSize().x / 2, (float) window.getSize().y / 2 - 250), 100.f));
-	UIButton button1(dList, ButtonType::BUTTON_ADD, sf::Vector2f(200.f, 100.f), font, "CREATE", sf::Vector2f(50.f, (float) window.getSize().y - 150));
+
+	Domain* filler = new ClosedDomain(100.f, sf::Color::Black, 1.0f, sf::Vector2f(0.f, 0.f));
+
+	struct DomainData {
+		DomainType dt = DomainType::ENUM_SIZE;
+		float radius = 0.f;
+		sf::Color c;
+		float refinement = 0.f;
+		sf::Vector2f position;
+	};
+
+	struct DomainData dd;
+	dd.dt = DomainType::CLOSED_DOMAIN;
+	dd.radius = 100.f;
+	dd.c = sf::Color::Black;
+	dd.refinement = 1.0f;
+	dd.position = sf::Vector2f(0.f, 0.f);
+
+	const void* vptr[2];
+	vptr[0] = (void*)&dList;
+	vptr[1] = (void*)&dd;
+
+	UIButton button1(sf::Vector2f(50.f, 50.f), vptr, 2, [](const void** args, const unsigned int NUM_ARGS) {
+		DomainManager* dm = (DomainManager*) (args[0]);
+		DomainData* d = (DomainData*) (args[1]);
+		dm->add(d->dt, d->radius, d->c, d->refinement, d->position);
+	});
+
+	button1.setPosition(sf::Vector2f(100.f, 500.f));
+	button1.setFont(font);
+	button1.setString("CREATE");
+	button1.setButtonColor(sf::Color::Black);
+
+	std::cout << "Button1 position" << std::endl;
+	std::cout << "(" << button1.getPosition().x << "," << button1.getPosition().y << ")" << std::endl;
 	std::cout << "button initialized" << std::endl;
 
 	sf::Transform entity = sf::Transform::Identity;
@@ -259,21 +291,19 @@ int main() {
 
 			if (cur->isConsumed()) {
 				dList.remove(i);
-				domainText.erase(domainText.begin() + i--);
+				//domainText.erase(domainText.begin() + i--);
 			} else {
 				cur->onUpdate(elapsed.asSeconds());
-				domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
-				domainText[i].setFillColor(cur->getColor());
+				//domainText[i].setPosition(cur->getCenterCoords() + sf::Vector2f(-1 * domainText[i].getLocalBounds().getSize().x / 2, cur->getRadius() + cur->getOutlineThickness() + 10));
+				//domainText[i].setFillColor(cur->getColor());
 
 				dList.overlapSearch(i);
 				window.draw(*cur, camera);
-				window.draw(domainText[i], camera);
+				//window.draw(domainText[i], camera);
 			}
 
 		}
 
-		//window.draw(*d0);
-		//window.draw(rect);
 		window.draw(button1);
 		window.display();
 	}

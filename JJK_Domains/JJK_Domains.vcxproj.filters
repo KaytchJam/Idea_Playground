@@ -56,6 +56,9 @@
     <ClInclude Include="entity\WorldEntity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ui_stuffs\UIGroup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragment\OpenDomain.frag" />

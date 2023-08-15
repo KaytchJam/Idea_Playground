@@ -2,8 +2,6 @@
 #include "SFML/Graphics.hpp"
 #include <functional>
 
-#include "../entity/domain_types/DomainManager.h"
-
 class UIButton : public sf::Drawable {
 private:
 	// rendering

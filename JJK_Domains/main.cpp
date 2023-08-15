@@ -161,7 +161,7 @@ int main() {
 	dd.refinement = 1.0f;
 	dd.position = sf::Vector2f(0.f, 0.f);
 
-	const void* vptr[2];
+	const void* vptr[2] = { NULL, NULL };
 	vptr[0] = (void*)&dList;
 	vptr[1] = (void*)&dd;
 

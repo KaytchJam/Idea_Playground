@@ -3,6 +3,7 @@
 #include "SFML/Graphics.hpp"
 
 #include "../entity/domain_types/DomainManager.h"
+#include "UIElement.h"
 
 class UIGroup {
 private:
@@ -20,6 +21,10 @@ private:
 		int TYPE;
 		sf::Vector2f position;
 	};
+
+	// INPUT UI elements executed prior to output elements, feed data into struct beforehand
+	std::vector<UIElement*> inputElements; 
+	std::vector<UIElement*> outputElements;
 
 
 public:

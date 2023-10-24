@@ -39,7 +39,6 @@ bool DomainManager::add(DomainType type, float radius, sf::Color color, float re
 		break;
 	case DomainType::SIMPLE_DOMAIN:
 		newmain = new Domain(radius, color, refine_val, centerCoords);
-		// newmain = new SimpleDomain(d.getBaseRadius(), d.getColor(), d.getRefinement(), d.getOriginCoords());
 		break;
 	default:
 		std::cout << "Not a valid domain type, could not add to list." << std::endl;

@@ -1,7 +1,7 @@
 #pragma once
-#include "SFML/Graphics.hpp"
+#include "UIElement.h"
 
-class UISlider {
+class UISlider : public UIElement {
 private:
 	sf::RectangleShape block;
 	sf::RectangleShape bar;
@@ -12,6 +12,8 @@ private:
 	const unsigned int m_NUM_ARGS;
 
 public:
-	UISlider();
+	UISlider(float min, float max);
 	~UISlider();
+
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };

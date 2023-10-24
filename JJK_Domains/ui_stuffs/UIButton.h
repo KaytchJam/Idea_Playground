@@ -1,17 +1,16 @@
 #pragma once
-#include "SFML/Graphics.hpp"
+#include "UIElement.h"
 #include <functional>
 
-class UIButton : public sf::Drawable {
+class UIButton : public UIElement {
 private:
 	// rendering
 	sf::RectangleShape buttonRect;
+	sf::Font buttonFont;
 	sf::Text buttonText;
 
 	// function
 	void (*buttonFunction)(const void**, const unsigned int);
-	const void** m_args;
-	const unsigned int m_NUM_ARGS;
 
 public:
 	UIButton(sf::Vector2f dim, const void** p_args, const unsigned int p_NUM_ARGS, void (*on_click)(const void**, const unsigned int));
@@ -26,6 +25,7 @@ public:
 
 	// font
 	void setFont(sf::Font font);
+	void setFont(std::string font_path);
 	void setTextColor(sf::Color color);
 
 	// getters

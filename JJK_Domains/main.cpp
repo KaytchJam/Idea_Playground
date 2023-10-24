@@ -131,20 +131,13 @@ int main() {
 	sf::VertexArray grid = make_grid_lines(window, 20, 20, (float) window.getSize().x, (float) window.getSize().y);
 
 	// DOMAIN INITIALIZATION
-	ClosedDomain d1(100.f, sf::Color::Blue, 1.3f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2), 150.f));
-	OpenDomain d2(120.f, sf::Color::Red, 1.3f, Domain::centerToOriginCoords(d1.getCenterCoords(), 120));
-
-	
-	// UI INITIALIZATION
-	/*sf::RectangleShape rect(sf::Vector2f(200.f, 100.f));
-	rect.setPosition(50.f, (float) window.getSize().y - 150);
-	rect.setFillColor(sf::Color::Black);*/
-
-	DomainManager dList; // the domain manager has a HARD COPY of whatever domain is added to it, so different IDs
-	dList.add(d2);
-	dList.add(d1);
-
-	Domain* filler = new ClosedDomain(100.f, sf::Color::Black, 1.0f, sf::Vector2f(0.f, 0.f));
+	DomainManager dList;
+	{
+		ClosedDomain d1(100.f, sf::Color::Blue, 1.3f, ClosedDomain::centerToOriginCoords(sf::Vector2f((float)window.getSize().x / 2, (float)window.getSize().y / 2), 150.f));
+		OpenDomain d2(180.f, sf::Color::Red, 1.3f, Domain::centerToOriginCoords(d1.getCenterCoords(), 120));
+		dList.add(d1);
+		dList.add(d2);
+	}
 
 	struct DomainData {
 		DomainType dt = DomainType::ENUM_SIZE;
@@ -165,16 +158,17 @@ int main() {
 	vptr[0] = (void*)&dList;
 	vptr[1] = (void*)&dd;
 
-	UIButton button1(sf::Vector2f(50.f, 50.f), vptr, 2, [](const void** args, const unsigned int NUM_ARGS) {
+	UIButton button1(sf::Vector2f(100.f, 50.f), vptr, 2, [](const void** args, const unsigned int NUM_ARGS) {
 		DomainManager* dm = (DomainManager*) (args[0]);
 		DomainData* d = (DomainData*) (args[1]);
 		dm->add(d->dt, d->radius, d->c, d->refinement, d->position);
 	});
 
-	button1.setPosition(sf::Vector2f(100.f, 500.f));
+	button1.setPosition(sf::Vector2f(100.f, window.getSize().y - 100.f));
 	button1.setFont(font);
-	button1.setString("CREATE");
+	button1.setString("MAKE");
 	button1.setButtonColor(sf::Color::Black);
+	//button1.setTextColor(sf::Color::White);
 
 	std::cout << "Button1 position" << std::endl;
 	std::cout << "(" << button1.getPosition().x << "," << button1.getPosition().y << ")" << std::endl;
@@ -184,12 +178,6 @@ int main() {
 	sf::RenderStates camera;
 
 	OpenDomain d(100.f, sf::Color::Black, 2.f, sf::Vector2f(300.f, 300.f));
-
-	std::cout << "EXPECTED IDS: 1 2 5" << std::endl;
-	Domain* dArray[] = {&d1, &d2, &d};
-	for (int i = 0; i < 3; i++) {
-		std::cout << dArray[i]->getID() << std::endl;
-	}
 
 	std::vector<sf::Text> domainText(dList.size());
 	int index = 0;
@@ -252,32 +240,6 @@ int main() {
 		//printVector2i(localPosition);
 
 		window.clear(sf::Color(0xE1, 0xE1, 0xE1));
-
-		//std::cout << "Holding Object: " << user_mouse.HOLDING_OBJECT << std::endl;
-
-		/*if (user_keys.LEFT_HELD) {
-			camera.transform = entity.translate(sf::Vector2f(-5.f, 0.f));
-			std::cout << "<" << std::endl;
-		}
-		if (user_keys.RIGHT_HELD) {
-			camera.transform = entity.translate(sf::Vector2f(5.f, 0.f));
-			std::cout << ">" << std::endl;
-		}
-		if (user_keys.DOWN_HELD) {
-			camera.transform = entity.translate(sf::Vector2f(0.f, 5.f));
-			std::cout << "v" << std::endl;
-		}
-		if (user_keys.UP_HELD) {
-			camera.transform = entity.translate(sf::Vector2f(0.f, -5.f));
-			std::cout << "^" << std::endl;
-		}*/
-
-		/*sf::Vector2f rPos = rect.getPosition();
-		if (user_mouse.position.x > rPos.x && user_mouse.position.y > rPos.y && user_mouse.position.x < rPos.x + rect.getSize().x && user_mouse.position.y < rPos.y + rect.getSize().y) {
-			if (user_mouse.LEFT_RELEASED) {
-				dList.add(DomainType::CLOSED_DOMAIN, 100.f, sf::Color::Black, 1.f);
-			}
-		}*/
 
 		sf::Time elapsed = dtClock.restart();
 

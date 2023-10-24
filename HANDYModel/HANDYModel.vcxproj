@@ -18,11 +18,14 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9c856190-daac-4f3c-850e-349a5b5361b3}</ProjectGuid>
-    <RootNamespace>JJKDomains</RootNamespace>
+    <ProjectGuid>{a2673cee-d31d-45bd-9539-127e575f744f}</ProjectGuid>
+    <RootNamespace>HANDYModel</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -65,7 +68,6 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\SFML_LIB.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -109,8 +111,6 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>"C:\Users\kaytc\OneDrive\Desktop\CS_Projects\Dependencies\SFML-2.6.0\lib"</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;kernel32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -129,33 +129,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="entity\domain_types\ClosedDomain.cpp" />
-    <ClCompile Include="entity\domain_types\Domain.cpp" />
-    <ClCompile Include="entity\domain_types\DomainManager.cpp" />
-    <ClCompile Include="entity\domain_types\OpenDomain.cpp" />
-    <ClCompile Include="entity\WorldEntity.cpp" />
-    <ClCompile Include="globals\UserListener.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="ui_stuffs\UIButton.cpp" />
-    <ClCompile Include="ui_stuffs\UISlider.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="entity\domain_types\Domain.h" />
-    <ClInclude Include="entity\domain_types\DomainManager.h" />
-    <ClInclude Include="entity\WorldEntity.h" />
-    <ClInclude Include="globals\UserListener.h" />
-    <ClInclude Include="tools\BVHTree.h" />
-    <ClInclude Include="tools\KDTree.h" />
-    <ClInclude Include="tools\Quadtree.h" />
-    <ClInclude Include="ui_stuffs\UIButton.h" />
-    <ClInclude Include="ui_stuffs\UIElement.h" />
-    <ClInclude Include="ui_stuffs\UIGroup.h" />
-    <ClInclude Include="ui_stuffs\UISlider.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\fragment\OpenDomain.frag" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

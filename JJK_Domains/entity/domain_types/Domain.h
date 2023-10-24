@@ -16,6 +16,7 @@ protected:
 	const float DEGREES_PER_FRAME = 100.f;
 	sf::Color line_color;
 	sf::Vector2f base_origin_position = sf::Vector2f(0, 0);
+	//std::vector<Domain*> tugOfWarList;
 
 	// PARAMS
 	float refinement = 0.0f;
@@ -96,7 +97,6 @@ public:
 	OpenDomain(float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f originCoords = sf::Vector2f(0.f, 0.f));
 	~OpenDomain();
 
-	std::vector<sf::Vector2f> getPointPairs() const;
 	void consume(Domain& other);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };

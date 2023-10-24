@@ -42,12 +42,6 @@ void OpenDomain::idleStates(float deltaTime) {
 	}
 }
 
-static sf::Vector3f getStandardCoefs(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f offset) {
-	float slope = (p2.y - p1.y) / (p2.x - p1.x);
-	float intercept = (p2.y + offset.y) - (slope * (p2.x + offset.x));
-	return sf::Vector3f(-1 * slope, 1, -1 * intercept);
-
-}
 
 void OpenDomain::consume(Domain& other) {
 	if (!CONSUMED) {
@@ -60,6 +54,12 @@ void OpenDomain::consume(Domain& other) {
 	}
 
 	CONSUMED = base_radius <= 0 ? true : false;
+}
+
+static sf::Vector3f getStandardCoefs(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f offset) {
+	float slope = (p2.y - p1.y) / (p2.x - p1.x);
+	float intercept = (p2.y + offset.y) - (slope * (p2.x + offset.x));
+	return sf::Vector3f(-1 * slope, 1, -1 * intercept);
 }
 
 void OpenDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -82,22 +82,6 @@ void OpenDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	odShader->setUniform("TUG_OF_WAR", TUG_OF_WAR);
 	odShader->setUniformArray("standard", standardList, 4);
 
-
-	//sf::VertexArray circLines(sf::Lines, 4);
-
-	// VERTICAL LINE
-	//circLines[0].position = circle.getPosition() + circle.getPoint(0);
-	//circLines[0].color = line_color;
-	//circLines[1].position = circle.getPosition() + circle.getPoint(0) + sf::Vector2f(0, circle.getRadius());
-	//circLines[1].color = line_color;
-
-	//// HORIZONTAL LINE
-	//circLines[2].position = circle.getPosition() + sf::Vector2f(0, circle.getRadius());
-	//circLines[2].color = line_color;
-	//circLines[3].position = circle.getPosition() + circle.getPoint(0) + sf::Vector2f(0, circle.getRadius());
-	//circLines[3].color = line_color;
-
-	//target.draw(circLines, states);
 	states.shader = odShader;
 	target.draw(circle, states);
 }

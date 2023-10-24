@@ -26,7 +26,7 @@ void printVector2i(sf::Vector2u& v) {
 int main() {
 	sf::RenderWindow window(sf::VideoMode(800, 600), "sort_animation");
 
-	const unsigned int NUM_ELEMENTS = 150;
+	const unsigned int NUM_ELEMENTS = 50;
 	std::vector<int> nums(NUM_ELEMENTS);
 	for (int i = 1; i <= NUM_ELEMENTS; i++)
 		nums[i - 1] = i;

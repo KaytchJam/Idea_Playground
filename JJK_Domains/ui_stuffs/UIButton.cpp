@@ -5,10 +5,12 @@
 
 extern kay::mousestates user_mouse;
 
+static const std::string DEFAULT_FONT_PATH = "assets/fonts/arial.ttf";
+
 sf::Vector2f centerText(sf::RectangleShape& r, sf::Text t) {
 	sf::FloatRect bb = t.getLocalBounds();
 	std::printf("box dimensions (%f,%f)\n", bb.getSize().x, bb.getSize().y);
-	return r.getPosition() + sf::Vector2f(0.f, r.getSize().y / 2 - t.getLocalBounds().getSize().y / 2);
+	return r.getPosition() + sf::Vector2f(0.f, r.getSize().y / 2 - bb.getSize().y);
 }
 
 //UIButton::UIButton(DomainManager& dm, ButtonType bt, sf::Vector2f dim, sf::Font& font, std::string buttonString) : buttonRect(sf::RectangleShape(dim)), dm(dm) {
@@ -22,14 +24,19 @@ sf::Vector2f centerText(sf::RectangleShape& r, sf::Text t) {
 //}
 
 UIButton::UIButton(sf::Vector2f dim, const void** p_args, unsigned int p_NUM_ARGS, void (*on_click)(const void**, const unsigned int)) 
-	: buttonFunction(on_click), m_args(p_args), m_NUM_ARGS(p_NUM_ARGS) {
+	: UIElement(p_args, p_NUM_ARGS), buttonFunction(on_click) {
 
 	buttonRect = sf::RectangleShape(dim);
 	buttonRect.setFillColor(sf::Color::Black);
 
+	if (!buttonFont.loadFromFile(DEFAULT_FONT_PATH)) {
+		throw std::invalid_argument("Couldn't properly load default font.");
+	}
+
+	buttonText.setFont(buttonFont);
 	buttonText.setCharacterSize(30);
 	buttonText.setFillColor(sf::Color::White);
-	buttonText.setString("lorem ipsum");
+	buttonText.setString("DEFAULT");
 	buttonText.setPosition(centerText(buttonRect, buttonText));
 }
 
@@ -70,8 +77,17 @@ bool UIButton::checkOverlap(sf::Vector2i pos) {
 	return checkOverlap(sf::Vector2f((float) pos.x, (float) pos.y));
 }
 
+void UIButton::setFont(std::string font_path) {
+	if (!buttonFont.loadFromFile(DEFAULT_FONT_PATH)) {
+		throw std::invalid_argument("Couldn't properly load default font.");
+	}
+
+	buttonText.setFont(buttonFont);
+}
+
 void UIButton::setFont(sf::Font font) {
-	buttonText.setFont(font);
+	buttonFont = font;
+	buttonText.setFont(buttonFont);
 }
 
 void UIButton::setTextColor(sf::Color color) {
@@ -80,7 +96,7 @@ void UIButton::setTextColor(sf::Color color) {
 
 void UIButton::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	target.draw(buttonRect, states);
-	//target.draw(buttonText, states);
+	target.draw(buttonText, states);
 }
 
 void UIButton::onUpdate(float deltaTime) {

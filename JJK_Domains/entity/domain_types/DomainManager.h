@@ -2,8 +2,12 @@
 #include <vector>
 #include <iostream>
 
+
 #include "Domain.h"
 #include "SFML/Graphics.hpp"
+
+// QUADTREE for Non-Domain world entities
+// BVHTree for Domains
 
 class DomainManager : public sf::Drawable {
 private:

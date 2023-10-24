@@ -13,16 +13,6 @@ sf::Vector2f centerText(sf::RectangleShape& r, sf::Text t) {
 	return r.getPosition() + sf::Vector2f(0.f, r.getSize().y / 2 - bb.getSize().y);
 }
 
-//UIButton::UIButton(DomainManager& dm, ButtonType bt, sf::Vector2f dim, sf::Font& font, std::string buttonString) : buttonRect(sf::RectangleShape(dim)), dm(dm) {
-//	buttonRect.setFillColor(sf::Color::Black);
-//
-//	buttonText.setFont(font);
-//	buttonText.setCharacterSize(30);
-//	buttonText.setFillColor(sf::Color::White);
-//	buttonText.setString(buttonString);
-//	buttonText.setPosition(centerText(buttonRect, buttonText));
-//}
-
 UIButton::UIButton(sf::Vector2f dim, const void** p_args, unsigned int p_NUM_ARGS, void (*on_click)(const void**, const unsigned int)) 
 	: UIElement(p_args, p_NUM_ARGS), buttonFunction(on_click) {
 
@@ -39,17 +29,6 @@ UIButton::UIButton(sf::Vector2f dim, const void** p_args, unsigned int p_NUM_ARG
 	buttonText.setString("DEFAULT");
 	buttonText.setPosition(centerText(buttonRect, buttonText));
 }
-
-//UIButton::UIButton(DomainManager& dm, ButtonType bt, sf::Vector2f dim, sf::Font& font, std::string buttonString, sf::Vector2f pos) : buttonRect(sf::RectangleShape(dim)), dm(dm) {
-//	buttonRect.setPosition(pos);
-//	buttonRect.setFillColor(sf::Color::Black);
-//
-//	buttonText.setFont(font);
-//	buttonText.setCharacterSize(30);
-//	buttonText.setFillColor(sf::Color::White);
-//	buttonText.setString(buttonString);
-//	buttonText.setPosition(centerText(buttonRect, buttonText));
-//}
 
 void UIButton::setPosition(sf::Vector2f pos) {
 	buttonRect.setPosition(pos);

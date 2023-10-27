@@ -8,7 +8,7 @@
 #include <iomanip>
 
 #include "entity/domain_types/Domain.h"
-#include "entity/domain_types/DomainManager.h"
+#include "entity/DomainManager.h"
 #include "globals/UserListener.h"
 
 #include "ui_stuffs/UIButton.h"
@@ -17,21 +17,34 @@
 extern kay::keystates user_keys;
 extern kay::mousestates user_mouse;
 
-//void printVector2f(sf::Vector2f& v) {
-//	std::printf("{%f,%f}\n", v.x, v.y);
-//}
+sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float length, float height) {
+	float x = 0;
+	float y = 0;
+	float x_shift = length / cols;
+	float y_shift = height / rows;
 
-void printVector2f(sf::Vector2f v) {
-	std::printf("{%f,%f}\n", v.x, v.y);
+	int i = 0;
+	sf::VertexArray gridlines(sf::Lines, (rows - 1) * (cols - 1) * 2);
+	while (i < rows - 1 || i < cols - 1) {
+		if (i < rows - 1) {
+			float localized_yshift = y + y_shift * (i + 1);
+			int actual_index = i << 1; // * 2
+			gridlines[actual_index].position = sf::Vector2f(x, localized_yshift);
+			gridlines[actual_index + 1].position = sf::Vector2f(x + length, localized_yshift);
+		}
+
+		if (i < cols - 1) {
+			float localized_xshift = x + x_shift * (i + 1);
+			int actual_index = (rows - 1 + i) << 1; // * 2
+			gridlines[actual_index].position = sf::Vector2f(localized_xshift, y);
+			gridlines[actual_index + 1].position = sf::Vector2f(localized_xshift, y + height);
+		}
+		i++;
+	}
+
+	return gridlines;
 }
 
-void printVector2u(sf::Vector2u& v) {
-	std::printf("{%d,%d}\n", v.x, v.y);
-}
-
-void printVector2i(sf::Vector2i& v) {
-	std::printf("{%d,%d}\n", v.x, v.y);
-}
 
 void direction_toggle(sf::Event& event, bool toggle) {
 	switch (event.key.scancode) {
@@ -78,35 +91,6 @@ void mouse_toggle(sf::Event& event, bool held, bool released, bool holding) {
 	}
 
 	user_mouse.MOUSE_HELD = user_mouse.LEFT_HELD || user_mouse.RIGHT_HELD;
-	//user_mouse.MOUSE_RELEASED = user_mouse.RIGHT_RELEASED && user_mouse.LEFT_RELEASED;
-}
-
-sf::VertexArray make_grid_lines(sf::RenderWindow& w, int rows, int cols, float length, float height) {
-	float x = 0;
-	float y = 0;
-	float x_shift = length / cols;
-	float y_shift = height / rows;
-
-	int i = 0;
-	sf::VertexArray gridlines(sf::Lines, (rows - 1) * (cols - 1) * 2);
-	while (i < rows - 1 || i < cols - 1) {
-		if (i < rows - 1) {
-			float localized_yshift = y + y_shift * (i + 1);
-			int actual_index = i << 1; // * 2
-			gridlines[actual_index].position = sf::Vector2f(x, localized_yshift);
-			gridlines[actual_index + 1].position = sf::Vector2f(x + length, localized_yshift);
-		}
-
-		if (i < cols - 1) {
-			float localized_xshift = x + x_shift * (i + 1);
-			int actual_index = (rows - 1 + i) << 1; // * 2
-			gridlines[actual_index].position = sf::Vector2f(localized_xshift, y);
-			gridlines[actual_index + 1].position = sf::Vector2f(localized_xshift, y + height);
-		}
-		i++;
-	}
-
-	return gridlines;
 }
 
 int main() {
@@ -158,20 +142,23 @@ int main() {
 	vptr[0] = (void*)&dList;
 	vptr[1] = (void*)&dd;
 
-	UIButton button1(sf::Vector2f(100.f, 50.f), vptr, 2, [](const void** args, const unsigned int NUM_ARGS) {
+	UIButton cdButton(sf::Vector2f(100.f, 50.f), vptr, 1, [](const void** args, const unsigned int NUM_ARGS) { ((DomainData*)(args[1]))->dt = DomainType::CLOSED_DOMAIN; });
+	UIButton odButton(sf::Vector2f(100.f, 50.f), vptr, 1, [](const void** args, const unsigned int NUM_ARGS) { ((DomainData*)(args[1]))->dt = DomainType::OPEN_DOMAIN; });
+	UIButton sdButton(sf::Vector2f(100.f, 50.f), vptr, 1, [](const void** args, const unsigned int NUM_ARGS) { ((DomainData*)(args[1]))->dt = DomainType::CLOSED_DOMAIN; });
+	UIButton makeDomainButton(sf::Vector2f(100.f, 50.f), vptr, 2, [](const void** args, const unsigned int NUM_ARGS) {
 		DomainManager* dm = (DomainManager*) (args[0]);
 		DomainData* d = (DomainData*) (args[1]);
 		dm->add(d->dt, d->radius, d->c, d->refinement, d->position);
 	});
 
-	button1.setPosition(sf::Vector2f(100.f, window.getSize().y - 100.f));
-	button1.setFont(font);
-	button1.setString("MAKE");
-	button1.setButtonColor(sf::Color::Black);
-	//button1.setTextColor(sf::Color::White);
+	makeDomainButton.setPosition(sf::Vector2f(100.f, window.getSize().y - 100.f)).setFont(font).setString("MAKE").setButtonColor(sf::Color::Black).updateClickalAlert("making Domain.");
+	cdButton.setPosition(makeDomainButton.getPosition() + sf::Vector2f(0, -50.f)).setFont(font).setString("CD").setButtonColor(sf::Color::Black).updateClickalAlert("closed domain option set");
+	odButton.setPosition(makeDomainButton.getPosition() + sf::Vector2f(100, -50.f)).setFont(font).setString("OD").setButtonColor(sf::Color::Black).updateClickalAlert("open domain option set");
+	sdButton.setPosition(makeDomainButton.getPosition() + sf::Vector2f(200, -50.f)).setFont(font).setString("SD").setButtonColor(sf::Color::Black).updateClickalAlert("simple domain option set");
+
 
 	std::cout << "Button1 position" << std::endl;
-	std::cout << "(" << button1.getPosition().x << "," << button1.getPosition().y << ")" << std::endl;
+	std::cout << "(" << makeDomainButton.getPosition().x << "," << makeDomainButton.getPosition().y << ")" << std::endl;
 	std::cout << "button initialized" << std::endl;
 
 	sf::Transform entity = sf::Transform::Identity;
@@ -205,12 +192,6 @@ int main() {
 	window.setFramerateLimit(30);
 	window.setKeyRepeatEnabled(false);
 
-	for (int i = 0; i < dList.size(); i++) {
-		printVector2f(dList.get(i)->circle.getPosition());
-	}
-
-	bool once = false;
-
 	while (window.isOpen()) {
 		user_mouse.MOUSE_RELEASED = false;
 		user_mouse.LEFT_RELEASED = false;
@@ -236,16 +217,17 @@ int main() {
 			}
 		}
 
-		//sf::Vector2i localPosition = sf::Mouse::getPosition(window);
-		//printVector2i(localPosition);
-
 		window.clear(sf::Color(0xE1, 0xE1, 0xE1));
 
 		sf::Time elapsed = dtClock.restart();
+		const float asSecs = elapsed.asSeconds();
 
 		//std::cout << "deltaTime: " << elapsed.asSeconds() << std::endl;
 		window.draw(grid);
-		button1.onUpdate(elapsed.asSeconds());
+		cdButton.onUpdate(asSecs);
+		odButton.onUpdate(asSecs);
+		sdButton.onUpdate(asSecs);
+		makeDomainButton.onUpdate(asSecs);
 
 		// Update domains & render them
 		for (unsigned int i = 0; i < dList.size(); i++) {
@@ -266,7 +248,10 @@ int main() {
 
 		}
 
-		window.draw(button1);
+		window.draw(cdButton);
+		window.draw(odButton);
+		window.draw(sdButton);
+		window.draw(makeDomainButton);
 		window.display();
 	}
 

@@ -14,7 +14,7 @@ int main() {
 
 	// initializing each of our "stocks"
 	init_human_pop(elites, 100.f, 0.5f, 1.5f, 8.f, 0.2f);
-	init_human_pop(commoners, 800.f, 0.5f, 1.5f, 0.f, 0.2f);
+	init_human_pop(commoners, 800.f, 0.5f, 1.f, 0.f, 0.2f);
 	init_nature(nature, 2000.f, 5.f, 1.2f, 4000.f);
 	init_wealth(wealth, 200.f, 50.f);
 

@@ -28,10 +28,14 @@ struct wealth_stock {
 	float wealth_threshold;					// w_thresh - threshold wealth needed to pay for consumption
 };
 
+static float HP_HEALTHY_VAL = 15.f;
+static float HP_FAMINE_VAL = 25.f;
+
 // Initializers
 void init_human_pop(human_pop& hp, float initial_pop, float br, float k, float P, float s);
 void init_nature(nature_stock& nst, float initial_stock, float regen, float depletion, float capacity);
 void init_wealth(wealth_stock& wst, float initial_stock, float threshold);
+void calc_consumption_rate(human_pop& hp, const wealth_stock& wst);
 
 /** 
 Differential Equations :

@@ -1,4 +1,5 @@
 #include "Populations.h"
+#include <cmath>
 
 // initializes our human population stocks...
 void init_human_pop(human_pop& p, float initial_pop, float br, float k, float P, float s) {
@@ -26,4 +27,19 @@ void init_wealth(wealth_stock& wst, float initial_stock, float thresh) {
 	wst.stock = initial_stock;
 	wst.D_wealth = 0.f;
 	wst.wealth_threshold = thresh;
+}
+
+human_pop& hp_consumption_rate(human_pop& hp, const wealth_stock& wst) {
+	hp.consumption = fmin(1, wst.stock / wst.wealth_threshold) * hp.output_portion_K * hp.sspc_s * hp.stock;
+	return hp;
+}
+
+human_pop& hp_death_rate(human_pop& hp) {
+	hp.death_rate = HP_HEALTHY_VAL + fmax(0, 1 - hp.consumption / (hp.sspc_s * hp.stock)) * (HP_FAMINE_VAL - HP_HEALTHY_VAL);
+	return hp;
+}
+
+wealth_stock& wst_wealth_threshold(wealth_stock& wst, const human_pop& elite, const human_pop& commoner) {
+	wst.wealth_threshold = elite.mcpc_p * elite.stock * commoner.output_portion_K + commoner.mcpc_p * commoner.stock * commoner.output_portion_K;
+	return wst;
 }

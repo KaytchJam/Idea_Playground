@@ -30,17 +30,20 @@ UIButton::UIButton(sf::Vector2f dim, const void** p_args, unsigned int p_NUM_ARG
 	buttonText.setPosition(centerText(buttonRect, buttonText));
 }
 
-void UIButton::setPosition(sf::Vector2f pos) {
+UIButton& UIButton::setPosition(sf::Vector2f pos) {
 	buttonRect.setPosition(pos);
 	buttonText.setPosition(centerText(buttonRect, buttonText));
+	return *this;
 }
 
-void UIButton::setString(std::string str) {
+UIButton& UIButton::setString(std::string str) {
 	buttonText.setString(str);
+	return *this;
 }
 
-void UIButton::setButtonColor(sf::Color color) {
+UIButton& UIButton::setButtonColor(sf::Color color) {
 	buttonRect.setFillColor(color);
+	return *this;
 }
 
 bool UIButton::checkOverlap(sf::Vector2f pos) {
@@ -56,21 +59,24 @@ bool UIButton::checkOverlap(sf::Vector2i pos) {
 	return checkOverlap(sf::Vector2f((float) pos.x, (float) pos.y));
 }
 
-void UIButton::setFont(std::string font_path) {
+UIButton& UIButton::setFont(std::string font_path) {
 	if (!buttonFont.loadFromFile(DEFAULT_FONT_PATH)) {
 		throw std::invalid_argument("Couldn't properly load default font.");
 	}
 
 	buttonText.setFont(buttonFont);
+	return *this;
 }
 
-void UIButton::setFont(sf::Font font) {
+UIButton& UIButton::setFont(sf::Font font) {
 	buttonFont = font;
 	buttonText.setFont(buttonFont);
+	return *this;
 }
 
-void UIButton::setTextColor(sf::Color color) {
+UIButton& UIButton::setTextColor(sf::Color color) {
 	buttonText.setFillColor(color);
+	return *this;
 }
 
 void UIButton::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -82,8 +88,14 @@ void UIButton::onUpdate(float deltaTime) {
 	sf::Vector2f mouse_pos = sf::Vector2f((float) user_mouse.position.x, (float) user_mouse.position.y);
 	if (user_mouse.HOLDING_OBJECT == false && user_mouse.LEFT_RELEASED) {
 		if (checkOverlap(user_mouse.position) && checkOverlap(user_mouse.LEFT_CLICK_POSITION)) {
-			std::cout << "click" << std::endl;
+			std::cout << clickAlert << std::endl;
 			buttonFunction(m_args, m_NUM_ARGS);
 		}
 	}
+}
+
+UIButton& UIButton::updateClickalAlert(const std::string alert) {
+	if (alert.size() >= 256) throw std::invalid_argument("string is too big bro.");
+	clickAlert = alert;
+	return *this;
 }

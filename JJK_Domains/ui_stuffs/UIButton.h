@@ -12,6 +12,9 @@ private:
 	// function
 	void (*buttonFunction)(const void**, const unsigned int);
 
+	// debug
+	std::string clickAlert = "click!";
+
 public:
 	UIButton(sf::Vector2f dim, const void** p_args, const unsigned int p_NUM_ARGS, void (*on_click)(const void**, const unsigned int));
 
@@ -19,18 +22,20 @@ public:
 	bool checkOverlap(sf::Vector2i pos);
 	
 	// button
-	void setPosition(sf::Vector2f pos);
-	void setString(std::string str);
-	void setButtonColor(sf::Color color);
+	UIButton& setPosition(sf::Vector2f pos);
+	UIButton& setString(std::string str);
+	UIButton& setButtonColor(sf::Color color);
 
 	// font
-	void setFont(sf::Font font);
-	void setFont(std::string font_path);
-	void setTextColor(sf::Color color);
+	UIButton& setFont(sf::Font font);
+	UIButton& setFont(std::string font_path);
+	UIButton& setTextColor(sf::Color color);
+	UIButton& updateClickalAlert(const std::string alert);
 
 	// getters
 	sf::Vector2f getPosition() const { return buttonRect.getPosition(); }
 
+	// rendering
 	void onUpdate(float deltaTime);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };

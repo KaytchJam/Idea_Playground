@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-#include "Domain.h"
+#include "domain_types/Domain.h"
 #include "SFML/Graphics.hpp"
 
 // QUADTREE for Non-Domain world entities

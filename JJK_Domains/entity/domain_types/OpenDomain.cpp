@@ -24,9 +24,10 @@ OpenDomain::OpenDomain(float radius, sf::Color color, float refine_val, sf::Vect
 	if (odShader == NULL) {
 		odShader = new sf::Shader();
 		odShader->loadFromFile(shader_path, sf::Shader::Fragment);
-		std::cout << "Shader loaded." << std::endl;
-	} else {
-		std::cout << "Shader already loaded" << std::endl;
+		std::cout << "General Shader loaded." << std::endl;
+	}
+	else {
+		std::cout << "General Shader already loaded" << std::endl;
 	}
 	od_count++;
 }
@@ -62,10 +63,19 @@ static sf::Vector3f getStandardCoefs(sf::Vector2f p1, sf::Vector2f p2, sf::Vecto
 	return sf::Vector3f(-1 * slope, 1, -1 * intercept);
 }
 
+sf::Vector2f static vec2i_to_vec2f(sf::Vector2i v) {
+	return sf::Vector2f(v.x, v.y);
+}
+
+sf::Vector3f static vec3i_to_vec3f() {
+	return sf::Vector3f(-0.f, -0.f, -0.f);
+}
+
 void OpenDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	sf::Vector2f center = getCenterCoords();
 	float radius = getRadius();
-	sf::Vector2f local_center = sf::Vector2f(radius, radius);
+	sf::Vector2f transformCenter = vec2i_to_vec2f( target.mapCoordsToPixel( sf::Vector2f(radius, radius)) );
+	sf::Vector2f transformOrigin = vec2i_to_vec2f(target.mapCoordsToPixel(getOriginCoords()));
 	sf::Vector3f standardList[4];
 
 	sf::CircleShape totem(radius / 10);
@@ -73,15 +83,19 @@ void OpenDomain::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	totem.setPosition(centerToOriginCoords(center, totem.getRadius()));
 	target.draw(totem, states);
 
-	for (int i = 0; i < 4; i++) standardList[i] = getStandardCoefs(local_center, circle.getPoint((int)point_indices[i]), getOriginCoords());
+	for (int i = 0; i < 4; i++) standardList[i] = getStandardCoefs(transformCenter, vec2i_to_vec2f( target.mapCoordsToPixel(circle.getPoint((int)point_indices[i])) ), transformOrigin);
+	sf::Vector2f modifyThresh = vec2i_to_vec2f(target.mapCoordsToPixel(sf::Vector2f(radius, radius) * 0.1f));
 
-	odShader->setUniform("center", sf::Vector2f(0.f, (float) target.getSize().y) - sf::Vector2f(-1 * center.x, center.y));
-	odShader->setUniform("radius", getRadius());
-	odShader->setUniform("line_color", sf::Glsl::Vec4(line_color));
+	// Setting Uniforms
 	odShader->setUniform("resolution", sf::Vector2f( (float) target.getSize().x, (float) target.getSize().y));
-	odShader->setUniform("TUG_OF_WAR", TUG_OF_WAR);
+	odShader->setUniform("thresh_in", modifyThresh.x);
+	odShader->setUniform("center", vec2i_to_vec2f(target.mapCoordsToPixel(center)));
+	odShader->setUniform("radius", transformCenter.x);
+	odShader->setUniform("line_color", sf::Glsl::Vec4(this->line_color));
 	odShader->setUniformArray("standard", standardList, 4);
+	odShader->setUniform("TUG_OF_WAR", TUG_OF_WAR);
 
+	// Apply Shader
 	states.shader = odShader;
 	target.draw(circle, states);
 }

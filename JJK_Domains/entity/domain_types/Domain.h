@@ -89,6 +89,7 @@ public:
 class OpenDomain : public Domain {
 private:
 	static sf::Shader* odShader;
+
 	float point_indices[4];
 
 	void idleStates(float deltaTime);

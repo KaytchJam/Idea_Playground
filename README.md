@@ -3,7 +3,8 @@ ___
 ## JJK Domains
 #### Todo List
 
-- [ ] **GENERAL**
+- [ ] **GENERAL:**
+    - [x] Render loop
     - [x] Mouse click & position detection
     - [ ] Background 
         - [x] General background
@@ -14,7 +15,7 @@ ___
     - [ ] View matrix 
         - [ ] More dynamic camera or zooming functionality
         - [ ] Fix fullscreen stuffs
-- [ ] **DOMAIN CLASS**
+- [ ] **DOMAIN CLASS:**
     - [x] General domain parent class
         - [ ] Tug of wars
             - _make tug of wars better later_
@@ -35,16 +36,19 @@ ___
     - [ ] Finish Simple Domains
         - [ ] Remove tug of war capability
     - [x] Working collision detection
-- [ ] **WORD ENTITIES**
+- [ ] **WORD ENTITIES:**
     - [ ] CE Objects
         - [ ] Sorcerers (can deploy domains)
         - [ ] Non-sorcerers (cannot deploy domains)
     - [ ] Structures
-- [ ] **DATA STRUCTURES & MANAGERS**
+- [ ] **DATA STRUCTURES & MANAGERS:**
     - [ ] Domain Manager
         - [x] Domain Manager working with std::vector
             - Replace w/ Quadtree or BVH Tree
-        - [x] Working add methods
+        - [x] Domain Insertion
+            - [x] `bool add(Domain& d)`
+            - [x] `bool add(Domain* d)`
+            - [x] `bool add(DomainType type, float radius = 150.f, sf::Color color = sf::Color::Red, float refine_val = 0.5f, sf::Vector2f centerCoords = sf::Vector2f(0.f, 0.f));`
         - [x] Collision detection working
         - [ ] Add a toggle-able text list for debugging
     - [ ] UI Manager
@@ -53,7 +57,7 @@ ___
         - [ ] Append to domain manager
     - [ ] BVH Tree
         - [ ] Append to domain manager
-- [ ] **UI ELEMENTS**
+- [ ] **UI ELEMENTS:**
     - [ ] Button class
         - [x] Get clicks working
         - [x] Callback
@@ -74,3 +78,9 @@ ___
             - [ ] Couple UIGroup w/ Domains & World Entities
         - [ ] General UI Group
         - [ ] Setup shared callback struct among groups & sub-UI Elements
+
+#### Domains
+###### OpenDomains
+![Alt text](image.png)
+###### ClosedDomains
+![Alt text](image-1.png)

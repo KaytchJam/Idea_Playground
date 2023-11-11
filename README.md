@@ -52,7 +52,7 @@ population& calcStock(population& pop, const float begin, const float end, const
 
 Here are a couple example graphs I got by taking the values I got via the simulation, transferring them into a .csv, and plotting them using matplotlib:
 
-![Graph of an Oscillatory Equilibrium simulation run](content/NoEliteEquilibrium)
+![Graph of an Oscillatory Equilibrium simulation run](content/NoEliteEquilibrium.png)
 
 Extra note: the reason for the struct reference returns is because method chaining is cool that's pretty much it lol
 

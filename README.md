@@ -16,7 +16,7 @@ Consists of 4 differential equations...
 
 In our code they're represented by population structs
 
-```
+```cpp
 struct population { float stock, flow; } // x , dx/dt
 
 // represent our other populations, have both a 'stock' and a 'flow' among other fields
@@ -33,7 +33,7 @@ wealth_stock& calcFlow(wealth_stock& wst, nature_stock& nst, human_pop& elite_hp
 ```
 
 Calculating the solution is a matter of just taking the integral of the calculated flow. This is further simplified since our System of Differential Equations is Autonomous.
-```
+```cpp
 population& calcStock(population& pop, const float begin, const float end, const bool use_prev) {
 	const float dt = 0.001f;
 	float sum = 0.0f + pop.stock * use_prev;

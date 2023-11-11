@@ -14,7 +14,7 @@ Consists of 4 differential equations...
 
 ![The Four Differential Equations we use as reference](content/4DifferentialEquations.png)
 
-In our code they're represented by population structs
+In our code they're represented by population structs:
 
 ```cpp
 struct population { float stock, flow; } // x , dx/dt
@@ -50,6 +50,10 @@ population& calcStock(population& pop, const float begin, const float end, const
 }
 ```
 
+Here are a couple example graphs I got by taking the values I got via the simulation, transferring them into a .csv, and plotting them using matplotlib:
+
+![Graph of an Oscillatory Equilibrium simulation run](output/NoEliteEquillibrium)
+
 Extra note: the reason for the struct reference returns is because method chaining is cool that's pretty much it lol
 
 Citation:
@@ -68,6 +72,9 @@ Abstract: There are widespread concerns that current trends in resource-use are 
 Keywords: Human–nature dynamics; Societal collapse; Carrying capacity; Overshoot vs. sustainability; Economic inequality; Ecological strain
 ___
 ## JJK Domains
+
+The gist of this project is modelling a construct called "Domains" from a show called ![Jujutsu Kaisen](https://en.wikipedia.org/wiki/Jujutsu_Kaisen). To focus squarely on domains; they're spherical constructs created by a special kind of energy generated and manipulated by characaters in the series called Cursed Energy. A barrier has 3 main components to be recognized as complete: **a barrier**, an associated **innate domain**, and an **imbued technique**. 
+
 #### Todo List
 
 - [ ] **GENERAL:**

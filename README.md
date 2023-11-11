@@ -9,6 +9,46 @@ Consists of 4 differential equations...
 2. Natural Supply, has a natural regeneration rate and depletion rate by humans
 3. Wealth Supply, stock extracted from nature to be used by Human Populations and a buffer between drainage of natural supply & consumption by humans
 
+![The Four Differential Equations we use as reference](content/4DifferentialEquations.png)
+
+In our code they're represented by population structs
+
+```
+struct population { float stock, flow; } // x , dx/dt
+
+// represent our other populations, have both a 'stock' and a 'flow' among other fields
+struct human_pop : population;
+struct nature_stock : population;
+struct wealth_stock : population;
+
+// initializer, there are actually four of these, one for each differential equation in the system
+void init_population(... args);
+
+human_pop& calcFlow(human_pop& hp);
+nature_stock& calcFlow(nature_stock& nst, human_pop& commoner_hp);
+wealth_stock& calcFlow(wealth_stock& wst, nature_stock& nst, human_pop& elite_hp, human_pop& commoner_hp);
+```
+
+Calculating the solution is a matter of just taking the integral of the calculated flow. This is further simplified since our System of Differential Equations is Autonomous.
+```
+population& calcStock(population& pop, const float begin, const float end, const bool use_prev) {
+	const float dt = 0.001f;
+	float sum = 0.0f + pop.stock * use_prev;
+	float t = begin;
+
+	while (t < end) {
+		sum += pop.flow * dt;
+		t += dt;
+	}
+
+	bool eq_bounds = begin == end;
+	pop.stock = sum * !eq_bounds + pop.stock * eq_bounds;
+	return pop;
+}
+```
+
+Extra note: the reason for the struct reference returns is because method chaining is cool that's pretty much it lol
+
 Citation:
 
 Safa Motesharrei, Jorge Rivas, Eugenia Kalnay, 
@@ -18,8 +58,7 @@ Volume 101,
 2014, 
 Pages 90-102, 
 ISSN 0921-8009, 
-https://doi.org/10.1016/j.ecolecon.2014.02.014. 
-(https://www.sciencedirect.com/science/article/pii/S0921800914000615)
+https://doi.org/10.1016/j.ecolecon.2014.02.014. (https://www.sciencedirect.com/science/article/pii/S0921800914000615)
 
 Abstract: There are widespread concerns that current trends in resource-use are unsustainable, but possibilities of overshoot/collapse remain controversial. Collapses have occurred frequently in history, often followed by centuries of economic, intellectual, and population decline. Many different natural and social phenomena have been invoked to explain specific collapses, but a general explanation remains elusive. In this paper, we build a human population dynamics model by adding accumulated wealth and economic inequality to a predator–prey model of humans and nature. The model structure, and simulated scenarios that offer significant implications, are explained. Four equations describe the evolution of Elites, Commoners, Nature, and Wealth. The model shows Economic Stratification or Ecological Strain can independently lead to collapse, in agreement with the historical record. The measure “Carrying Capacity” is developed and its estimation is shown to be a practical means for early detection of a collapse. Mechanisms leading to two types of collapses are discussed. The new dynamics of this model can also reproduce the irreversible collapses found in history. Collapse can be avoided, and population can reach a steady state at maximum carrying capacity if the rate of depletion of nature is reduced to a sustainable level and if resources are distributed equitably.
 

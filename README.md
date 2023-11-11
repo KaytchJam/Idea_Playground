@@ -9,18 +9,28 @@ Consists of 4 differential equations...
 2. Natural Supply, has a natural regeneration rate and depletion rate by humans
 3. Wealth Supply, stock extracted from nature to be used by Human Populations and a buffer between drainage of natural supply & consumption by humans
 
-Citation:
+#### Citation:
 
 Safa Motesharrei, Jorge Rivas, Eugenia Kalnay,
+
 Human and nature dynamics (HANDY): Modeling inequality and use of resources in the collapse or sustainability of societies,
+
 Ecological Economics,
+
 Volume 101,
+
 2014,
+
 Pages 90-102,
+
 ISSN 0921-8009,
+
 https://doi.org/10.1016/j.ecolecon.2014.02.014.
+
 (https://www.sciencedirect.com/science/article/pii/S0921800914000615)
+
 Abstract: There are widespread concerns that current trends in resource-use are unsustainable, but possibilities of overshoot/collapse remain controversial. Collapses have occurred frequently in history, often followed by centuries of economic, intellectual, and population decline. Many different natural and social phenomena have been invoked to explain specific collapses, but a general explanation remains elusive. In this paper, we build a human population dynamics model by adding accumulated wealth and economic inequality to a predator–prey model of humans and nature. The model structure, and simulated scenarios that offer significant implications, are explained. Four equations describe the evolution of Elites, Commoners, Nature, and Wealth. The model shows Economic Stratification or Ecological Strain can independently lead to collapse, in agreement with the historical record. The measure “Carrying Capacity” is developed and its estimation is shown to be a practical means for early detection of a collapse. Mechanisms leading to two types of collapses are discussed. The new dynamics of this model can also reproduce the irreversible collapses found in history. Collapse can be avoided, and population can reach a steady state at maximum carrying capacity if the rate of depletion of nature is reduced to a sustainable level and if resources are distributed equitably.
+
 Keywords: Human–nature dynamics; Societal collapse; Carrying capacity; Overshoot vs. sustainability; Economic inequality; Ecological strain
 ___
 ## JJK Domains

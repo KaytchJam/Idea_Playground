@@ -81,6 +81,6 @@ ___
 
 #### Domains
 ###### OpenDomains
-![Alt text](image.png)
+![Red Open Domain](content/redopendomain_scrs.png)
 ###### ClosedDomains
-![Alt text](image-1.png)
+![Blue Closed Domain](content/bluecloseddomain_scrs.png)

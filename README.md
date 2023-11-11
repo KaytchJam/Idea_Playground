@@ -1,4 +1,7 @@
 # MiniProjects_and_Algos
+
+A collection of miniature projects I've done in my freetime. 
+
 ___
 ## Human and Nature Dynamics (HANDY) Differential Equation Simulation
 

@@ -73,7 +73,7 @@ Keywords: Human–nature dynamics; Societal collapse; Carrying capacity; Oversho
 ___
 ## JJK Domains
 
-The gist of this project is modelling a construct called "Domains" from a show called ![Jujutsu Kaisen](https://en.wikipedia.org/wiki/Jujutsu_Kaisen). To focus squarely on domains; they're spherical constructs created by a special kind of energy generated and manipulated by characaters in the series called Cursed Energy. A barrier has 3 main components to be recognized as complete: **a barrier**, an associated **innate domain**, and an **imbued technique**. 
+The gist of this project is modelling a construct called "Domains" from a show called [Jujutsu Kaisen](https://en.wikipedia.org/wiki/Jujutsu_Kaisen). To focus squarely on domains; they're spherical constructs created by a special kind of energy generated and manipulated by characaters in the series called Cursed Energy. A barrier has 3 main components to be recognized as complete: **a barrier**, an associated **innate domain**, and an **imbued technique**. 
 
 #### Todo List
 

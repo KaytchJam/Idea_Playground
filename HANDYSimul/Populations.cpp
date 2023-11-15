@@ -77,18 +77,19 @@ wealth_stock& calcFlow(wealth_stock& wst, nature_stock& nst, human_pop& elite_hp
 // compute differential equation
 // "take the reimann of it"
 
-// run this after calculating your DStock
+// run this after calculating our flow (dx/dt)
 population& calcStock(population& pop, const float begin, const float end, const bool use_prev) {
 	const float dt = 0.001f;
-	float sum = 0.0f + pop.stock * use_prev;
+	float sum = 0.0f + pop.stock * use_prev; // for initial condition
 	float t = begin;
 
+	// """Integral"""
 	while (t < end) {
-		sum += pop.flow * dt;
+		sum += pop.flow * dt; // dx/dt * dt
 		t += dt;
 	}
 
 	bool eq_bounds = begin == end;
-	pop.stock = sum * !eq_bounds + pop.stock * eq_bounds;
+	pop.stock = sum * !eq_bounds + pop.stock * eq_bounds; // check in case our bounds are equal
 	return pop;
 }

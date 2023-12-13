@@ -108,7 +108,7 @@ int renderLoop() {
 	const sf::Vector2f mid(WIN_LENGTH / 2, WIN_HEIGHT / 2);
 
 	ColumnShape col(20.f, 80.f);
-	col.setPosition(mid + sf::Vector2f(0, -80.f));
+	col.setPosition(mid + sf::Vector2f(0 - 10.f, -80.f));
 
 	std::vector<float> heights = {80.f, 100.f, 60.f, 300.f, 250.f, 180.f, 140.f, 80.f};
 	const int FRAME_DELAY = 20;

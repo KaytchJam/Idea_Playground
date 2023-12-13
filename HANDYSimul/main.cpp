@@ -6,6 +6,10 @@
 #include <fstream>
 
 #include "Populations.h"
+#include "MyTools/MyV.h"
+#include "CustomShapes/ColumnShape.h"
+
+#define M_PI 3.14159265358979323846
 
 int runSimToFile(float elite_total_pop, float commoner_total_pop, float nature_total_stock , float wealth_total_stock) {
 	// populations
@@ -92,14 +96,28 @@ int runSim(float elite_total_pop, float commoner_total_pop, float nature_total_s
 	return 0;
 }
 
+static sf::Vector2f lerp(const sf::Vector2f start, const sf::Vector2f end, const int numerator, const int denominator) {
+	float frac = (float) numerator / denominator;
+	return start * (1 - frac) + end * (frac);
+}
+
 int renderLoop() {
 	const int WIN_LENGTH = 1280;
 	const int WIN_HEIGHT = 720;
 	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "");
+	const sf::Vector2f mid(WIN_LENGTH / 2, WIN_HEIGHT / 2);
 
-	sf::CircleShape base(20.f);
-	base.setPosition(sf::Vector2f(WIN_LENGTH / 2, WIN_HEIGHT / 2));
-	base.setFillColor(sf::Color::Blue);
+	ColumnShape col(20.f, 80.f);
+	col.setPosition(mid + sf::Vector2f(0, -80.f));
+
+	std::vector<float> heights = {80.f, 100.f, 60.f, 300.f, 250.f, 180.f, 140.f, 80.f};
+	const int FRAME_DELAY = 20;
+	int height_index = 0;
+	int frames_passed = 0;
+
+	int frame = 0;
+	lalg::vec4 v1 = { 0x1E, 0xBA, 0xE1, 0xFF};
+	//lalg::mat4 r1 = lalg::rotationMatY(30 / 360 * 2 * M_PI);
 
 	// run the program as long as the window is open
 	window.setFramerateLimit(30);
@@ -112,9 +130,30 @@ int renderLoop() {
 				window.close();
 		}
 
-		window.clear(sf::Color(0xE1, 0xE1, 0xE1));
-		window.draw(base);
+
+		// MODIFY HEIGHT
+		float l = lerp({ 0, col.getHeight() }, { 0, heights[height_index] }, frames_passed, FRAME_DELAY).y;
+		printf("Current: %f, Target: %f\n", l, heights[height_index]);
+
+		float prev_height = col.getHeight();
+		col.setHeight(l);
+		col.setPosition(col.getPosition() - sf::Vector2f(0, l - prev_height));
+
+			// conditional increments
+		bool move_on = frames_passed == (FRAME_DELAY - 1);
+		height_index += move_on * 1;
+		height_index *= !(height_index == heights.size());
+		frames_passed = (frames_passed + 1) * !move_on;
+
+		std::printf("Frames Passed: %d - Height Index %d\n\n", frames_passed, height_index);
+
+
+		// RENDER
+		window.clear(sf::Color(0xE1E1E1FF));
+		window.draw(col);
 		window.display();
+
+		frame = (frame + 1) * !(frame == 359);
 	}
 
 	return 0;

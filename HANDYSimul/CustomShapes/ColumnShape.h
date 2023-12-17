@@ -45,6 +45,22 @@ public:
 		base.setPosition(pos + sf::Vector2f(0, bar.getSize().y));
 	}
 
+	void setColor(const uint8_t r, uint8_t g, uint8_t b) {
+		int rgb[] = { r, g, b, 1};
+		int index = 0;
+
+		int max_color_index = 0;
+		for (int i = 1; i < 4; i++) {
+			bool cond = (rgb[i] > rgb[max_color_index]);
+			max_color_index = cond * rgb[i] + !cond * rgb[max_color_index];
+		}
+
+		bar.setFillColor(sf::Color(rgb[0], rgb[1], rgb[2], 0xFF));
+		base.setFillColor(sf::Color(rgb[0], rgb[1], rgb[2], 0xFF));
+		top.setFillColor(sf::Color(rgb[0] / 3, rgb[1] / 3, rgb[2] / 3, 0xFF));
+		
+	}
+
 	// getters
 	float getHeight() const { return bar.getSize().y; }
 	float getRadius() const { return base.getRadius();  }

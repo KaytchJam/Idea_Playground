@@ -122,8 +122,12 @@ static lalg::vec4 normalize(const lalg::vec4& vals, const sf::Vector2f RANGE) {
 	return (vals - RANGE.x * lalg::onesVec()) / (RANGE.y - RANGE.x);
 }
 
+//static lalg::vec4 normalizeL(const lalg::vec4& vals, const lalg::vec4& maxes) {
+//	return lalg::map(lalg::diag(maxes), [](float f) { return 1 / (f + (f == 0.0f)) - (f == 0.0f); }) * vals;
+//}
+
 static lalg::vec4 normalizeL(const lalg::vec4& vals, const lalg::vec4& maxes) {
-	return lalg::map(lalg::diag(maxes), [](float f) { return 1 / (f + (f == 0.0f)) - (f == 0.0f); }) * vals;
+	return lalg::diag(lalg::map(maxes, [](float f) { return 1 / f; })) * vals;
 }
 
 static float normToRange(const float val, const sf::Vector2f OLD_RANGE, const sf::Vector2f NEW_RANGE) {
@@ -287,6 +291,7 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 
 		// RENDER
 		window.clear(sf::Color(0xE1E1E1FF));
+
 		window.draw(eliteCol);
 		window.draw(commonerCol);
 		window.draw(natureCol);
@@ -312,5 +317,6 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 int main() {
 	std::cout << "Hello world" << std::endl;
 	//return runSim(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
+	setEquilibriumValues(UNEQUAL_OSCILLATE_TOWARDS_EQUILIBRIUM);
 	renderLoop(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
 }

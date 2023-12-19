@@ -159,6 +159,15 @@ namespace lalg {
         return out;
     }
 
+    vec4 map(const vec4& v, float (*func)(float)) {
+        vec4 out = zeroVec();
+        out.r = func(v.r);
+        out.g = func(v.g);
+        out.b = func(v.b);
+        out.a = func(v.a);
+        return out;
+    }
+
     // apply some function func to all elements in the matrix, and update the matrix
     void mapInPlace(mat4* m, float(*func)(float)) {
         float* elem_ptr = (float*)&m;
@@ -166,6 +175,13 @@ namespace lalg {
             *elem_ptr = func(*elem_ptr);
             elem_ptr++;
         }
+    }
+
+    void mapInPlace(vec4* v, float(*func)(float)) {
+        v->r = func(v->r);
+        v->g = func(v->g);
+        v->b = func(v->b);
+        v->a = func(v->a);
     }
 
     // print da matrix

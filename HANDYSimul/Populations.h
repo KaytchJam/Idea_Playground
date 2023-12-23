@@ -126,7 +126,7 @@ static void setEquilibriumValues(const unsigned int index) {
 		case EQUITABLE_OSCILLATE_TOWARDS_EQUILIBRIUM:
 			BASE_ELITE_POP = 25;
 			BASE_INEQUALITY_FACTOR = 1.f;
-			BASE_DEPLETION_FACTOR = 2.20e-5;
+			BASE_DEPLETION_FACTOR = 2.20e-5f;
 			break;
 		case EQUITABLE_CYCLES_AND_REVIVAL:
 			BASE_ELITE_POP = 25;

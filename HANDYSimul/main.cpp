@@ -7,6 +7,7 @@
 
 #include "Populations.h"
 #include "MyTools/MyV.h"
+#include "MyTools/RingBuffer.h"
 #include "CustomShapes/ColumnShape.h"
 
 #define M_PI 3.14159265358979323846
@@ -163,17 +164,16 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "");
 	const sf::Vector2f mid(WIN_LENGTH / 2, WIN_HEIGHT / 2);
 
+	// COLUMNS
 	ColumnShape natureCol(20.f, 80.f);
 	natureCol.setPosition(mid + sf::Vector2f(0 - 10.f, -80.f));
 	natureCol.setColor(0x0, 0x88, 0x0);
 
 	sf::CircleShape natureTri(20, 3);
 	natureTri.setFillColor(sf::Color(0x008800FF));
-	//tri.setPosition(natureCol.getPosition() + sf::Vector2f(0, natureCol.getHeight() + 60.f));
 
 	sf::Vector2f p = natureTri.getPosition();
 	std::printf("Origin: (%f, %f)\n", p.x, p.y);
-
 
 	lalg::vec4 p1 = sfToLalg(natureTri.getPoint(0));
 	lalg::vec4 p2 = sfToLalg(natureTri.getPoint(1));
@@ -183,9 +183,6 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 
 	natureTri.setOrigin(mp);
 	natureTri.move(natureCol.getPosition() + sf::Vector2f(0.f, natureCol.getHeight() + 60.f) + mp);
-	//tri.rotate(180.f);
-	//tri.move(sf::Vector2f(0, 30.f));
-	//tri.rotate(180);
 
 	ColumnShape wealthCol(20.f, 80.f);
 	wealthCol.setPosition(mid + sf::Vector2f(0 - 10.f + 60.f, -80.f));
@@ -195,7 +192,6 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 	wealthTri.setFillColor(sf::Color(0xDF8800FF));
 	wealthTri.setOrigin(mp);
 	wealthTri.move(wealthCol.getPosition() + sf::Vector2f(0.f, wealthCol.getHeight() + 60.f) + mp);
-	//tri2.setPosition(wealthCol.getPosition() + sf::Vector2f(0, wealthCol.getHeight() + 60.f));
 
 	ColumnShape commonerCol(20.f, 80.f);
 	commonerCol.setPosition(mid + sf::Vector2f(0 - 10.f - 60.f, -80.f));
@@ -205,7 +201,6 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 	commonTri.setFillColor(sf::Color(0x000088FF));
 	commonTri.setOrigin(mp);
 	commonTri.move(commonerCol.getPosition() + sf::Vector2f(0.f, commonerCol.getHeight() + 60.f) + mp);
-	//tri3.setPosition(commonerCol.getPosition() + sf::Vector2f(0, commonerCol.getHeight() + 60.f));
 
 	ColumnShape eliteCol(20.f, 80.f);
 	eliteCol.setPosition(commonerCol.getPosition() + sf::Vector2f(-60.f, 0));
@@ -215,8 +210,12 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 	eliteTri.setFillColor(sf::Color(0xBA0000FF));
 	eliteTri.setOrigin(mp);
 	eliteTri.move(eliteCol.getPosition() + sf::Vector2f(0.f, eliteCol.getHeight() + 60.f) + mp);
-	//eliteTri.setPosition(eliteCol.getPosition() + sf::Vector2f(0, eliteCol.getHeight() + 60.f));
 
+	// GRAPHING
+	std::vector<float> nature_curve;
+	sf::RectangleShape graph(sf::Vector2f(200, 200));
+	graph.setPosition(sf::Vector2f(WIN_LENGTH - 200 - 50, 50));
+	graph.setFillColor(sf::Color(200, 200, 200, 255));
 
 	// column height interpolation + computation rate
 	std::vector<float> heights = {80.f, 100.f, 60.f, 300.f, 250.f, 180.f, 140.f, 80.f};
@@ -289,6 +288,9 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 		natureTri.setRotation((abs(nature.flow) == 0.f) * 90.f + (nature.flow < 0) * 180.f);
 		wealthTri.setRotation((abs(wealth.flow) == 0.f) * 90.f + (wealth.flow < 0) * 180.f);
 
+		//GRAPH
+		//nature_curve.push_back(nature.stock);
+
 		// RENDER
 		window.clear(sf::Color(0xE1E1E1FF));
 
@@ -302,6 +304,8 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 		window.draw(natureTri);
 		window.draw(wealthTri);
 
+		window.draw(graph);
+
 		std::printf("Flows: %f %f %f %f\n", elites.flow, commoners.flow, nature.flow, wealth.flow);
 
 		window.display();
@@ -314,9 +318,101 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 	return 0;
 }
 
+int graphTest() {
+	const int WIN_LENGTH = 1280;
+	const int WIN_HEIGHT = 720;
+	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "Curve / Graph Testing");
+	const sf::Vector2f mid(WIN_LENGTH / 2, WIN_HEIGHT / 2);
+
+	float frame = 1;
+	const unsigned int BUFFER_SIZE = 100;
+	RingBuffer rb(BUFFER_SIZE);
+
+	sf::RectangleShape graph_bounds({ WIN_LENGTH, WIN_HEIGHT });
+	graph_bounds.setFillColor(sf::Color::Black);
+	//graph_bounds.setFillColor(sf::Color(200, 200, 200, 255));
+	graph_bounds.setPosition(mid - sf::Vector2f(graph_bounds.getSize().x / 2, graph_bounds.getSize().y / 2));
+
+	float timestep = 0;
+	float local_max = 10.f;
+	float LOWER = -10.f;
+
+	std::vector<sf::Vertex> vertices(BUFFER_SIZE * 2);
+	rb.insert(0.f);
+
+	window.setFramerateLimit(30);
+	while (window.isOpen()) {
+		// check all the window's events that were triggered since the last iteration of the loop
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			// "close requested" event: we close the window
+			if (event.type == sf::Event::Closed)
+				window.close();
+		}
+
+		// add frame # to ringbuffer
+		rb.insert(2 * sin(3 / (1 + frame)) + 3 * cos(5 * frame) + 4 * sin(6 * frame) + cos(3 / (1 + frame)));
+		bool cond = local_max< rb.peek();
+		local_max = rb.peek() * cond + local_max * !cond;
+
+		float prev = rb.front();
+		int index = 0;
+		RingBuffer::iterator it = rb.begin();
+		while (it != rb.end()) {
+			std::printf("IT: %d, END: %d\n", it.m_index, rb.end().m_index);
+			std::printf("Index: %d\n", index);
+
+			float prev_normalized = normToRange(prev, { LOWER, local_max }, { 0, graph_bounds.getSize().y } );
+			float cur_normalized = normToRange(it.m_data, { LOWER, local_max }, { 0, graph_bounds.getSize().y });
+			float index_normalized = normToRange((index - 2) / 2.f, { 0.f, (float)rb.size()/*(float)rb.size() - rb.capacity()*/}, {0.f, (float)graph_bounds.getSize().x});
+			float index_plus_one_normalized = normToRange((index) / 2.f, { 0.f, (float)rb.size()/*(float)rb.size() - rb.capacity()*/}, {0.f, (float)graph_bounds.getSize().x});
+
+			std::printf("(%f, %f) -> (%f, %f)\n\n", index_normalized, prev_normalized, index_plus_one_normalized, cur_normalized);
+
+			vertices[index].position = graph_bounds.getPosition() + sf::Vector2f(index_normalized, graph_bounds.getSize().y - prev_normalized);
+			vertices[index].color = sf::Color::White;
+			vertices[index + 1].position = graph_bounds.getPosition() + sf::Vector2f(index_plus_one_normalized, graph_bounds.getSize().y - cur_normalized);
+			vertices[index + 1].color = sf::Color::White;
+
+			prev = it.m_data;
+			it++;
+			index += 2;
+		}
+
+		window.clear(sf::Color(0xFFFFFFFF));
+		window.draw(graph_bounds);
+		window.draw(&vertices[0], (rb.size() - rb.capacity()) * 2, sf::Lines);
+		window.display();
+		frame = (frame + 1) * !(frame == 359);
+		timestep++;
+	}
+
+	return 0;
+}
+
+static void bufferTest() {
+
+	RingBuffer rb(101);
+	for (int i = 0; i < 100; i++) {
+		rb.insert((float)i);
+	}
+
+	rb.stream(NULL, [](float f, void* cb) {
+			std::printf("%f\n", f);
+	});
+
+	auto it = rb.begin();
+	while (it != rb.end()) {
+		std::printf("%f\n", it.getData());
+		it++;
+	}
+}
+
 int main() {
 	std::cout << "Hello world" << std::endl;
 	//return runSim(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
-	setEquilibriumValues(UNEQUAL_OSCILLATE_TOWARDS_EQUILIBRIUM);
-	renderLoop(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
+	//setEquilibriumValues(UNEQUAL_OSCILLATE_TOWARDS_EQUILIBRIUM);
+	//renderLoop(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
+	//bufferTest();
+	graphTest();
 }

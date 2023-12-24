@@ -21,7 +21,9 @@ namespace lalg {
     vec4 operator/(const vec4& v, const float scalar) { return { v.r / scalar, v.g / scalar, v.b / scalar, v.a / scalar }; }
     vec4 operator/(const float scalar, const vec4& v) { return scalar * v; }
 
+
     // vector functions
+    float getValue(const vec4& v, uint8_t offset) { return *((float*)&v + offset); }
     float magnitude(const vec4& v) { return sqrt(v.r * v.r + v.g * v.g + v.b * v.b + v.a * v.a); }
     vec4 cross(const vec4& v1, const vec4& v2) { return { v1.g * v2.b - v1.b * v2.g, v1.b * v2.r - v1.r * v2.b, v1.r * v2.g - v1.g * v2.r, 0 }; }
     vec4 normalize(const vec4& v) { return v / magnitude(v); }
@@ -170,7 +172,7 @@ namespace lalg {
 
     // apply some function func to all elements in the matrix, and update the matrix
     void mapInPlace(mat4* m, float(*func)(float)) {
-        float* elem_ptr = (float*)&m;
+        float* elem_ptr = (float*)m;
         for (int i = 0; i < 16; i++) {
             *elem_ptr = func(*elem_ptr);
             elem_ptr++;
@@ -190,5 +192,10 @@ namespace lalg {
         printVec(m.r2);
         printVec(m.r3);
         printVec(m.r4);
+    }
+    
+    // normalize each element in vector v to a different range determined by min_vec and max_vec
+    vec4 normalizeVecElems(const lalg::vec4& v, const lalg::vec4& min_vec, const lalg::vec4& max_vec) {
+        return diag(map(max_vec - min_vec, [](float f) { return 1.f / (f + 0.001f * (f != 0.0f));  })) * (v - min_vec);
     }
 }

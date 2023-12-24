@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-
+template <typename Type>
 class RingBuffer {
 private:
 	unsigned int m_first = 0;
@@ -11,13 +11,13 @@ private:
 	unsigned int m_capacity;
 	bool m_full;
 
-	std::vector<float> m_buffer;
+	std::vector<Type> m_buffer;
 
 	class rbIterator {
 	public:
 		unsigned int m_index = 0;
 		RingBuffer* m_parent;
-		float m_data;
+		Type m_data;
 		rbIterator(unsigned int index, RingBuffer* parent) : m_index(index), m_parent(parent), m_data(parent->m_buffer[index]) {}
 	
 		rbIterator& operator++() {
@@ -54,7 +54,7 @@ private:
 public:
 	// Data structure of finite size that 'loops' on itself
 	RingBuffer(unsigned int INITIAL_SIZE) {
-		m_buffer = std::vector<float>(INITIAL_SIZE);
+		m_buffer = std::vector<Type>(INITIAL_SIZE);
 		m_capacity = INITIAL_SIZE;
 		m_full = false;
 	}
@@ -62,7 +62,7 @@ public:
 	~RingBuffer() {}
 
 	// Insert an element at the end of the buffer
-	void insert(float val) {
+	void insert(Type val) {
 		m_buffer[m_last] = val;
 
 		m_capacity = m_capacity - 1 * !m_full;
@@ -72,7 +72,7 @@ public:
 	}
 
 	// Iterate from the first to last position in the ringbuffer, and apply some function "func"
-	void stream(void* callback, void (*func)(float, void*)) {
+	void stream(void* callback, void (*func)(Type, void*)) {
 		int idx = m_first;
 		while (idx != m_last) {
 			func(m_buffer[idx], callback);
@@ -81,12 +81,12 @@ public:
 	}
 
 	// return the first element in the ringbuffer
-	float front() {
+	Type front() {
 		return m_buffer[m_first];
 	}
 
 	// look at the last item in the ringbuffer
-	float peek() {
+	Type peek() {
 		bool c1 = m_last != 0;
 		return m_buffer[m_last - 1 * c1 + (m_buffer.size() - 1) * !c1];
 	}

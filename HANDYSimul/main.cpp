@@ -9,6 +9,7 @@
 #include "MyTools/MyV.h"
 #include "MyTools/RingBuffer.h"
 #include "CustomShapes/ColumnShape.h"
+#include "CustomShapes/Plotter.h"
 
 #define M_PI 3.14159265358979323846
 
@@ -128,7 +129,7 @@ static lalg::vec4 normalize(const lalg::vec4& vals, const sf::Vector2f RANGE) {
 //}
 
 static lalg::vec4 normalizeL(const lalg::vec4& vals, const lalg::vec4& maxes) {
-	return lalg::diag(lalg::map(maxes, [](float f) { return 1 / f; })) * vals;
+	return lalg::diag(lalg::map(maxes, [](float f) { return 1 / (f + 1 * (f == 0.f)); })) * vals;
 }
 
 static float normToRange(const float val, const sf::Vector2f OLD_RANGE, const sf::Vector2f NEW_RANGE) {
@@ -212,10 +213,25 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 	eliteTri.move(eliteCol.getPosition() + sf::Vector2f(0.f, eliteCol.getHeight() + 60.f) + mp);
 
 	// GRAPHING
-	std::vector<float> nature_curve;
+	/*std::vector<float> nature_curve;
 	sf::RectangleShape graph(sf::Vector2f(200, 200));
 	graph.setPosition(sf::Vector2f(WIN_LENGTH - 200 - 50, 50));
-	graph.setFillColor(sf::Color(200, 200, 200, 255));
+	graph.setFillColor(sf::Color(200, 200, 200, 255));*/
+
+	lalg::vec4 current_stocks;
+	RingBuffer<lalg::vec4> rb(100);
+
+	Plotter graph(sf::Vector2f(200, 200), 200, sf::Color(0xBA0000FF), sf::Color::Black);
+	graph.setPosition(sf::Vector2f(WIN_LENGTH - 250, 50));
+
+	Plotter nature_graph(sf::Vector2f(200, 200), 200, sf::Color(0x008800FF), sf::Color::Black);
+	nature_graph.setPosition(graph.getPosition() + sf::Vector2f(0, 220));
+
+	Plotter commoner_graph(sf::Vector2f(200, 200), 200, sf::Color(0x0000FCFF), sf::Color::Black);
+	commoner_graph.setPosition(graph.getPosition() - sf::Vector2f(220, 0));
+
+	Plotter wealth_graph(sf::Vector2f(200, 200), 200, sf::Color(0xDF8800FF), sf::Color::Black);
+	wealth_graph.setPosition(nature_graph.getPosition() - sf::Vector2f(220, 0));
 
 	// column height interpolation + computation rate
 	std::vector<float> heights = {80.f, 100.f, 60.f, 300.f, 250.f, 180.f, 140.f, 80.f};
@@ -239,7 +255,7 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 	window.setFramerateLimit(30);
 	while (window.isOpen()) {
 		std::printf("timestep %d: ", timestep);
-		printVec(stockHeights);
+		//printVec(stockHeights);
 
 		// check all the window's events that were triggered since the last iteration of the loop
 		sf::Event event;
@@ -256,17 +272,17 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 		calcFlow(wealth, nature, elites, commoners);
 
 		// computing the solution, current stock S
-		calcStock(elites, 0, 1, true);
-		calcStock(commoners, 0, 1, true);
-		calcStock(nature, 0, 1, true);
-		calcStock(wealth, 0, 1, true);
+		current_stocks = {
+			calcStock(elites, 0, 1, true).stock,
+			calcStock(commoners, 0, 1, true).stock,
+			calcStock(nature, 0, 1, true).stock,
+			calcStock(wealth, 0, 1, true).stock
+		};
 
 		bool move_on = frames_passed == (FRAME_DELAY - 1);
 
-		lalg::vec4 all_stocks = { elites.stock, commoners.stock, nature.stock, wealth.stock };
-
-		update_maxes(max_vector, all_stocks);
-		lalg::vec4 normed_stocks = normalizeL(all_stocks, max_vector);
+		update_maxes(max_vector, current_stocks);
+		lalg::vec4 normed_stocks = normalizeL(current_stocks, max_vector);
 		stockHeights = MAX_HEIGHT * normed_stocks;
 
 		// MODIFY HEIGHT
@@ -289,7 +305,11 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 		wealthTri.setRotation((abs(wealth.flow) == 0.f) * 90.f + (wealth.flow < 0) * 180.f);
 
 		//GRAPH
-		//nature_curve.push_back(nature.stock);
+		rb.insert(current_stocks);
+		graph.setVertices(rb, 0, { (float)(rb.size() << 1), (float)(rb.size() << 1), max_vector.r, max_vector.r });
+		commoner_graph.setVertices(rb, 1, { (float)(rb.size() << 1), (float)(rb.size() << 1), max_vector.g, max_vector.g });
+		nature_graph.setVertices(rb, 2, {(float)(rb.size() << 1), (float)(rb.size() << 1), max_vector.b, max_vector.b});
+		wealth_graph.setVertices(rb, 3, { (float)(rb.size() << 1), (float)(rb.size() << 1), max_vector.a, max_vector.a });
 
 		// RENDER
 		window.clear(sf::Color(0xE1E1E1FF));
@@ -305,6 +325,9 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 		window.draw(wealthTri);
 
 		window.draw(graph);
+		window.draw(commoner_graph);
+		window.draw(nature_graph);
+		window.draw(wealth_graph);
 
 		std::printf("Flows: %f %f %f %f\n", elites.flow, commoners.flow, nature.flow, wealth.flow);
 
@@ -326,9 +349,11 @@ int graphTest() {
 
 	float frame = 1;
 	const unsigned int BUFFER_SIZE = 100;
-	RingBuffer rb(BUFFER_SIZE);
+	RingBuffer<float> rb(BUFFER_SIZE);
 
-	sf::RectangleShape graph_bounds({ WIN_LENGTH, WIN_HEIGHT });
+	sf::Color PLOT_COLOR = sf::Color::Red;
+
+	sf::RectangleShape graph_bounds({ 500.f, 500.f });
 	graph_bounds.setFillColor(sf::Color::Black);
 	//graph_bounds.setFillColor(sf::Color(200, 200, 200, 255));
 	graph_bounds.setPosition(mid - sf::Vector2f(graph_bounds.getSize().x / 2, graph_bounds.getSize().y / 2));
@@ -357,22 +382,22 @@ int graphTest() {
 
 		float prev = rb.front();
 		int index = 0;
-		RingBuffer::iterator it = rb.begin();
+		RingBuffer<float>::iterator it = rb.begin();
 		while (it != rb.end()) {
 			std::printf("IT: %d, END: %d\n", it.m_index, rb.end().m_index);
 			std::printf("Index: %d\n", index);
 
 			float prev_normalized = normToRange(prev, { LOWER, local_max }, { 0, graph_bounds.getSize().y } );
 			float cur_normalized = normToRange(it.m_data, { LOWER, local_max }, { 0, graph_bounds.getSize().y });
-			float index_normalized = normToRange((index - 2) / 2.f, { 0.f, (float)rb.size()/*(float)rb.size() - rb.capacity()*/}, {0.f, (float)graph_bounds.getSize().x});
-			float index_plus_one_normalized = normToRange((index) / 2.f, { 0.f, (float)rb.size()/*(float)rb.size() - rb.capacity()*/}, {0.f, (float)graph_bounds.getSize().x});
+			float index_normalized = normToRange((index - 2.f) * (index != 0), {0.f, (float)vertices.size()/*(float)rb.size() - rb.capacity()*/}, {0.f, (float)graph_bounds.getSize().x});
+			float index_plus_one_normalized = normToRange((float) (index), { 0.f, (float)vertices.size()/*(float)rb.size() - rb.capacity()*/}, {0.f, (float)graph_bounds.getSize().x});
 
 			std::printf("(%f, %f) -> (%f, %f)\n\n", index_normalized, prev_normalized, index_plus_one_normalized, cur_normalized);
 
 			vertices[index].position = graph_bounds.getPosition() + sf::Vector2f(index_normalized, graph_bounds.getSize().y - prev_normalized);
-			vertices[index].color = sf::Color::White;
+			vertices[index].color = PLOT_COLOR;
 			vertices[index + 1].position = graph_bounds.getPosition() + sf::Vector2f(index_plus_one_normalized, graph_bounds.getSize().y - cur_normalized);
-			vertices[index + 1].color = sf::Color::White;
+			vertices[index + 1].color = PLOT_COLOR;
 
 			prev = it.m_data;
 			it++;
@@ -392,7 +417,7 @@ int graphTest() {
 
 static void bufferTest() {
 
-	RingBuffer rb(101);
+	RingBuffer<float> rb(101);
 	for (int i = 0; i < 100; i++) {
 		rb.insert((float)i);
 	}
@@ -408,11 +433,60 @@ static void bufferTest() {
 	}
 }
 
+static int plotterTest() {
+
+	const int WIN_LENGTH = 1280;
+	const int WIN_HEIGHT = 720;
+	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "Curve / Graph Testing");
+	const sf::Vector2f mid(WIN_LENGTH / 2, WIN_HEIGHT / 2);
+
+	float frame = 1;
+	const unsigned int BUFFER_SIZE = 100;
+
+	RingBuffer<lalg::vec4> rb(BUFFER_SIZE);
+	sf::Color PLOT_COLOR = sf::Color::Red;
+
+	Plotter p({ 500.f, 500.f }, BUFFER_SIZE);
+	p.setColor(PLOT_COLOR);
+	p.setPosition(mid - sf::Vector2f(p.getSize().x / 2, p.getSize().y / 2));
+	p.setBackgroundColor(sf::Color::Black);
+
+	float timestep = 0;
+	float local_max = 10.f;
+	float LOWER = -10.f;
+
+	window.setFramerateLimit(30);
+	while (window.isOpen()) {
+		// check all the window's events that were triggered since the last iteration of the loop
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			// "close requested" event: we close the window
+			if (event.type == sf::Event::Closed)
+				window.close();
+		}
+
+		bool cond = local_max < rb.peek().r;
+		local_max = rb.peek().r * cond + local_max * !cond;
+
+		// add frame # to ringbuffer
+		rb.insert({ 2 * sin(3 / (1 + frame)) + 3 * cos(5 * frame) + 4 * sin(6 * frame) + cos(3 / (1 + frame)), 0, 0, 0 });
+		p.setVertices(rb, 0, { (float)(rb.size() << 1), (float) (rb.size() << 1), local_max, local_max}, {0, 0, LOWER, LOWER});
+
+		window.clear(sf::Color(0xFFFFFFFF));
+		window.draw(p);
+		window.display();
+
+		frame = (frame + 1) * !(frame == 100);
+		timestep++;
+	}
+	return 0;
+}
+
 int main() {
 	std::cout << "Hello world" << std::endl;
 	//return runSim(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
-	//setEquilibriumValues(UNEQUAL_OSCILLATE_TOWARDS_EQUILIBRIUM);
-	//renderLoop(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
+	setEquilibriumValues(EQUITABLE_CYCLES_AND_REVIVAL);
+	renderLoop(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
 	//bufferTest();
-	graphTest();
+	//plotterTest();
 }

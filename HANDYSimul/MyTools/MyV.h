@@ -28,11 +28,13 @@ namespace lalg {
     vec4 cross(const vec4& v1, const vec4& v2) { return { v1.g * v2.b - v1.b * v2.g, v1.b * v2.r - v1.r * v2.b, v1.r * v2.g - v1.g * v2.r, 0 }; }
     vec4 normalize(const vec4& v) { return v / magnitude(v); }
     float dot(const vec4& v1, const vec4& v2) { return v1.r * v2.r + v1.g * v2.g + v1.b * v2.b + v1.a * v2.a; }
+    vec4 pow(const vec4& v, const float power) { return { powf(v.r, power), powf(v.g, power) , powf(v.b, power) , powf(v.a, power) }; }
     void printVec(const vec4& v) { std::printf("[%f, %f, %f, %f]\n", v.r, v.g, v.b, v.a); }
 
     // special vectors
     vec4 const onesVec() { return { 1, 1, 1, 1 }; }
     vec4 const zeroVec() { return { 0, 0, 0, 0 }; }
+    vec4 const NVec(float n) { return { n, n, n, n }; }
 
     //
     // MATRICES

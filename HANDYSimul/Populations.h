@@ -96,6 +96,22 @@ enum EQUILIBRIUM_STATES {
 	UNEQUAL_OSCILLATE_TOWARDS_EQUILIBRIUM
 };
 
+const char* const EQUILIBRIUM_STATE_NAMES[13] = {
+	"Egalitarian Society: Soft Landing to Equilibrium",
+	"Egalitarian Society: Oscillatory Approach to Equilibrium",
+	"Egalitarian Society: Cycles of Prosperity, Overshoot, Collapse, and Revival",
+	"Egalitarian Society: Irreversible Type-N Collapse (Full Collapse)",
+	"Equitable Society: Soft Landing to Optimal Equilibrium",
+	"Equitable Society: Oscillatory Approach to Equilibrium",
+	"Equitable Society: Cycles of Prosperity, Overshoot, Collapse, and Revival",
+	"Equitable Society: Full Collapse",
+	"Equitable Society: Preventing a Full Collapse by Decreasing Average Depletion per Capita",
+	"Unequal Society: Type-L Collapse (Labor Disappears, Nature Recovers)",
+	"Unequal Society: Irreversible Type-N Collapse (Full Collapse)",
+	"Unequal Society: Soft Landing to Optimal Equilibrium",
+	"Unequal Society: Oscillatory Approach to Equilibrium"
+};
+
 // EQUILIBRIUM VALUES:
 static void setEquilibriumValues(const unsigned int index) {
 	// EGALITARIAN SOCIETY: 0 - 3

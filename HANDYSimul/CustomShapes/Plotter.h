@@ -62,11 +62,9 @@ public:
 		{
 			vec4 diff_vec = MAX_VEC - MIN_VEC;
 			const vec4 diagonal_inverse_vec = { diff_vec.r / m_LENGTH, diff_vec.g / m_LENGTH, diff_vec.b / m_HEIGHT, diff_vec.a / m_HEIGHT };
-			coord_transform = diag(map(diagonal_inverse_vec, [](float f) {return 1.f / (f + 0.001f * (f == 0.0f));  }));
+			coord_transform = diag(map(diagonal_inverse_vec, [](float f) {return 1.f / (f + 0.001f * (f == 0.0f));  })); // diag(vector^-1)
 		}
-		//vec4 target_maxes = { m_LENGTH, m_LENGTH, m_HEIGHT, m_HEIGHT };
-		//const mat4 norm_each_elem_transform = diag(map(MAX_VEC - MIN_VEC, [](float f) {return 1.f / (f + 0.001f * (f == 0.0f));  }));
-		//const mat4 to_graph_coords_transform = diag({ (float) m_LENGTH, (float) m_LENGTH, (float) m_HEIGHT, (float) m_HEIGHT });
+
 		vec4 current_vec = { 0 /*prev index*/, 1 /*index + 1*/, getValue(rb.front(), offset) /*prev*/, 0 /*current*/ };
 
 		RingBuffer<vec4>::iterator it = rb.begin();

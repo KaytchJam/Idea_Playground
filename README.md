@@ -54,7 +54,121 @@ Here are a couple example graphs I got by taking the values I got via the simula
 
 ![Graph of an Oscillatory Equilibrium simulation run](content/NoEliteEquilibrium.png)
 
-Extra note: the reason for the struct reference returns is because method chaining is cool that's pretty much it lol
+### Changes as of December 24th, 2023:
+
+Added the entire set of equilibrium equations noted on the paper and their default values. The notable ones are all listed in the following enum, and can be called via the function `setEquilibriumValues(EquilibriumStates state)`. The equilibrium conditions set by each of these states are noted in the paper but you can see the variables I set in the HANDYSim/Populations.h file if you want to see the code, but it's honestly just a switch case.
+
+```cpp
+enum EQUILIBRIUM_STATES {
+	EGALITARIAN_SOFT_LANDING,
+	EGALITARIAN_OSCILLATE_TOWARDS_EQUILIBRIUM,
+	EGALITARIAN_CYCLES_AND_REVIVAL,
+	EGALITARIAN_FULL_COLLAPSE,
+	EQUITABLE_SOFT_LANDING,
+	EQUITABLE_OSCILLATE_TOWARDS_EQUILIBRIUM,
+	EQUITABLE_CYCLES_AND_REVIVAL,
+	EQUITABLE_FULL_COLLAPSE,
+	EQUITABLE_FULL_COLLAPSE_PREVENTION,
+	UNEQUAL_TYPE_L_COLLAPSE,
+	UNEQUAL_TYPE_N_COLLAPSE,
+	UNEQUAL_SOFT_LANDING,
+	UNEQUAL_OSCILLATE_TOWARDS_EQUILIBRIUM
+};
+```
+
+Second major addition (as of this date) is the implementation of a graphics component. Before I was simply computing all the 'stocks' or integrals at each timestep using a numerical method, writing them to a CSV file, and then graphing the four equations in python. Now I'm rendering the actual dynamics of our elite population, commoner population, nature stock, and wealth stock during runtime using SFML. Notable components are: columns indicating the 'size' and 'direction' of each stock, and a plot over time. 
+
+#### Columns
+
+Implementation is pretty straightforward here. I have a column class called ColumnShape in ColumnShape.h, composed of 2 `sf::CircleShape`s and one `sf::RectangleShape`. Functions for changing the height, radius, and position of said Column were all implemented since it's effectively a shape. Once the stock values for our four equations are calculated via `calcStock()`, they're normalized based on the maximums of each stock (so elite and commoner populations are normalized to the maximum of the two thus far, nature is normalized to its carrying capacity, wealth to its maximum so far) and then passed in as heights for the column. The tris are there to complement the columns, they're just triangles signifying whether the flow (rate of change... derivative) of the column is positive, negative, or zero -- pointing up, down, or sideways. The tris make use of SFML's `sf::CircleShape` with 3 points specified to get a triangle shape out.
+
+```cpp
+// Code snippet for initializing the four columns, nothing crazy here (in main.cpp)
+void init_columns(std::vector<ColumnShape*>& cols, float c_rad, float c_height, float c_spacing, uint32_t CCs[4], sf::Vector2f ref_pos) {
+	for (int i = 0; i < cols.size(); i++) {
+		ColumnShape* col_ptr = cols[i];
+		col_ptr->setRadius(c_rad); // column radius
+		col_ptr->setHeight(c_height);
+		col_ptr->setPosition(ref_pos + sf::Vector2f((-2 + i) * c_spacing, 0)); // so the four columns are all centered around a midpoint
+		col_ptr->setColor(CCs[i]);
+	}
+}
+
+// Code for setting column color, always try to make sure the "top" of the column is darkest (in the ColumnShape.h file)
+void ColumnShape::setColor(const uint8_t r, uint8_t g, uint8_t b) {
+	this->bar.setFillColor(sf::Color(r, g, b, 0xFF));
+	this->base.setFillColor(sf::Color(r, g, b, 0xFF));
+	this->top.setFillColor(sf::Color(r / 3, g / 3, b / 3, 0xFF));
+}
+
+// The other setColor function (in the ColumnShape.h file)
+void ColumnShape::setColor(uint32_t color) {
+	uint8_t colors[3] = {0x0, 0x0, 0x0};
+	const uint32_t s = color;
+
+	color = color >> 8; // skip past alpha channel
+	for (int i = 0; i < 3; i++) {
+		colors[2 - i] = color & 0xFF;
+		color = color >> 8;
+	}
+
+	//printf("Color: 0x%08X, R: 0x%02X G: 0x%02X B: 0x%02X\n", s, colors[0], colors[1], colors[2]);
+	this->setColor(colors[0], colors[1], colors[2]);
+}
+```
+
+A picture of the columns & tris:
+
+![Columns & Tris Example Image 1](content/ColAndTri_Example1.png)
+
+![Columns & Tris Example Image 2](content/ColAndTri_Example2.png)
+
+#### Real Time Plots / Graphing
+
+The next component I've added is a plotter that graphs the last 100 stock values computed. This was done via the implementation of a RingBuffer data structure, a Plotter class, along with some matrix math for mapping current values to vertices on the graph. The RingBuffer class is there to easily handle the 'stream' of data that's constantly being used for graphing, especially since I'm only graphing a fixed amount of values for a given stock which I've set to be 100. Within the RingBuffer is an iterator that travels from the 'first' index in the RingBuffer to 1 before the 'last' index. I'll put some RingBuffer functions I particularly liked making, though I feel I went too far with the booleans.
+
+```cpp
+// RingBuffer fields
+template <typename Type>
+class RingBuffer {
+private:
+    unsigned int m_first = 0;   // first index
+    unsigned int m_last = 0;    // last index
+    unsigned int m_capacity;    // number of 'open' spots left
+    bool m_full;                // do the open spots == 0 ?
+    std::vector<Type> m_buffer; // container
+    class rbIterator;
+    
+    ...
+    ...
+}
+
+// insert an element into the ringbuffer
+void RingBuffer::insert(Type val) {
+	m_buffer[m_last] = val;
+
+	m_capacity = m_capacity - 1 * !m_full;
+	m_full = m_capacity == 0;
+	m_last = (m_last + 1) * !(m_last == m_buffer.size() - 1);
+	m_first = (m_first + m_full) * !(m_first == m_buffer.size() - 1);
+}
+
+// Increments the iterator to point to the next item in the ringbuffer
+rbIterator& RingBuffer::rbIterator::operator++(int) {
+	bool at_end = (m_index == m_parent->m_buffer.size() - 1 || m_index == m_parent->m_last);
+	m_index = (m_index + 1) * !at_end + m_parent->m_first * at_end * !m_parent->m_full;
+	m_data = m_parent->m_buffer[m_index];
+	return *this;
+}
+```
+
+Moving onto the Plotter.class, it's composed of a `std::vector<sf::Vertices>` field of constant size, determined upon initialization. 
+
+#### Additional Note
+
+Throughout `main.cpp` and other files there are calls to the namespace `lalg`, particularly the `lalg::vec4` and `lalg::mat4` structs. This is miniature linear algebra library (loosely) that I had made whilst getting carried away with another project and everything related to it is in the `MyTools/MyV.h` file. It's more or less there so I can have size 4 vectors (SFML only has size 2 vectors and size 3 x 3 tranformation matrices, and i was too lazy to link GLM) and implement functions like `diag()`, `map()`, `transpose()`, and retrieving matrix columns as vectors (`lalg::mat4` is implemented as a struct of row vectors).
+
+Extra Extra note: the reason for the struct reference returns is because method chaining is cool that's pretty much it lol
 
 Citation:
 

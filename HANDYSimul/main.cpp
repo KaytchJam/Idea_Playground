@@ -5,11 +5,7 @@
 #include <Windows.h>
 #include <fstream>
 
-#include "Populations.h"
-#include "MyTools/MyV.h"
-#include "MyTools/RingBuffer.h"
-#include "CustomShapes/ColumnShape.h"
-#include "CustomShapes/Plotter.h"
+#include "MyTools/MainHelper.h"
 
 #define M_PI 3.14159265358979323846
 
@@ -144,6 +140,28 @@ static sf::Vector2f lalgToSf(const lalg::vec4& v) {
 	return { v.r, v.g };
 }
 
+void init_columns(std::vector<ColumnShape*>& cols, float c_rad, float c_height, float c_spacing, uint32_t CCs[4], sf::Vector2f ref_pos) {
+	for (int i = 0; i < cols.size(); i++) {
+		ColumnShape* col_ptr = cols[i];
+		col_ptr->setRadius(c_rad); // column radius
+		col_ptr->setHeight(c_height);
+		col_ptr->setPosition(ref_pos + sf::Vector2f((-2 + i) * c_spacing, 0));
+		col_ptr->setColor(CCs[i]);
+	}
+}
+
+void init_tris(std::vector<sf::CircleShape*>& tris, std::vector<ColumnShape*> cols, float rad, float spacing) {
+	for (int i = 0; i < tris.size(); i++) {
+		sf::CircleShape* tri = tris[i];
+		ColumnShape* curCol = cols[i];
+		tri->setRadius(rad);
+		tri->setPointCount(3);
+		tri->setOrigin({ rad,rad });
+		tri->move(curCol->getPosition() + sf::Vector2f(0.f, curCol->getHeight() + spacing) + sf::Vector2f(rad, rad));
+		tri->setFillColor(curCol->getColor());
+	}
+}
+
 int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_total_stock, float wealth_total_stock) {
 
 	// HANDY SIM INITIALIZATIONS
@@ -166,60 +184,25 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 	const sf::Vector2f mid(WIN_LENGTH / 2, WIN_HEIGHT / 2);
 
 	// COLUMNS
-	ColumnShape natureCol(20.f, 80.f);
-	natureCol.setPosition(mid + sf::Vector2f(0 - 10.f, -80.f));
-	natureCol.setColor(0x0, 0x88, 0x0);
+	ColumnShape natureCol, wealthCol, commonerCol, eliteCol;
+	sf::CircleShape eliteTri, commonTri, natureTri, wealthTri;
+	std::vector<ColumnShape*> colList({ &eliteCol, &commonerCol, &natureCol, &wealthCol });
+	std::vector<sf::CircleShape*> triList({ &eliteTri, &commonTri, &natureTri, &wealthTri });
+	{
+		const float COLUMN_RADIUS = 20.f;
+		const float COLUMN_HEIGHT = 80.f;
+		const float COLUMN_SPACING = 60.f;
+		unsigned int COLUMN_COLORS[4] = { 0xBA0000FF, 0x000088FF, 0x008800FF, 0xDF8800FF };
+		sf::Vector2f REFERENCE_POSITION = mid - sf::Vector2f(COLUMN_RADIUS / 2, COLUMN_HEIGHT);
 
-	sf::CircleShape natureTri(20, 3);
-	natureTri.setFillColor(sf::Color(0x008800FF));
-
-	sf::Vector2f p = natureTri.getPosition();
-	std::printf("Origin: (%f, %f)\n", p.x, p.y);
-
-	lalg::vec4 p1 = sfToLalg(natureTri.getPoint(0));
-	lalg::vec4 p2 = sfToLalg(natureTri.getPoint(1));
-	lalg::vec4 p3 = sfToLalg(natureTri.getPoint(2));
-
-	sf::Vector2f mp = lalgToSf((p1 + p2 + p3) / 3);
-
-	natureTri.setOrigin(mp);
-	natureTri.move(natureCol.getPosition() + sf::Vector2f(0.f, natureCol.getHeight() + 60.f) + mp);
-
-	ColumnShape wealthCol(20.f, 80.f);
-	wealthCol.setPosition(mid + sf::Vector2f(0 - 10.f + 60.f, -80.f));
-	wealthCol.setColor(0xDF, 0x88, 0x0);
-
-	sf::CircleShape wealthTri(20, 3);
-	wealthTri.setFillColor(sf::Color(0xDF8800FF));
-	wealthTri.setOrigin(mp);
-	wealthTri.move(wealthCol.getPosition() + sf::Vector2f(0.f, wealthCol.getHeight() + 60.f) + mp);
-
-	ColumnShape commonerCol(20.f, 80.f);
-	commonerCol.setPosition(mid + sf::Vector2f(0 - 10.f - 60.f, -80.f));
-	commonerCol.setColor(0x0, 0x0, 0x88);
-
-	sf::CircleShape commonTri(20, 3);
-	commonTri.setFillColor(sf::Color(0x000088FF));
-	commonTri.setOrigin(mp);
-	commonTri.move(commonerCol.getPosition() + sf::Vector2f(0.f, commonerCol.getHeight() + 60.f) + mp);
-
-	ColumnShape eliteCol(20.f, 80.f);
-	eliteCol.setPosition(commonerCol.getPosition() + sf::Vector2f(-60.f, 0));
-	eliteCol.setColor(0xBA, 0x0, 0x0);
-
-	sf::CircleShape eliteTri(20, 3);
-	eliteTri.setFillColor(sf::Color(0xBA0000FF));
-	eliteTri.setOrigin(mp);
-	eliteTri.move(eliteCol.getPosition() + sf::Vector2f(0.f, eliteCol.getHeight() + 60.f) + mp);
+		init_columns(colList, COLUMN_RADIUS, COLUMN_HEIGHT, COLUMN_SPACING, COLUMN_COLORS, REFERENCE_POSITION);
+		init_tris(triList, colList, COLUMN_RADIUS, COLUMN_SPACING);
+	}
 
 	// GRAPHING
-	/*std::vector<float> nature_curve;
-	sf::RectangleShape graph(sf::Vector2f(200, 200));
-	graph.setPosition(sf::Vector2f(WIN_LENGTH - 200 - 50, 50));
-	graph.setFillColor(sf::Color(200, 200, 200, 255));*/
-
+	int RINGBUFFER_SIZE = 100;
 	lalg::vec4 current_stocks;
-	RingBuffer<lalg::vec4> rb(100);
+	RingBuffer<lalg::vec4> rb(RINGBUFFER_SIZE);
 
 	Plotter graph(sf::Vector2f(200, 200), 200, sf::Color(0xBA0000FF), sf::Color::Black);
 	graph.setPosition(sf::Vector2f(WIN_LENGTH - 250, 50));
@@ -232,6 +215,11 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 
 	Plotter wealth_graph(sf::Vector2f(200, 200), 200, sf::Color(0xDF8800FF), sf::Color::Black);
 	wealth_graph.setPosition(nature_graph.getPosition() - sf::Vector2f(220, 0));
+
+	ObjectGroup<Plotter> plotGroup;
+	plotGroup.add(&graph).add(&commoner_graph).add(&nature_graph).add(&wealth_graph);
+
+	std::vector<Plotter*> plots({ &graph, &commoner_graph, &nature_graph, &wealth_graph });
 
 	// column height interpolation + computation rate
 	std::vector<float> heights = {80.f, 100.f, 60.f, 300.f, 250.f, 180.f, 140.f, 80.f};
@@ -246,10 +234,10 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 	lalg::vec4 max_vector = { max_human_pop, max_human_pop, nature.capacity, std::max(wealth_total_stock * 5, max_human_pop / 2)};
 	// elite, commoner, nature, wealth
 	float MAX_HEIGHT = 200;
-	lalg::vec4 stockHeights = {elites.stock, commoners.stock, nature.stock, wealth.stock};
-	lalg::printVec(stockHeights);
-	lalg::printVec(max_vector);
-	stockHeights = normalizeL(stockHeights, max_vector) * MAX_HEIGHT;
+	lalg::vec4 stockHeights = MAX_HEIGHT * normalizeL({ elites.stock, commoners.stock, nature.stock, wealth.stock }, max_vector);
+	//lalg::printVec(stockHeights);
+	//lalg::printVec(max_vector);
+	//stockHeights = normalizeL(stockHeights, max_vector) * MAX_HEIGHT;
 
 	// run the program as long as the window is open
 	window.setFramerateLimit(30);
@@ -265,77 +253,41 @@ int renderLoop(float elite_total_pop, float commoner_total_pop, float nature_tot
 				window.close();
 		}
 
-		// computing change in stock size dS/dt
-		calcFlow(elites);
-		calcFlow(commoners);
-		calcFlow(nature, commoners);
-		calcFlow(wealth, nature, elites, commoners);
-
-		// computing the solution, current stock S
-		current_stocks = {
-			calcStock(elites, 0, 1, true).stock,
-			calcStock(commoners, 0, 1, true).stock,
-			calcStock(nature, 0, 1, true).stock,
-			calcStock(wealth, 0, 1, true).stock
-		};
-
-		bool move_on = frames_passed == (FRAME_DELAY - 1);
+		calcAllFlows(elites, commoners, nature, wealth); // computing dS/dt
+		current_stocks = calcAllStocks(elites, commoners, nature, wealth); // compute S -> return vector of all
+		rb.insert(current_stocks);
 
 		update_maxes(max_vector, current_stocks);
-		lalg::vec4 normed_stocks = normalizeL(current_stocks, max_vector);
-		stockHeights = MAX_HEIGHT * normed_stocks;
+		lalg::vec4 diffs;
+		{
+			lalg::vec4 normed_stocks = normalizeL(current_stocks, max_vector);
+			stockHeights = MAX_HEIGHT * normed_stocks;
+			diffs = stockHeights - lalg::vec4({ eliteCol.getHeight(), commonerCol.getHeight(), natureCol.getHeight(), wealthCol.getHeight() });
+		}
 
-		// MODIFY HEIGHT
-		lalg::vec4 colHeights = { eliteCol.getHeight(), commonerCol.getHeight(), natureCol.getHeight(), wealthCol.getHeight()};
-
-		eliteCol.setHeight(stockHeights.r);
-		commonerCol.setHeight(stockHeights.g);
-		natureCol.setHeight(stockHeights.b);
-		wealthCol.setHeight(stockHeights.a);
-
-		lalg::vec4 diffs = stockHeights - colHeights;
-		eliteCol.setPosition(eliteCol.getPosition() - sf::Vector2f(0, diffs.r));
-		commonerCol.setPosition(commonerCol.getPosition() - sf::Vector2f(0, diffs.g));
-		natureCol.setPosition(natureCol.getPosition() - sf::Vector2f(0, diffs.b));
-		wealthCol.setPosition(wealthCol.getPosition() - sf::Vector2f(0, diffs.a));
-
-		eliteTri.setRotation((abs(elites.flow) == 0.f) * 90.f + (elites.flow < 0) * 180.f);
-		commonTri.setRotation((abs(commoners.flow) == 0.f) * 90.f + (commoners.flow < 0) * 180.f);
-		natureTri.setRotation((abs(nature.flow) == 0.f) * 90.f + (nature.flow < 0) * 180.f);
-		wealthTri.setRotation((abs(wealth.flow) == 0.f) * 90.f + (wealth.flow < 0) * 180.f);
-
-		//GRAPH
-		rb.insert(current_stocks);
-		graph.setVertices(rb, 0, { (float)(rb.size() << 1), (float)(rb.size() << 1), max_vector.r, max_vector.r });
-		commoner_graph.setVertices(rb, 1, { (float)(rb.size() << 1), (float)(rb.size() << 1), max_vector.g, max_vector.g });
-		nature_graph.setVertices(rb, 2, {(float)(rb.size() << 1), (float)(rb.size() << 1), max_vector.b, max_vector.b});
-		wealth_graph.setVertices(rb, 3, { (float)(rb.size() << 1), (float)(rb.size() << 1), max_vector.a, max_vector.a });
-
-		// RENDER
 		window.clear(sf::Color(0xE1E1E1FF));
+		for (int i = 0; i < colList.size(); i++) {
+			ColumnShape* curCol = colList[i];
+			sf::CircleShape* curTri = triList[i];
+			Plotter* curPlot = plots[i];
+			float max_value = getValue(max_vector, i);
 
-		window.draw(eliteCol);
-		window.draw(commonerCol);
-		window.draw(natureCol);
-		window.draw(wealthCol);
+			curCol->setHeight(lalg::getValue(stockHeights, i));
+			curCol->setPosition(curCol->getPosition() - sf::Vector2f(0, lalg::getValue(diffs, i)));
+			curTri->setRotation((abs(wealth.flow) == 0.f) * 90.f + (populist[i]->flow < 0) * 180.f);
+			curPlot->setVertices(rb, i, { (float)(RINGBUFFER_SIZE << 1), (float)(RINGBUFFER_SIZE << 1), max_value, max_value});
 
-		window.draw(eliteTri);
-		window.draw(commonTri);
-		window.draw(natureTri);
-		window.draw(wealthTri);
-
-		window.draw(graph);
-		window.draw(commoner_graph);
-		window.draw(nature_graph);
-		window.draw(wealth_graph);
-
-		std::printf("Flows: %f %f %f %f\n", elites.flow, commoners.flow, nature.flow, wealth.flow);
+			window.draw(*curCol);
+			window.draw(*curTri);
+			window.draw(*curPlot);
+		}
 
 		window.display();
-
+		bool move_on = frames_passed == (FRAME_DELAY - 1);
 		frames_passed = (frames_passed + 1) * !move_on;
 		frame = (frame + 1) * !(frame == 359);
 		timestep++;
+		std::printf("\n");
 	}
 
 	return 0;
@@ -485,7 +437,7 @@ static int plotterTest() {
 int main() {
 	std::cout << "Hello world" << std::endl;
 	//return runSim(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
-	setEquilibriumValues(EQUITABLE_CYCLES_AND_REVIVAL);
+	setEquilibriumValues(EGALITARIAN_CYCLES_AND_REVIVAL);
 	renderLoop(BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
 	//bufferTest();
 	//plotterTest();

@@ -102,6 +102,13 @@ namespace lalg {
                 {0, 0, 0, 0}};
     }
 
+    mat4 const nMat(float n) {
+        return {{n, n, n, n},
+                {n, n, n, n},
+                {n, n, n, n},
+                {n, n, n, n} };
+    }
+
     // creates a matrix with values of vector v along the diagonal
     mat4 const diag(const vec4& v) {
         return {{v.r, 0, 0, 0},

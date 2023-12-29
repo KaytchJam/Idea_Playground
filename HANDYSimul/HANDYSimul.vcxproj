@@ -137,6 +137,13 @@
     <ClCompile Include="Populations.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CustomShapes\ColumnShape.h" />
+    <ClInclude Include="CustomShapes\Plotter.h" />
+    <ClInclude Include="CustomShapes\SubCanvas.h" />
+    <ClInclude Include="MyTools\MainHelper.h" />
+    <ClInclude Include="MyTools\MyV.h" />
+    <ClInclude Include="MyTools\ObjectGroup.h" />
+    <ClInclude Include="MyTools\RingBuffer.h" />
     <ClInclude Include="Populations.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

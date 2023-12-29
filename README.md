@@ -162,7 +162,59 @@ rbIterator& RingBuffer::rbIterator::operator++(int) {
 }
 ```
 
-Moving onto the Plotter.class, it's composed of a `std::vector<sf::Vertices>` field of constant size, determined upon initialization. 
+Moving onto the Plotter.class, it's composed of a `std::vector<sf::Vertices>` field of constant size, determined upon initialization, along with a user-specified length, height, position, and color (for both the actual plots & background). The constructor is shown below:
+
+```cpp
+// Planning to add text fields to this in the future for titling the graph, labeling axes, and displaying values
+Plotter(sf::Vector2f size, unsigned int NUMBER_OF_POINTS, sf::Color line_color = sf::Color::Black, sf::Color bg_color = sf::Color::White) 
+	: m_LENGTH((int) size.x), m_HEIGHT((int) size.y), m_POINTS_TO_RENDER(0) {
+	m_vertices = std::vector<sf::Vertex>(NUMBER_OF_POINTS * 2);
+	m_PLOT_COLOR = line_color;
+	m_bg = sf::RectangleShape(size); // background is basically just a rectangle
+	m_bg.setFillColor(bg_color);  // rectangle color
+}
+```
+
+The most interesting function of the Plotter class to me (or the one I enjoyed making the most) is the `setVertices()` function. It's used for actually populating the std::vector of vertices `m_vertices` with vertices to be used in the `draw()` function. setVertices takes in a few paramters: a RingBuffer of linear algebra vectors (`lalg::vec4`) of size 4 (holding our four stocks: elite pop, commoner pop, nature stock, wealth stock), an unsigned integer offset to specify which of the four stocks we're plotting (so 0 would be the first value of the vector, 1 the second, and so on...), and 2 vectors holding maximums and minimums to be used in the normalization process of our stocks as they're transformed to vertices called `max_vector` and `min_vector` (note that `min_vector` is defaulted to a zero vector if the value is left unspecified). A messy diagram of how this all comes together is below (made in GIMP, shoutout GIMP).
+
+![Diagram of Plotter Matrix transformation](content/Plotter_Diagram_1.png)
+
+The code is a little messier, for example: instead of the previous index being - 1, it's - 2 since every value in the RingBuffer gets two vertices in the list to form a line. I also subtract the y-coordinates I get for my vertices from m_HEIGHT since SFML's y-axis is inverted (0 is the top, window.size().y is the bottom).
+
+```cpp
+void setVertices(RingBuffer<lalg::vec4>& rb, unsigned int offset, const lalg::vec4& MAX_VEC, const lalg::vec4& MIN_VEC = lalg::zeroVec()) {
+    using namespace lalg; // less typing 
+
+    mat4 coord_transform;
+    {
+        vec4 diff_vec = MAX_VEC - MIN_VEC;
+        const vec4 diagonal_inverse_vec = { diff_vec.r / m_LENGTH, diff_vec.g / m_LENGTH, diff_vec.b / m_HEIGHT, diff_vec.a / m_HEIGHT };
+        coord_transform = diag(map(diagonal_inverse_vec, [](float f) {return 1.f / (f + 0.001f * (f == 0.0f));  })); // diag(vector^-1)
+    }
+
+    vec4 current_vec = { 0 /*prev index*/, 1 /*index*/, getValue(rb.front(), offset) /*prev*/, 0 /*current*/ };
+    RingBuffer<vec4>::iterator it = rb.begin();
+    while (it != rb.end() && current_vec.r < m_vertices.size()) {
+
+        current_vec.g = (current_vec.r - 2) * (current_vec.r != 0); // boolean to handle edge-case at start
+        current_vec.a = getValue(it.m_data, offset); // current value
+        vec4 coords = coord_transform * (current_vec - MIN_VEC); // transformed coordinates
+
+        m_vertices[(int) current_vec.r].position = m_origin + sf::Vector2f(coords.g, m_HEIGHT - coords.b); // index . pos = ~~~
+        m_vertices[(int) current_vec.r].color = m_PLOT_COLOR; // index . color = ~~~
+        m_vertices[(int) current_vec.r + 1].position = m_origin + sf::Vector2f(coords.r, m_HEIGHT - coords.a); // index + 1 . pos ~~~
+        m_vertices[(int) current_vec.r + 1].color = m_PLOT_COLOR; // index + 1 . color  = ~~~
+
+        current_vec.r += 2; // update index
+        current_vec.b = current_vec.a; // update prev
+        it++;
+    }
+
+    m_POINTS_TO_RENDER = (unsigned int) current_vec.r;
+}
+```
+
+![Plotter Example Image](content/Plotter_Example_Image.png)
 
 #### Additional Note
 

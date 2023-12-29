@@ -324,3 +324,47 @@ The gist of this project is modelling a construct called "Domains" from a show c
 ![Red Open Domain](content/redopendomain_scrs.png)
 ###### ClosedDomains
 ![Blue Closed Domain](content/bluecloseddomain_scrs.png)
+
+## Sort Animations
+
+Literaly just sort animations lol. Right now it's just selection sort that's visualized, don't really feel like adding more anytime soon lol.
+
+#### Structure
+
+Revolves around the `SortAnim` parent class, which has functions `onUpdate()` and `onRender()` called within the render loop. `main` is short enough so I'll just drop the function below:
+
+```cpp
+int main() {
+	sf::RenderWindow window(sf::VideoMode(800, 600), "sort_animation");
+
+	const unsigned int NUM_ELEMENTS = 50;
+	std::vector<int> nums(NUM_ELEMENTS);
+	for (int i = 1; i <= NUM_ELEMENTS; i++)
+		nums[i - 1] = i;
+
+	std::srand(unsigned(std::time(0)));
+	std::random_shuffle(nums.begin(), nums.end());
+
+	window.setFramerateLimit(30);
+	window.setKeyRepeatEnabled(false);
+
+	SortAnim* s = new SelectionSortAnim(window, nums);
+
+	while (window.isOpen()) {
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed) window.close();
+			if (event.type == sf::Event::MouseButtonPressed) mouse_states.MOUSE_HELD = true;
+			if (event.type == sf::Event::MouseButtonReleased) mouse_states.MOUSE_HELD = false;
+		}
+
+		window.clear();
+		s->onUpdate();
+		s->onRender();
+		window.display();
+	}
+
+	delete(s);
+	return 0;
+}
+```

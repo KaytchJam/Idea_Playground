@@ -5,7 +5,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>"C:\Users\kaytc\OneDrive\Desktop\CS_Projects\Dependencies\SFML-2.6.0\include"</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>"C:\Users\kaytc\Documents\CS_Projects\Dependencies\SFML-2.6.0\include"</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />

@@ -59,9 +59,11 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\SFML_LIB.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\SFML_LIB.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -69,6 +71,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\SFML_LIB.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -109,7 +112,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>"C:\Users\kaytc\OneDrive\Desktop\CS_Projects\Dependencies\SFML-2.6.0\lib"</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>"C:\Users\kaytc\Documents\CS_Projects\Dependencies\SFML-2.6.0\lib"</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;kernel32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -132,7 +135,7 @@
   <ItemGroup>
     <ClCompile Include="entity\domain_types\ClosedDomain.cpp" />
     <ClCompile Include="entity\domain_types\Domain.cpp" />
-    <ClCompile Include="entity\domain_types\DomainManager.cpp" />
+    <ClCompile Include="entity\DomainManager.cpp" />
     <ClCompile Include="entity\domain_types\OpenDomain.cpp" />
     <ClCompile Include="entity\WorldEntity.cpp" />
     <ClCompile Include="globals\UserListener.cpp" />
@@ -142,7 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\domain_types\Domain.h" />
-    <ClInclude Include="entity\domain_types\DomainManager.h" />
+    <ClInclude Include="entity\DomainManager.h" />
     <ClInclude Include="entity\WorldEntity.h" />
     <ClInclude Include="globals\UserListener.h" />
     <ClInclude Include="tools\BVHTree.h" />
@@ -154,7 +157,10 @@
     <ClInclude Include="ui_stuffs\UISlider.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\fragment\ODInterior.frag" />
+    <None Include="shaders\fragment\ODExterior.frag" />
     <None Include="shaders\fragment\OpenDomain.frag" />
+    <None Include="shaders\fragment\UIButton.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

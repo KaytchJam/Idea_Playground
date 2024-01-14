@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <cmath>
+#include <functional>
 
 namespace lalg {
     //
@@ -180,7 +181,7 @@ namespace lalg {
     }
 
     // apply some function func to all elements in the matrix, and update the matrix
-    void mapInPlace(mat4* m, float(*func)(float)) {
+    void map_mut(mat4* m, float(*func)(float)) {
         float* elem_ptr = (float*)m;
         for (int i = 0; i < 16; i++) {
             *elem_ptr = func(*elem_ptr);
@@ -188,11 +189,20 @@ namespace lalg {
         }
     }
 
-    void mapInPlace(vec4* v, float(*func)(float)) {
+    void map_mut(vec4* v, float(*func)(float)) {
         v->r = func(v->r);
         v->g = func(v->g);
         v->b = func(v->b);
         v->a = func(v->a);
+    }
+
+    vec4 map_capture(const vec4& v, std::function<float(float)> func) {
+        vec4 out = zeroVec();
+        out.r = func(v.r);
+        out.g = func(v.g);
+        out.b = func(v.b);
+        out.a = func(v.a);
+        return out;
     }
 
     // print da matrix

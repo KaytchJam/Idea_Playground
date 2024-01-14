@@ -20,9 +20,7 @@ public:
 		base.setFillColor(sf::Color(0x000000FF));
 	}
 
-	~ColumnShape() {
-
-	}
+	~ColumnShape() {}
 
 	// setters
 
@@ -33,42 +31,46 @@ public:
 		base.setPosition(top.getPosition() + sf::Vector2f(0, height));
 	}
 
+	// set the radius of the column
 	void setRadius(const float radius) {
 		top.setRadius(radius);
 		bar.setSize({ radius, bar.getSize().y });
 		base.setRadius(radius);
 	}
 
+	// set the position of the column
 	void setPosition(const sf::Vector2f pos) {
 		top.setPosition(pos);
 		bar.setPosition(pos + sf::Vector2f(0, top.getRadius()));
 		base.setPosition(pos + sf::Vector2f(0, bar.getSize().y));
 	}
 
+	// set the color of the bare and base of the column, passing in a byte for each channel
 	void setColor(const uint8_t r, uint8_t g, uint8_t b) {
 		bar.setFillColor(sf::Color(r, g, b, 0xFF));
 		base.setFillColor(sf::Color(r, g, b, 0xFF));
 		top.setFillColor(sf::Color(r / 3, g / 3, b / 3, 0xFF));
 	}
 
+	// set the color of the bar and base of the column passing in 4 bytes at once. The alpha channel is ignored.
 	void setColor(uint32_t color) {
 		uint8_t colors[3] = {0x0, 0x0, 0x0};
-		const uint32_t s = color;
-
 		color = color >> 8; // get rid of alpha channel
 		for (int i = 0; i < 3; i++) {
 			colors[2 - i] = color & 0xFF;
 			color = color >> 8;
 		}
 
-		printf("Color: 0x%08X, R: 0x%02X G: 0x%02X B: 0x%02X\n", s, colors[0], colors[1], colors[2]);
-		setColor(colors[0], colors[1], colors[2]);
+		this->setColor(colors[0], colors[1], colors[2]);
 	}
 
-	// getters
+	// get the height of the column
 	float getHeight() const { return bar.getSize().y; }
+	// get the radius of the column
 	float getRadius() const { return base.getRadius();  }
+	// get the position vector of the column
 	sf::Vector2f getPosition() const { return top.getPosition(); }
+	// get the color of the base and bar of the column
 	sf::Color getColor() const { return base.getFillColor(); }
 
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {

@@ -104,7 +104,6 @@ void ColumnShape::setColor(const uint8_t r, uint8_t g, uint8_t b) {
 // The other setColor function (in the ColumnShape.h file)
 void ColumnShape::setColor(uint32_t color) {
 	uint8_t colors[3] = {0x0, 0x0, 0x0};
-	const uint32_t s = color;
 
 	color = color >> 8; // skip past alpha channel
 	for (int i = 0; i < 3; i++) {
@@ -112,7 +111,6 @@ void ColumnShape::setColor(uint32_t color) {
 		color = color >> 8;
 	}
 
-	//printf("Color: 0x%08X, R: 0x%02X G: 0x%02X B: 0x%02X\n", s, colors[0], colors[1], colors[2]);
 	this->setColor(colors[0], colors[1], colors[2]);
 }
 ```
@@ -215,6 +213,12 @@ void setVertices(RingBuffer<lalg::vec4>& rb, unsigned int offset, const lalg::ve
 ```
 
 ![Plotter Example Image](content/Plotter_Example_Image.png)
+
+### Changes as of January 15th, 2024
+
+First of all, happy new years. 
+
+
 
 #### Additional Note
 

@@ -32,6 +32,16 @@ namespace lalg {
     vec4 pow(const vec4& v, const float power) { return { powf(v.r, power), powf(v.g, power) , powf(v.b, power) , powf(v.a, power) }; }
     void printVec(const vec4& v) { std::printf("[%f, %f, %f, %f]\n", v.r, v.g, v.b, v.a); }
 
+    void set_index(const vec4& v, const uint8_t index, const float value) {
+        if (index > 3) {
+            std::printf("You are a dumbass. Put an index between 0-3.\n");
+            return;
+        }
+
+        float* vec_ptr = (float*) &v;
+        *(vec_ptr + index) = value;
+    }
+
     // special vectors
     vec4 const onesVec() { return { 1, 1, 1, 1 }; }
     vec4 const zeroVec() { return { 0, 0, 0, 0 }; }

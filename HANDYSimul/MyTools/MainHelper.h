@@ -72,10 +72,11 @@ static sf::Vector2f lalgToSf(const lalg::vec4& v) {
 void init_columns(ObjectGroup<sf::Drawable>& cg, float c_rad, float c_height, float c_spacing, uint32_t CCs[4], sf::Vector2f ref_pos) {
 	for (int i = 0; i < cg.size(); i++) {
 		ColumnShape* col_ptr = (ColumnShape*) cg.get(i);
-		col_ptr->setRadius(c_rad); // column radius
-		col_ptr->setHeight(c_height);
-		col_ptr->setPosition(ref_pos + sf::Vector2f((-2 + i) * c_spacing, 0));
-		col_ptr->setColor(CCs[i]);
+
+		col_ptr->setRadius(c_rad)
+			.setHeight(c_height)
+			.setPosition(ref_pos + sf::Vector2f((-2 + i) * c_spacing, 0))
+			.setColor(CCs[i]);
 	}
 }
 
@@ -96,16 +97,26 @@ float sf_magnitude(const sf::Vector2f& v) {
 	return std::sqrtf(std::powf(v.x, 2) + std::powf(v.y, 2));
 }
 
-sf::Vector2f  bind_mouse_position(sf::Vector2i local_pos, int WIN_LENGTH, int WIN_HEIGHT) {
+sf::Vector2f bind_mouse_position(sf::Vector2i local_pos, int WIN_LENGTH, int WIN_HEIGHT) {
 	int call = 0;
 	return lalgToSf(lalg::map_capture(sfToLalg({ (float)local_pos.x, (float)local_pos.y }), [&WIN_LENGTH, &WIN_HEIGHT, &call](float f) {
 		return std::fmaxf(0.f, std::fminf(f, ((float)WIN_LENGTH * !(call == 1)) + ((float)WIN_HEIGHT * (call++ == 1)))); }));
 }
 
-sf::Vector2f get_global_force(lalg::mat4& bound_mouse_coords, sf::Vector2f& local_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
+sf::Vector2f get_global_force(sf::Vector2f& local_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
+	const lalg::mat4 bound_mouse_coords = 
+	   {{ 2.f / WIN_LENGTH, 0.f, -1.f, 0.f},
+		{ 0.f, 2.f / WIN_HEIGHT,  -1.f,  0.f },
+		{ 0.f, 0.f,                1.f,  0.f },
+		{ 0.f, 0.f,                0.f,  1.f } };
 	float call = 0;
 	return lalgToSf(bound_mouse_coords * lalg::map_capture(sfToLalg({ (float) local_pos.x, (float) local_pos.y }), [&WIN_LENGTH, &WIN_HEIGHT, &call](float f) {
 				return std::fmaxf(0, std::fminf(f, ((float)WIN_LENGTH * !(call == 1)) + (WIN_HEIGHT * (call++ == 1)))); }) * FORCE_MULTIPLIER);
+}
+
+sf::Vector2f get_global_force(sf::Vector2i& mouse_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
+	sf::Vector2f local_pos = sf::Vector2f((float) mouse_pos.x, (float) mouse_pos.y);
+	return get_global_force(local_pos, WIN_LENGTH, WIN_HEIGHT, FORCE_MULTIPLIER);
 }
 
 sf::Vector2f print_return(const sf::Vector2f v2) {
@@ -114,7 +125,7 @@ sf::Vector2f print_return(const sf::Vector2f v2) {
 }
 
 sf::Vector2f get_relative_force(const sf::Vector2f& bound_pos, const SubCanvas& canva, float FORCE_MULTIPLIER) {
-	sf::Vector2f diff = bound_pos - print_return(canva.getCenter());
+	sf::Vector2f diff = bound_pos - canva.getCenter();
 	float mag = sf_magnitude(diff);
 	return mag == 0.f ? sf::Vector2f(0.f, 0.f) : sf::Vector2f(diff.x / mag * FORCE_MULTIPLIER, diff.y / mag * FORCE_MULTIPLIER );
 }

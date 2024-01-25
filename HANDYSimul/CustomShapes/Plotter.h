@@ -80,13 +80,13 @@ public:
 			const sf::Vector2f OLD_MIDPOINT = m_origin + sf::Vector2f(coords.g, m_HEIGHT - coords.b);
 			const sf::Vector2f NEW_MIDPOINT = m_origin + sf::Vector2f(coords.r, m_HEIGHT - coords.a);
 
-			m_vertices[(int)current_vec.r].position = OLD_MIDPOINT + THICKNESS_VECTOR;// index . pos = ~~~
-			m_vertices[(int)current_vec.r + 1].position = OLD_MIDPOINT - THICKNESS_VECTOR;
-			m_vertices[(int)current_vec.r].color = m_PLOT_COLOR; // index . color = ~~~
+			m_vertices[(size_t)current_vec.r].position = { OLD_MIDPOINT.x, m_origin.y + m_HEIGHT};//OLD_MIDPOINT + THICKNESS_VECTOR;// index . pos = ~~~
+			m_vertices[(size_t)current_vec.r + 1].position = OLD_MIDPOINT - THICKNESS_VECTOR;
+			m_vertices[(size_t)current_vec.r].color = m_PLOT_COLOR; // index . color = ~~~
 			m_vertices[(int)current_vec.r + 1].color = m_PLOT_COLOR;
 
 			m_vertices[(int)current_vec.r + 2].position = NEW_MIDPOINT - THICKNESS_VECTOR; // index + 1 . pos ~~~
-			m_vertices[(int)current_vec.r + 3].position = NEW_MIDPOINT + THICKNESS_VECTOR;
+			m_vertices[(int)current_vec.r + 3].position = { NEW_MIDPOINT.x, m_origin.y + m_HEIGHT }; //NEW_MIDPOINT + THICKNESS_VECTOR;
 			m_vertices[(int)current_vec.r + 2].color = m_PLOT_COLOR; // index + 1 . color  = ~~~
 			m_vertices[(int)current_vec.r + 3].color = m_PLOT_COLOR; // index + 1 . color  = ~~~
 

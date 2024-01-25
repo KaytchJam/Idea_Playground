@@ -69,6 +69,16 @@ public:
 		return *this;
 	}
 
+	SubCanvas& set_outline_thickness(float thickness) {
+		this->background.setOutlineThickness(thickness);
+		return *this;
+	}
+
+	SubCanvas& set_outline_color(sf::Color color) {
+		this->background.setOutlineColor(color);
+		return *this;
+	}
+
 	sf::Vector2f getCenter() const {
 		return { origin.x + LENGTH / 2, origin.y + HEIGHT / 2 };
 	}

@@ -216,7 +216,9 @@ void setVertices(RingBuffer<lalg::vec4>& rb, unsigned int offset, const lalg::ve
 
 ### Changes as of January 15th, 2024
 
-First of all, happy new years. 
+First of all, happy new years. Most of the changes here are visual, and I went to refactor most of this later on & get better at making shaders so this is what I have for now.
+
+https://github.com/KaytchJam/Idea_Playground/assets/59188754/cc0c49d1-c8c8-4b03-9308-9b81912ae165
 
 
 

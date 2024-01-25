@@ -49,10 +49,10 @@ int graphTest() {
 		local_max = rb.peek() * cond + local_max * !cond;
 
 		float prev = rb.front();
-		int index = 0;
+		size_t index = 0;
 		RingBuffer<float>::iterator it = rb.begin();
 		while (it != rb.end()) {
-			std::printf("IT: %d, END: %d\n", it.m_index, rb.end().m_index);
+			std::printf("IT: %d, END: %x\n", it.m_index, rb.end().m_index);
 			std::printf("Index: %d\n", index);
 
 			float prev_normalized = normToRange(prev, { LOWER, local_max }, { 0, graph_bounds.getSize().y });
@@ -74,7 +74,7 @@ int graphTest() {
 
 		window.clear(sf::Color(0xFFFFFFFF));
 		window.draw(graph_bounds);
-		window.draw(&vertices[0], (rb.size() - rb.capacity()) * 2, sf::Lines);
+		window.draw(&vertices[0], (size_t) (rb.size() - rb.capacity()) * 2, sf::Lines);
 		window.display();
 		frame = (frame + 1) * !(frame == 359);
 		timestep++;

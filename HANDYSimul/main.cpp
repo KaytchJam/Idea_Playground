@@ -6,7 +6,7 @@
 #include <fstream>
 
 #include "MyTools/MainHelper.h"
-#include "CustomShapes/SubCanvas.h"
+#include "HANDYManager.h"
 
 const double M_PI = 3.14159265358979323846;
 const uint32_t ALMOST_WHITE_BUT_COOLER = 0xE1E1E1FF;
@@ -60,7 +60,9 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 		.link_group(&triGroup)
 		.setPosition({ 80.f, 100.f })
 		.setBackgroundColor(sf::Color(0xFFFFFFFF))
-		.set_shadow(true);
+		.set_shadow(true)
+		.set_outline_color(sf::Color::Black)
+		.set_outline_thickness(5.f);
 
 	// GRAPHING
 	const int RINGBUFFER_SIZE = 100;
@@ -68,20 +70,23 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 	RingBuffer<lalg::vec4> rb(RINGBUFFER_SIZE);
 
 	sf::Vector2f PLOT_SIZE(400, 200);
-	Plotter graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0xBA0000FF), sf::Color::Black);
-	Plotter nature_graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0x008800FF), sf::Color::Black);
-	Plotter commoner_graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0x0000FCFF), sf::Color::Black);
-	Plotter wealth_graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0xDF8800FF), sf::Color::Black);
+	sf::Color background_color = sf::Color::White;
+	Plotter graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0xBA0000FF), background_color);
+	Plotter nature_graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0x008800FF), background_color);
+	Plotter commoner_graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0x0000FCFF), background_color);
+	Plotter wealth_graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0xDF8800FF), background_color);
 
 	ObjectGroup<sf::Drawable> plotGroup({ &graph, &commoner_graph, &nature_graph, &wealth_graph });
 	format_window(plotGroup, mid - PLOT_SIZE, 20, 20, 2);
 
-	SubCanvas plot_canvas({ WIN_LENGTH * 5 / 15, WIN_HEIGHT * 4 / 5 }, { WIN_LENGTH, WIN_HEIGHT });
+	SubCanvas plot_canvas({ WIN_LENGTH / 3, WIN_HEIGHT * 4 / 5 }, { WIN_LENGTH, WIN_HEIGHT });
 	plot_canvas
 		.link_group(&plotGroup)
 		.setPosition(column_canvas.getOrigin() + sf::Vector2f(column_canvas.getDimensions().x + 50.f, 0))
 		.setBackgroundColor(sf::Color(0xFFFFFFFF))
-		.set_shadow(true);
+		.set_shadow(true)
+		.set_outline_color(sf::Color::Black)
+		.set_outline_thickness(5.f);
 
 	// column height interpolation + computation rate
 	lalg::vec4 stockHeights;
@@ -112,7 +117,8 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 	window.setFramerateLimit(30);
 	while (window.isOpen()) {
 		sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
-		sf::Vector2f bound_mouse_pos = bind_mouse_position(mouse_pos, WIN_LENGTH, WIN_HEIGHT);
+		//sf::Vector2f bound_mouse_pos = bind_mouse_position(mouse_pos, WIN_LENGTH, WIN_HEIGHT);
+		sf::Vector2f force = get_global_force(mouse_pos, WIN_LENGTH, WIN_HEIGHT, 10);
 	
 		// check all the window's events that were triggered since the last iteration of the loop
 		sf::Event event;
@@ -120,6 +126,15 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 			// "close requested" event: we close the window
 			if (event.type == sf::Event::Closed)
 				window.close();
+			if (event.type == sf::Event::KeyReleased) {
+				if (event.key.code == sf::Keyboard::Left) {
+					std::printf("<\n");
+				}
+
+				if (event.key.code == sf::Keyboard::Right) {
+					std::printf(">\n");
+				}
+			}
 		}
 
 		calcAllFlows(elites, commoners, nature, wealth); // computing dS/dt
@@ -140,7 +155,7 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 			ColumnShape* curCol = (ColumnShape*) colGroup.get(i);
 			sf::CircleShape* curTri = (sf::CircleShape*) triGroup.get(i);
 			Plotter* curPlot = (Plotter*) plotGroup.get(i);
-			float max_value = getValue(max_vector, i);
+			float max_value = lalg::getValue(max_vector, i);
 
 			curCol->setHeight(lalg::getValue(stockHeights, i));
 			curCol->setPosition(curCol->getPosition() - sf::Vector2f(0, lalg::getValue(diffs, i)));
@@ -148,8 +163,8 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 			curPlot->setVertices(rb, i, { (float)(RINGBUFFER_SIZE << 2), (float)(RINGBUFFER_SIZE << 2), max_value, max_value});
 		}
 
-		column_canvas.pull(get_relative_force(bound_mouse_pos, column_canvas, 5));
-		plot_canvas.pull(get_relative_force(bound_mouse_pos, plot_canvas, 5));
+		column_canvas.pull(force /*get_relative_force(bound_mouse_pos, column_canvas, 5)*/);
+		plot_canvas.pull(force /*get_relative_force(bound_mouse_pos, plot_canvas, 5)*/);
 
 		window.draw(column_canvas);
 		window.draw(plot_canvas);
@@ -162,10 +177,73 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 	return 0;
 }
 
+// refactoring?
+
+int HANDY_test() {
+	const int WIN_LENGTH = 1280;
+	const int WIN_HEIGHT = 720;
+	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "Human and Nature Dynamics: Modelling Differential...");
+	HANDYManager& man = HANDYManager::get_instance();
+
+	window.setFramerateLimit(30);
+	while (window.isOpen()) {
+		sf::Event event;
+
+		while (window.pollEvent(event)) {
+			// "close requested" event: we close the window
+			if (event.type == sf::Event::Closed) window.close();
+			else if (event.type == sf::Event::KeyReleased) {
+				if (event.key.code == sf::Keyboard::Left) {
+					std::printf("<\n");
+					man.decrement_state().print_state();
+				}
+
+				if (event.key.code == sf::Keyboard::Right) {
+					std::printf(">\n");
+					man.increment_state().print_state();
+				}
+			}
+		}
+
+		man.compute_flows()
+			.compute_stocks()
+			.print_flows()
+			.print_stocks();
+		std::cout << std::endl;
+
+		// rendering
+		window.clear(sf::Color(ALMOST_WHITE_BUT_COOLER));
+		window.display();
+	}
+
+	return man.close_instance();
+}
+
 int main() {
 	std::cout << "Hello world" << std::endl;
+	HANDY_test();
 
-	EQUILIBRIUM_STATES HANDY_STATE = EQUITABLE_CYCLES_AND_REVIVAL;
-	setEquilibriumValues(HANDY_STATE);
-	renderLoop(EQUILIBRIUM_STATE_NAMES[HANDY_STATE], BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
+	//EQUILIBRIUM_STATES HANDY_STATE = EQUITABLE_CYCLES_AND_REVIVAL;
+	//setEquilibriumValues(HANDY_STATE);
+	//renderLoop(EQUILIBRIUM_STATE_NAMES[HANDY_STATE], BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
 }
+
+//int pseudo_main() {
+//	std::unique_ptr<HANDYManager> h_man(initialize_instance()); 
+//	// inside initialize instance ->
+//		// Array of populations
+//		// initialize columns -> insert into ObjectGroup
+//		// initialize tris -> insert into ObjectGroup
+//		// initialize plots -> insert into ObjectGroup
+//
+//	// render loop
+//	while (window) {
+//		pre_events();
+//		events();
+//		update();
+//		render();
+//		post_render();
+//	}
+//
+//	return 0;
+//}

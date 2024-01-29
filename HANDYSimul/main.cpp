@@ -185,6 +185,10 @@ int HANDY_test() {
 	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "Human and Nature Dynamics: Modelling Differential...");
 	HANDYManager& man = HANDYManager::get_instance();
 
+	sf::CircleShape circ(50.f);
+	circ.setPosition({ 1280.f / 2.f - 50.f, 720.f / 2.f - 50.f });
+	circ.setFillColor(sf::Color(0xADD8A6FF));
+
 	window.setFramerateLimit(30);
 	while (window.isOpen()) {
 		sf::Event event;
@@ -195,37 +199,61 @@ int HANDY_test() {
 			else if (event.type == sf::Event::KeyReleased) {
 				if (event.key.code == sf::Keyboard::Left) {
 					std::printf("<\n");
-					man.decrement_state().print_state();
+					man.print_col_pos()
+						.print_flows()
+						.print_stocks()
+						.decrement_state()
+						.print_state();
 				}
 
 				if (event.key.code == sf::Keyboard::Right) {
 					std::printf(">\n");
-					man.increment_state().print_state();
+					man.print_col_pos()
+						.print_flows()
+						.print_stocks()
+						.increment_state()
+						.print_state();
+				}
+
+				if (event.key.code == sf::Keyboard::Space) {
+					man.get_col_group().map_mut([](ColumnShape* cs) {
+						ColumnShape::ColumnType new_type = cs->get_column_type();
+						switch (new_type) {
+							case ColumnShape::ColumnType::BAR:
+								new_type = ColumnShape::ColumnType::PILLAR;
+								break;
+							case ColumnShape::ColumnType::PILLAR:
+								new_type = ColumnShape::ColumnType::BAR;
+								break;
+						}
+
+						cs->set_column_type(new_type);
+					});
 				}
 			}
 		}
 
 		man.compute_flows()
 			.compute_stocks()
-			.print_flows()
-			.print_stocks();
-		std::cout << std::endl;
+			.update_columns();
 
 		// rendering
 		window.clear(sf::Color(ALMOST_WHITE_BUT_COOLER));
+		window.draw(circ);
+		man.get_col_group().map_capture([&window](ColumnShape* cs) { window.draw(*cs); });
 		window.display();
 	}
 
-	return man.close_instance();
+	return man.print_state().close_instance();
 }
 
 int main() {
 	std::cout << "Hello world" << std::endl;
-	HANDY_test();
+	//HANDY_test();
 
-	//EQUILIBRIUM_STATES HANDY_STATE = EQUITABLE_CYCLES_AND_REVIVAL;
-	//setEquilibriumValues(HANDY_STATE);
-	//renderLoop(EQUILIBRIUM_STATE_NAMES[HANDY_STATE], BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
+	EQUILIBRIUM_STATES HANDY_STATE = EQUITABLE_CYCLES_AND_REVIVAL;
+	setEquilibriumValues(HANDY_STATE);
+	renderLoop(EQUILIBRIUM_STATE_NAMES[HANDY_STATE], BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
 }
 
 //int pseudo_main() {

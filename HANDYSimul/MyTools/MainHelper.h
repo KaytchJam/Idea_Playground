@@ -25,8 +25,8 @@ lalg::vec4 calcAllStocks(human_pop& elite, human_pop& commoner, nature_stock& na
 
 void update_maxes(lalg::vec4& max_vector, lalg::vec4& cur_stocks) {
 	const float hpop_max = std::max(cur_stocks.r, cur_stocks.g);
-	max_vector.r = std::max(max_vector.r, hpop_max);
-	max_vector.g = max_vector.r;
+	max_vector.r = std::max(max_vector.r, cur_stocks.r);
+	max_vector.g = std::max(max_vector.g, cur_stocks.g);
 	max_vector.a = std::max(max_vector.a, cur_stocks.a);
 }
 
@@ -76,7 +76,8 @@ void init_columns(ObjectGroup<sf::Drawable>& cg, float c_rad, float c_height, fl
 		col_ptr->setRadius(c_rad)
 			.setHeight(c_height)
 			.setPosition(ref_pos + sf::Vector2f((-2 + i) * c_spacing, 0))
-			.setColor(CCs[i]);
+			.setColor(CCs[i])
+			.set_column_type(ColumnShape::ColumnType::BAR);
 	}
 }
 

@@ -5,8 +5,8 @@
 class SubCanvas : public sf::Drawable {
 private:
 	sf::Vector2f origin;
-	sf::RectangleShape background;
-	sf::RectangleShape shadow;
+	sf::RectangleShape* background;
+	sf::RectangleShape* shadow;
 
 	int LENGTH;
 	int HEIGHT;
@@ -15,19 +15,19 @@ private:
 	int WINDOW_HEIGHT;
 
 	std::vector<ObjectGroup<sf::Drawable>*> drawList;
-	sf::Transform projection;
+	sf::Transform* projection;
 	
 	bool has_shadow;
 public:
 	SubCanvas(sf::Vector2i subcanvas_size, sf::Vector2i reference_size)
 		: LENGTH(subcanvas_size.x), HEIGHT(subcanvas_size.y), WINDOW_LENGTH(reference_size.x), WINDOW_HEIGHT(reference_size.y) {
-		projection = sf::Transform((float) subcanvas_size.x / reference_size.x,  0, 0, 
+		projection = new sf::Transform((float) subcanvas_size.x / reference_size.x,  0, 0, 
 									0, (float) subcanvas_size.y / reference_size.y, 0, 
 									0,									         0, 1);
-		background = sf::RectangleShape({ (float) subcanvas_size.x, (float) subcanvas_size.y });
+		background = new sf::RectangleShape({ (float) subcanvas_size.x, (float) subcanvas_size.y });
 
-		shadow = sf::RectangleShape(background.getSize());
-		shadow.setFillColor(sf::Color(0x00000055));
+		shadow = new sf::RectangleShape(background->getSize());
+		shadow->setFillColor(sf::Color(0x00000055));
 		has_shadow = false;
 	}
 
@@ -43,24 +43,24 @@ public:
 
 	SubCanvas& setPosition(const sf::Vector2f pos) {
 		origin = pos;
-		projection = sf::Transform((float) LENGTH / WINDOW_LENGTH,  0, pos.x,
+		projection = new sf::Transform((float) LENGTH / WINDOW_LENGTH,  0, pos.x,
 									0, (float) HEIGHT / WINDOW_HEIGHT, pos.y,
 									0,                              0,     1);
-		background.setPosition(pos);
-		shadow.setPosition(pos);
+		background->setPosition(pos);
+		shadow->setPosition(pos);
 		return *this;
 	}
 
 	SubCanvas& pull(sf::Vector2f force) {
-		background.setPosition(origin + force);
-		projection = sf::Transform((float)LENGTH / WINDOW_LENGTH, 0, origin.x + force.x,
+		background->setPosition(origin + force);
+		projection = new sf::Transform((float)LENGTH / WINDOW_LENGTH, 0, origin.x + force.x,
 								   0, (float)HEIGHT / WINDOW_HEIGHT, origin.y + force.y,
 								   0,                                              0, 1);
 		return *this;
 	}
 
 	SubCanvas& setBackgroundColor(sf::Color color) {
-		background.setFillColor(color);
+		background->setFillColor(color);
 		return *this;
 	}
 
@@ -70,12 +70,12 @@ public:
 	}
 
 	SubCanvas& set_outline_thickness(float thickness) {
-		this->background.setOutlineThickness(thickness);
+		this->background->setOutlineThickness(thickness);
 		return *this;
 	}
 
 	SubCanvas& set_outline_color(sf::Color color) {
-		this->background.setOutlineColor(color);
+		this->background->setOutlineColor(color);
 		return *this;
 	}
 
@@ -84,10 +84,10 @@ public:
 	}
 
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
-		if (has_shadow) target.draw(shadow, states);
+		if (has_shadow) target.draw(*shadow, states);
 
-		target.draw(background, states);
-		states.transform = projection;
+		target.draw(*background, states);
+		states.transform = *projection;
 
 		for (ObjectGroup<sf::Drawable>* og : drawList) {
 			og->map_capture([&states, &target](sf::Drawable* t) { target.draw(*t, states); });

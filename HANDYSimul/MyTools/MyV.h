@@ -113,6 +113,7 @@ namespace lalg {
                 {0, 0, 0, 0}};
     }
 
+    // returns a 4 * 4 matrix of the value n
     mat4 const nMat(float n) {
         return {{n, n, n, n},
                 {n, n, n, n},
@@ -130,7 +131,7 @@ namespace lalg {
 
     // rotation with respect to the x (or red) axis
     mat4 const rotationMatX(const float theta) {
-        return { {1,           0,                0, 0},
+        return { {1,           0,               0, 0},
                 {0, cosf(theta), -1 * sinf(theta), 0},
                 {0, sinf(theta),      cosf(theta), 0},
                 {0,           0,                0, 1} };
@@ -138,7 +139,7 @@ namespace lalg {
 
     // rotation with respect to the y (or green) axis
     mat4 const rotationMatY(const float theta) {
-        return { {     cosf(theta), 0, sinf(theta), 0},
+        return { {    cosf(theta), 0, sinf(theta), 0},
                 {               0, 1,           0, 0},
                 {-1 * sinf(theta), 0, cosf(theta), 0},
                 {               0, 0,           0, 1} };

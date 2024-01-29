@@ -2,58 +2,75 @@
 #include "SFML/Graphics.hpp"
 
 class ColumnShape : public sf::Drawable {
-private:
-	sf::CircleShape base, top;
-	sf::RectangleShape bar;
-
 public:
-	ColumnShape(float radius = 0, float height = 0) {
-		top = sf::CircleShape(radius);
-		top.setPosition({0, 0});
-		top.setFillColor(sf::Color(0x808080FF));
+	enum ColumnType {
+		PILLAR,
+		BAR
+	};
+private:
+	sf::CircleShape* base;
+	sf::CircleShape* top;
+	sf::RectangleShape* bar;
+	ColumnType mode;
+	float m_radius;
+	
+public:
 
-		bar = sf::RectangleShape({ radius * 2, height });
-		bar.setPosition({ 0, radius });
-		bar.setFillColor(sf::Color(0x000000FF));
+	ColumnShape(float radius = 0, float height = 0, ColumnType colType = ColumnType::PILLAR) : mode(colType), m_radius(radius) {
 
-		base = sf::CircleShape(radius);
-		base.setPosition({ 0, height});
-		base.setFillColor(sf::Color(0x000000FF));
+		float circle_rad = radius * !(mode == BAR);
+		this->top = new sf::CircleShape(circle_rad);
+		this->top->setPosition({ 0, 0 });
+		this->top->setFillColor(sf::Color(0x808080FF));
+
+		this->bar = new sf::RectangleShape({ radius * 2, height });
+		this->bar->setPosition({ 0, radius });
+		this->bar->setFillColor(sf::Color(0x000000FF));
+
+		this->base = new sf::CircleShape(circle_rad);
+		this->base->setPosition({ 0, height });
+		this->base->setFillColor(sf::Color(0x000000FF));
 	}
 
-	~ColumnShape() {}
+	~ColumnShape() {
+		delete top;
+		delete base;
+		delete bar;
+	}
 
 	// setters
 
 	// Extends the height downwards
 	ColumnShape& setHeight(const float height) {
-		float top_radius = top.getRadius();
-		bar.setSize({ top_radius * 2 , height });
-		base.setPosition(top.getPosition() + sf::Vector2f(0, height));
+		this->bar->setSize({ m_radius * 2 , height });
+		this->base->setPosition(top->getPosition() + sf::Vector2f(0, height));
 		return *this;
 	}
 
 	// set the radius of the column
 	ColumnShape& setRadius(const float radius) {
-		top.setRadius(radius);
-		bar.setSize({ radius, bar.getSize().y });
-		base.setRadius(radius);
+		this->m_radius = radius;
+		float circle_rad = m_radius * !(mode == BAR);
+
+		this->top->setRadius(circle_rad);
+		this->bar->setSize({ radius, bar->getSize().y });
+		this->base->setRadius(circle_rad);
 		return *this;
 	}
 
 	// set the position of the column
 	ColumnShape& setPosition(const sf::Vector2f pos) {
-		top.setPosition(pos);
-		bar.setPosition(pos + sf::Vector2f(0, top.getRadius()));
-		base.setPosition(pos + sf::Vector2f(0, bar.getSize().y));
+		this->top->setPosition(pos);
+		this->bar->setPosition(pos + sf::Vector2f(0, m_radius));
+		this->base->setPosition(pos + sf::Vector2f(0, bar->getSize().y));
 		return *this;
 	}
 
 	// set the color of the bare and base of the column, passing in a byte for each channel
 	ColumnShape& setColor(const uint8_t r, uint8_t g, uint8_t b) {
-		bar.setFillColor(sf::Color(r, g, b, 0xFF));
-		base.setFillColor(sf::Color(r, g, b, 0xFF));
-		top.setFillColor(sf::Color(r / 3, g / 3, b / 3, 0xFF));
+		this->bar->setFillColor(sf::Color(r, g, b, 0xFF));
+		this->base->setFillColor(sf::Color(r, g, b, 0xFF));
+		this->top->setFillColor(sf::Color(r / 3, g / 3, b / 3, 0xFF));
 		return *this;
 	}
 
@@ -71,30 +88,43 @@ public:
 
 	ColumnShape& set_outline_thickness(float thickness) {
 		//bar.setOutlineThickness(thickness);
-		top.setOutlineThickness(thickness);
+		this->top->setOutlineThickness(thickness);
 		//base.setOutlineThickness(thickness);
 		return *this;
 	}
 
 	ColumnShape& set_outline_color(sf::Color color) {
-		bar.setOutlineColor(color);
-		base.setOutlineColor(color);
-		top.setOutlineColor(color);
+		this->bar->setOutlineColor(color);
+		this->base->setOutlineColor(color);
+		this->top->setOutlineColor(color);
 		return *this;
 	}
 
+	ColumnShape& set_column_type(ColumnType col_type) {
+		this->mode = col_type;
+
+		float circle_rad = m_radius * !(mode == BAR);
+		this->top->setRadius(circle_rad);
+		this->base->setRadius(circle_rad);
+		return *this;
+	}
+
+	ColumnType get_column_type() {
+		return this->mode;
+	}
+
 	// get the height of the column
-	float getHeight() const { return bar.getSize().y; }
+	float getHeight() const { return bar->getSize().y; }
 	// get the radius of the column
-	float getRadius() const { return base.getRadius();  }
+	float getRadius() const { return m_radius;  }
 	// get the position vector of the column
-	sf::Vector2f getPosition() const { return top.getPosition(); }
+	sf::Vector2f getPosition() const { return top->getPosition(); }
 	// get the color of the base and bar of the column
-	sf::Color getColor() const { return base.getFillColor(); }
+	sf::Color getColor() const { return base->getFillColor(); }
 
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
-		target.draw(base, states);
-		target.draw(bar, states);
-		target.draw(top, states);
+		target.draw(*base, states);
+		target.draw(*bar, states);
+		target.draw(*top, states);
 	}
 };

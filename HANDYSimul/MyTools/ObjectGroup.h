@@ -2,6 +2,7 @@
 #include <vector>
 #include <functional>
 
+// vector wrapper that holds only pointers of some type 'Type', has a bunch of map and cast functions
 template <typename Type>
 class ObjectGroup {
 	std::vector<Type*> list;
@@ -43,6 +44,16 @@ public:
 	ObjectGroup& map_capture(std::function<void(Type* t)> call) {
 		for (size_t i = 0; i < list.size(); i++) call(list[i]);
 		return *this;
+	}
+
+	template <typename new_type> ObjectGroup& map_cast(std::function<void(new_type* nt)> call) {
+		for (size_t i = 0; i < list.size(); i++) call((new_type*)list[i]);
+		return *this;
+	}
+
+	template <typename as_new> ObjectGroup<as_new>* cast_inner() {
+		ObjectGroup<as_new>* new_cast = (ObjectGroup<as_new>*) this;
+		return new_cast;
 	}
 
 	Type* get(size_t index) {

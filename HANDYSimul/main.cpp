@@ -41,8 +41,8 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 	ColumnShape natureCol, wealthCol, commonerCol, eliteCol;
 	sf::CircleShape eliteTri, commonTri, natureTri, wealthTri;
 
-	ObjectGroup<sf::Drawable> colGroup({ &eliteCol, &commonerCol, &natureCol, &wealthCol });
-	ObjectGroup<sf::Drawable> triGroup({ &eliteTri, &commonTri, &natureTri, &wealthTri });
+	PointerVector<ColumnShape> colGroup({ &eliteCol, &commonerCol, &natureCol, &wealthCol });
+	PointerVector<sf::CircleShape> triGroup({ &eliteTri, &commonTri, &natureTri, &wealthTri });
 	{
 		const float COLUMN_RADIUS = 40.f;
 		const float COLUMN_HEIGHT = 100.f;
@@ -50,14 +50,14 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 		unsigned int COLUMN_COLORS[4] = { ELITE_COLOR, COMMONER_COLOR, NATURE_COLOR, WEALTH_COLOR };
 
 		sf::Vector2f REFERENCE_POSITION = mid + sf::Vector2f(COLUMN_RADIUS / 2, -1 * COLUMN_HEIGHT);
-		init_columns(colGroup, COLUMN_RADIUS, COLUMN_HEIGHT, COLUMN_SPACING, COLUMN_COLORS, REFERENCE_POSITION);
-		init_tris(triGroup, colGroup, COLUMN_RADIUS, COLUMN_SPACING * 3.f / 4.f);
+		init_columns(colGroup.cast_inner<sf::Drawable>(), COLUMN_RADIUS, COLUMN_HEIGHT, COLUMN_SPACING, COLUMN_COLORS, REFERENCE_POSITION);
+		init_tris(triGroup.cast_inner<sf::Drawable>(), colGroup.cast_inner<sf::Drawable>(), COLUMN_RADIUS, COLUMN_SPACING * 3.f / 4.f);
 	}
 
 	SubCanvas column_canvas({ WIN_LENGTH / 2, WIN_HEIGHT * 4 / 5 }, { WIN_LENGTH, WIN_HEIGHT });
 	column_canvas
-		.link_group(&colGroup)
-		.link_group(&triGroup)
+		.link_group(&colGroup.cast_inner<sf::Drawable>())
+		.link_group(&triGroup.cast_inner<sf::Drawable>())
 		.setPosition({ 80.f, 100.f })
 		.setBackgroundColor(sf::Color(0xFFFFFFFF))
 		.set_shadow(true)
@@ -76,12 +76,12 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 	Plotter commoner_graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0x0000FCFF), background_color);
 	Plotter wealth_graph(PLOT_SIZE, RINGBUFFER_SIZE, sf::Color(0xDF8800FF), background_color);
 
-	ObjectGroup<sf::Drawable> plotGroup({ &graph, &commoner_graph, &nature_graph, &wealth_graph });
-	format_window(plotGroup, mid - PLOT_SIZE, 20, 20, 2);
+	PointerVector<Plotter> plotGroup({ &graph, &commoner_graph, &nature_graph, &wealth_graph });
+	Plotter::format_window(plotGroup.cast_inner<sf::Drawable>(), mid - PLOT_SIZE, 20, 20, 2);
 
 	SubCanvas plot_canvas({ WIN_LENGTH / 3, WIN_HEIGHT * 4 / 5 }, { WIN_LENGTH, WIN_HEIGHT });
 	plot_canvas
-		.link_group(&plotGroup)
+		.link_group(&plotGroup.cast_inner<sf::Drawable>())
 		.setPosition(column_canvas.getOrigin() + sf::Vector2f(column_canvas.getDimensions().x + 50.f, 0))
 		.setBackgroundColor(sf::Color(0xFFFFFFFF))
 		.set_shadow(true)
@@ -152,15 +152,13 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 		// FINAL UPDATES & RENDERING
 		window.clear(sf::Color(ALMOST_WHITE_BUT_COOLER));
 		for (int i = 0; i < colGroup.size(); i++) {
-			ColumnShape* curCol = (ColumnShape*) colGroup.get(i);
-			sf::CircleShape* curTri = (sf::CircleShape*) triGroup.get(i);
-			Plotter* curPlot = (Plotter*) plotGroup.get(i);
+			ColumnShape* curCol = colGroup.get(i);
 			float max_value = lalg::getValue(max_vector, i);
 
 			curCol->setHeight(lalg::getValue(stockHeights, i));
 			curCol->setPosition(curCol->getPosition() - sf::Vector2f(0, lalg::getValue(diffs, i)));
-			curTri->setRotation((abs(wealth.flow) == 0.f) * 90.f + (populist[i]->flow < 0) * 180.f);
-			curPlot->setVertices(rb, i, { (float)(RINGBUFFER_SIZE << 2), (float)(RINGBUFFER_SIZE << 2), max_value, max_value});
+			triGroup.get(i)->setRotation((abs(populist[i]->flow) == 0.f) * 90.f + (populist[i]->flow < 0) * 180.f);
+			plotGroup.get(i)->setVertices(rb, i, {(float)(RINGBUFFER_SIZE << 2), (float)(RINGBUFFER_SIZE << 2), max_value, max_value});
 		}
 
 		column_canvas.pull(force /*get_relative_force(bound_mouse_pos, column_canvas, 5)*/);
@@ -185,62 +183,19 @@ int HANDY_test() {
 	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "Human and Nature Dynamics: Modelling Differential...");
 	HANDYManager& man = HANDYManager::get_instance();
 
-	sf::CircleShape circ(50.f);
-	circ.setPosition({ 1280.f / 2.f - 50.f, 720.f / 2.f - 50.f });
-	circ.setFillColor(sf::Color(0xADD8A6FF));
-
 	window.setFramerateLimit(30);
 	while (window.isOpen()) {
 		sf::Event event;
+		sf::Vector2f force = get_global_force(sf::Mouse::getPosition(window), WIN_LENGTH, WIN_HEIGHT, 10);
 
 		while (window.pollEvent(event)) {
-			// "close requested" event: we close the window
 			if (event.type == sf::Event::Closed) window.close();
-			else if (event.type == sf::Event::KeyReleased) {
-				if (event.key.code == sf::Keyboard::Left) {
-					std::printf("<\n");
-					man.print_col_pos()
-						.print_flows()
-						.print_stocks()
-						.decrement_state()
-						.print_state();
-				}
-
-				if (event.key.code == sf::Keyboard::Right) {
-					std::printf(">\n");
-					man.print_col_pos()
-						.print_flows()
-						.print_stocks()
-						.increment_state()
-						.print_state();
-				}
-
-				if (event.key.code == sf::Keyboard::Space) {
-					man.get_col_group().map_mut([](ColumnShape* cs) {
-						ColumnShape::ColumnType new_type = cs->get_column_type();
-						switch (new_type) {
-							case ColumnShape::ColumnType::BAR:
-								new_type = ColumnShape::ColumnType::PILLAR;
-								break;
-							case ColumnShape::ColumnType::PILLAR:
-								new_type = ColumnShape::ColumnType::BAR;
-								break;
-						}
-
-						cs->set_column_type(new_type);
-					});
-				}
-			}
+			man.handle_events(event);
 		}
-
-		man.compute_flows()
-			.compute_stocks()
-			.update_columns();
 
 		// rendering
 		window.clear(sf::Color(ALMOST_WHITE_BUT_COOLER));
-		window.draw(circ);
-		man.get_col_group().map_capture([&window](ColumnShape* cs) { window.draw(*cs); });
+		window.draw(man.compute_flows().compute_stocks().update_drawables().get_canvas().pull(force));
 		window.display();
 	}
 
@@ -249,20 +204,20 @@ int HANDY_test() {
 
 int main() {
 	std::cout << "Hello world" << std::endl;
-	//HANDY_test();
+	HANDY_test();
 
-	EQUILIBRIUM_STATES HANDY_STATE = EQUITABLE_CYCLES_AND_REVIVAL;
-	setEquilibriumValues(HANDY_STATE);
-	renderLoop(EQUILIBRIUM_STATE_NAMES[HANDY_STATE], BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
+	//EQUILIBRIUM_STATES HANDY_STATE = EQUITABLE_CYCLES_AND_REVIVAL;
+	//setEquilibriumValues(HANDY_STATE);
+	//renderLoop(EQUILIBRIUM_STATE_NAMES[HANDY_STATE], BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
 }
 
 //int pseudo_main() {
 //	std::unique_ptr<HANDYManager> h_man(initialize_instance()); 
 //	// inside initialize instance ->
 //		// Array of populations
-//		// initialize columns -> insert into ObjectGroup
-//		// initialize tris -> insert into ObjectGroup
-//		// initialize plots -> insert into ObjectGroup
+//		// initialize columns -> insert into PointerVector
+//		// initialize tris -> insert into PointerVector
+//		// initialize plots -> insert into PointerVector
 //
 //	// render loop
 //	while (window) {

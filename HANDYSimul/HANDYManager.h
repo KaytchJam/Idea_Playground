@@ -7,7 +7,7 @@
 #include "Populations.h"
 
 // Data Structures & Linear Algebra
-#include "MyTools/ObjectGroup.h"
+#include "MyTools/PointerVector.h"
 #include "MyTools/RingBuffer.h"
 #include "MyTools/MyV.h"
 
@@ -19,20 +19,32 @@
 #define BUFFER_SIZE 100
 
 // COLUMNS
-#define COL_MAX_HEIGHT 200.0f
+#define COL_MAX_HEIGHT 300.0f
 #define COL_BASE_HEIGHT 100.f
 #define COL_RAD 20.0f
 #define COL_SPACING_FACTOR 2
 #define COL_TYPE ColumnShape::ColumnType::BAR
-#define COL_REF_POS sf::Vector2f(640.f, 360.f)
+#define COL_REF_POS sf::Vector2f(320.f, 540.f)//sf::Vector2f(640.f, 360.f)
+
+// TRIS
+#define TRI_ADDITIONAL_SHIFT sf::Vector2f(0, 20.f)
 
 // PLOTS
 #define PLT_LENGTH 200.f
-#define PLT_HEIGHT 400.f
+#define PLT_HEIGHT 200.f
+#define PLT_FORMAT_REF_POS sf::Vector2f(640.f, 160.f)
+#define PLT_FORMAT_V_SPACING 20
+#define PLT_FORMAT_H_SPACING 20
+#define PLT_FORMAT_ROWS 2
+#define PLT_BACKGROUND_COLOR 0x9B959BFF
+#define PLT_ADDITIONAL_SHIFT sf::Vector2f(100.f, 0)
 
 // CANVAS
 #define CANV_LENGTH 960
 #define CANV_HEIGHT 540
+#define CANV_REF_POS sf::Vector2f(640.f, 360.f)
+#define CANV_BACKGROUND_COLOR 0xFFFFFFFF
+#define CANV_OUTLINE_COLOR 0x000000FF
 
 // POPULATION COLORS
 #define E_COLOR 0xBA0000FF
@@ -49,16 +61,21 @@ private:
 	lalg::vec4 pop_stock_maxes;
 	RingBuffer<lalg::vec4> data_stream;
 
+	// TODO
 	//sf::Text txt;
 	//sf::Font fnt;
 
-	// Object Groups
-	ObjectGroup<ColumnShape> col_group;
-	ObjectGroup<Plotter> plot_group;
-	ObjectGroup<sf::CircleShape> tri_group;
+	// Pointer Vectors
+	PointerVector<ColumnShape> col_group;
+	PointerVector<Plotter> plot_group;
+	PointerVector<sf::CircleShape> tri_group;
 
 	// main canvas
-	SubCanvas main_canvas;
+	SubCanvas* main_canvas;
+
+	//static ColumnShape* to_col(sf::Drawable* d) { return (ColumnShape*)d; }
+	//static Plotter* to_plot(sf::Drawable* d) { return (Plotter*)d; }
+	//static sf::CircleShape* to_tri(sf::Drawable* d) { return (sf::CircleShape*)d; }
 
 	// update the values in each stock struct based on the current equilibrium values
 	static void set_population_values(human_pop& ep, human_pop& cp, nature_stock& ns, wealth_stock& ws) {
@@ -92,51 +109,67 @@ private:
 		pops[3] = wealth;
 	}
 
-	// Initialize columns for ObjectGroup
-	static void init_columns(ObjectGroup<ColumnShape>& col_g) {
-		ColumnShape* ep_col = new ColumnShape();
-		ColumnShape* cp_col = new ColumnShape();
-		ColumnShape* ns_col = new ColumnShape();
-		ColumnShape* ws_col = new ColumnShape();
+	// initializes all our drawables in 1 iteration
+	static void init_drawables(PointerVector<ColumnShape>& col_g, PointerVector<sf::CircleShape>& tri_g, PointerVector<Plotter>& plt_g) {
 
-		uint8_t index = 0;
+		// params
 		const uint32_t colors[4] = { E_COLOR, C_COLOR, N_COLOR, W_COLOR };
-		const sf::Vector2f TRUE_REF_POS = COL_REF_POS - sf::Vector2f(COL_RAD * 2 * COL_SPACING_FACTOR * 2 - COL_RAD, COL_BASE_HEIGHT); //- sf::Vector2f(COL_RAD * 2, 100.f);
+		const sf::Vector2f TRUE_REF_POS = COL_REF_POS - sf::Vector2f(COL_RAD * 2 * COL_SPACING_FACTOR * 2 - COL_RAD, COL_BASE_HEIGHT + COL_RAD * 3);
+		const float TRI_SPACING = COL_RAD * COL_SPACING_FACTOR * 3.f / 4.f;
+		const sf::Vector2f RAD_VECTOR = sf::Vector2f(COL_RAD, COL_RAD);
 
-		col_g.add_all({ ep_col, cp_col, ns_col, ws_col }).map_capture([&colors, &index, &TRUE_REF_POS](ColumnShape* col) {
-			col->setRadius(COL_RAD)
-				.setPosition(TRUE_REF_POS + sf::Vector2f((index) * COL_RAD * 2 * COL_SPACING_FACTOR, 0.f))
+		for (uint8_t index = 0; index < 4; index++) {
+			// column init
+			ColumnShape* col = col_g.add((new ColumnShape())
+				->setRadius(COL_RAD)
+				.setPosition(TRUE_REF_POS + sf::Vector2f((index)*COL_RAD * 2 * COL_SPACING_FACTOR, 0.f))
 				.setHeight(COL_BASE_HEIGHT)
 				.set_column_type(ColumnShape::ColumnType::BAR)
-				.setColor(colors[index]);
-			index++;
-		});
+				.setColor(colors[index])
+			).get(index);
+
+			// tri init
+			sf::CircleShape* tri = tri_g.add(new sf::CircleShape()).get(index);
+			tri->setRadius(COL_RAD);
+			tri->setPointCount(3);
+			tri->setOrigin(RAD_VECTOR);
+			tri->move(col->getPosition() + sf::Vector2f(0.f, col->getHeight() + TRI_SPACING) + RAD_VECTOR);
+			tri->setFillColor(col->getColor());
+
+			// plot init
+			plt_g.add((new Plotter({ PLT_LENGTH, PLT_HEIGHT }, BUFFER_SIZE))
+				->setColor(col->getColor())
+				.setBackgroundColor(sf::Color(PLT_BACKGROUND_COLOR))
+			);
+		}
+
+		// post loop
+		Plotter::format_window(plt_g.cast_inner<sf::Drawable>(), PLT_FORMAT_REF_POS, PLT_FORMAT_V_SPACING, PLT_FORMAT_H_SPACING, PLT_FORMAT_ROWS);
+		plt_g.map_mut([](Plotter* plt) { plt->move(PLT_ADDITIONAL_SHIFT); });
+		tri_g.map_mut([](sf::CircleShape* cs) { cs->move(TRI_ADDITIONAL_SHIFT); });
 	}
 
-	// TODO
-	static void init_plotter(ObjectGroup<Plotter>& plot_g) {
-		const uint32_t colors[4] = { E_COLOR, C_COLOR, N_COLOR, W_COLOR };
+	// Initialize the subcanvas
+	static void init_canvas(SubCanvas*& canva, std::initializer_list<PointerVector<sf::Drawable>*> obj_list) {
+		canva = new SubCanvas({ CANV_LENGTH, CANV_HEIGHT }, { 1280, 720 });
+		for (PointerVector<sf::Drawable>* obj : obj_list) canva->link_group(obj);
+
+		canva->setPosition(CANV_REF_POS - sf::Vector2f(canva->getDimensions().x / 2, canva->getDimensions().y / 2))
+			.setBackgroundColor(sf::Color(CANV_BACKGROUND_COLOR))
+			.set_outline_color(sf::Color(CANV_OUTLINE_COLOR))
+			.set_outline_thickness(5.f)
+			.set_shadow(true);
+	}
+
+	// should just update the heights based on the current state
+	static void reset_columns(PointerVector<ColumnShape>& col_g) {
+		const sf::Vector2f TRUE_REF_POS = COL_REF_POS - sf::Vector2f(COL_RAD * 2 * COL_SPACING_FACTOR * 2 - COL_RAD, COL_BASE_HEIGHT + COL_RAD * 3);
 		for (uint8_t index = 0; index < 4; index++) {
-			Plotter* plt = new Plotter({ PLT_LENGTH, PLT_HEIGHT }, BUFFER_SIZE, sf::Color(colors[index]), sf::Color(0xFFFFFFFF));
-			plot_g.add(plt);
+			col_g.get(index)->setPosition(TRUE_REF_POS + sf::Vector2f(index * COL_RAD * 2 * COL_SPACING_FACTOR, 0.f))
+				.setHeight(COL_BASE_HEIGHT);
 		}
 	}
 
-	// TODO
-	static void init_tris(ObjectGroup<sf::CircleShape>& tri_g) {
-		// = NULL;
-	}
-
-	// TODO: should just update the heights based on the current state
-	static void reset_columns(ObjectGroup<ColumnShape>& col_g) {
-		uint8_t index = 0;
-		const sf::Vector2f TRUE_REF_POS = COL_REF_POS - sf::Vector2f(COL_RAD * 2 * COL_SPACING_FACTOR * 2 - COL_RAD, COL_BASE_HEIGHT);
-		col_g.map_capture([&TRUE_REF_POS, &index](ColumnShape* cs) {
-			cs->setPosition(TRUE_REF_POS + sf::Vector2f(index * COL_RAD * 2 * COL_SPACING_FACTOR, 0.f))
-				.setHeight(COL_BASE_HEIGHT);
-			index++;
-		});
-	}
 
 	// TODO
 	static void reset_plotter() {
@@ -150,13 +183,22 @@ private:
 
 	// Constructor
 	HANDYManager(EQUILIBRIUM_STATES state) :
-		data_stream(BUFFER_SIZE), eq_state(state), main_canvas({ CANV_LENGTH, CANV_HEIGHT }, { 1280, 720 }) {
+		data_stream(BUFFER_SIZE), eq_state(state) {
 		init_populations(this->pops);
-		init_columns(this->col_group);
-		// init_tris(this->tri_group);
-		// init_plots(this->plot_group);
+		init_drawables(this->col_group, this->tri_group, this->plot_group);
+
+		init_canvas(this->main_canvas, {
+			&this->col_group.cast_inner<sf::Drawable>(),
+			&this->tri_group.cast_inner<sf::Drawable>(),
+			&this->plot_group.cast_inner<sf::Drawable>()
+		});
 		
-		this->pop_stock_maxes = { BASE_COMMONER_POP * 10, BASE_COMMONER_POP * 10, BASE_NATURE_CARRY_CAPACITY, std::fmaxf(BASE_WEALTH_STOCK * 5, BASE_COMMONER_POP * 5) };
+		this->pop_stock_maxes = { 
+			BASE_COMMONER_POP * 10, 
+			BASE_COMMONER_POP * 10, 
+			BASE_NATURE_CARRY_CAPACITY, 
+			500.f
+		};
 	}
 
 public:
@@ -168,9 +210,11 @@ public:
 
 	// Destructor
 	~HANDYManager() {
-		for (int i = 0; i < 4; i++) delete pops[i];
-		col_group.map_mut([](ColumnShape* cs) { delete cs; }).clear();
-		plot_group.map_mut([](Plotter* plt) { delete plt; }).clear();
+		for (int i = 0; i < 4; i++) delete this->pops[i];
+		this->col_group.delete_all_and_empty();
+		this->plot_group.delete_all_and_empty();
+		this->tri_group.delete_all_and_empty();
+		delete this->main_canvas;
 		std::cout << "Instance destroyed" << std::endl;
 	}
 
@@ -183,15 +227,11 @@ public:
 
 		setEquilibriumValues(this->eq_state);
 		set_population_values(ep, cp, ns, ws);
-		this->pop_stock_maxes = { BASE_COMMONER_POP * 10, BASE_COMMONER_POP * 10, BASE_NATURE_CARRY_CAPACITY, std::fmaxf(BASE_WEALTH_STOCK * 5, BASE_COMMONER_POP * 5) };
+		this->pop_stock_maxes = lalg::make_vec4(BASE_COMMONER_POP * 10, BASE_COMMONER_POP * 10, BASE_NATURE_CARRY_CAPACITY, 500.f);
 		this->data_stream.reset();
 
 		// clear ringbuffer
 		reset_columns(col_group);
-		// update tris
-		reset_tris();
-		// update plotter
-		reset_plotter();
 
 		return *this;
 	}
@@ -213,7 +253,6 @@ public:
 	// manually set the state of the manager to one of the equilibrium equations
 	HANDYManager& set_state(EQUILIBRIUM_STATES state) {
 		if (state >= EQUILIBRIUM_STATES::TOTAL_STATES || state < 0) std::printf("Invalid state!");
-
 		this->eq_state = state;
 		return reset_manager();
 	}
@@ -258,7 +297,7 @@ public:
 	// use euler's method of integration, compute the integral of each population for the current state
 	HANDYManager& compute_stocks() {
 		lalg::vec4 pop_vec = lalg::zeroVec();
-		for (size_t p = 0; p < 4; p++) lalg::set_index(pop_vec, (uint8_t) p, calcStock(*this->pops[p], 0, 1, true).stock); // autonomous differential equation
+		for (size_t p = 0; p < 4; p++) lalg::set_index(pop_vec, (uint8_t) p, calcStock(*this->pops[p], 0, 1, true).stock);
 
 		//pop_vec.b = fmaxf(-1.f, pop_vec.b);
 		//this->pops[3]->stock = pop_vec.b;
@@ -267,26 +306,39 @@ public:
 		return update_maxes(pop_vec);
 	}
 
-	// updates column heights according to ringbuffer values
-	HANDYManager& update_columns() {
-
-		const lalg::vec4 nuevo_stock_heights = lalg::diag(lalg::map(this->pop_stock_maxes, [](float f) { 
-			return 1.f / f; 
+	// Update all our drawable object groups to be ready for rendering
+	HANDYManager& update_drawables() {
+		const lalg::vec4 nouveau_stock_heights = lalg::diag(lalg::map(this->pop_stock_maxes, [](float f) {
+			return 1.f / f;
 		})) * this->data_stream.peek() * COL_MAX_HEIGHT;
 
-		const lalg::vec4 diffs = nuevo_stock_heights - lalg::vec4({ 
-			col_group.get(0)->getHeight(), 
-			col_group.get(1)->getHeight(),
-			col_group.get(2)->getHeight(),
-			col_group.get(3)->getHeight()
+		const lalg::vec4 diffs = nouveau_stock_heights - lalg::vec4({
+			this->col_group.get(0)->getHeight(),
+			this->col_group.get(1)->getHeight(),
+			this->col_group.get(2)->getHeight(),
+			this->col_group.get(3)->getHeight()
 		});
 
+		const float TOTAL_VERTICES = (float)((BUFFER_SIZE - 2) << 2);
 		for (uint8_t index = 0; index < 4; index++) {
-			ColumnShape& cur_col = *col_group.get(index);
-			cur_col.setHeight(lalg::getValue(nuevo_stock_heights, index))
+			// column
+			ColumnShape& cur_col = *this->col_group.get(index);
+			cur_col.setHeight(lalg::getValue(nouveau_stock_heights, index))
 				.setPosition(cur_col.getPosition() - sf::Vector2f(0, lalg::getValue(diffs, index)));
-		}
 
+			// tri
+			population& cur = *(pops[index]);
+			this->tri_group.get(index)->setRotation((abs(cur.flow) == 0.f) * 90.f + (cur.flow < 0) * 180.f);
+
+			// plotter
+			const float POP_MAX_VAL = lalg::getValue(this->pop_stock_maxes, index);
+			plot_group.get(index)->setVertices(this->data_stream, index, {
+				TOTAL_VERTICES,
+				TOTAL_VERTICES,
+				POP_MAX_VAL,
+				POP_MAX_VAL
+			});
+		}
 		return *this;
 	}
 
@@ -334,9 +386,46 @@ public:
 		return true;
 	}
 
-	// print column group
-	ObjectGroup<ColumnShape>& get_col_group() {
+	// returns the column object group
+	PointerVector<ColumnShape>& get_col_group() {
 		return this->col_group;
+	}
+
+	// returns the canvas
+	SubCanvas& get_canvas() {
+		return *this->main_canvas;
+	}
+
+	// handles da events
+	HANDYManager& handle_events(sf::Event& event) {
+		if (event.type == sf::Event::KeyReleased) {
+			if (event.key.code == sf::Keyboard::Left) {
+				std::printf("<\n");
+				this->print_col_pos().print_flows().print_stocks().decrement_state().print_state();
+			}
+
+			if (event.key.code == sf::Keyboard::Right) {
+				std::printf(">\n");
+				this->print_col_pos().print_flows().print_stocks().increment_state().print_state();
+			}
+
+			if (event.key.code == sf::Keyboard::Space) {
+				ColumnShape::ColumnType col_type = this->col_group.get(0)->get_column_type();
+
+				switch (col_type) {
+					case ColumnShape::ColumnType::BAR:
+						col_type = ColumnShape::ColumnType::PILLAR;
+						break;
+					case ColumnShape::ColumnType::PILLAR:
+						col_type = ColumnShape::ColumnType::BAR;
+						break;
+				}
+
+				this->col_group.map_capture([&col_type](ColumnShape* cs) { cs->set_column_type(col_type); });
+			}
+		}
+
+		return *this;
 	}
 
 private:

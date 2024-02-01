@@ -140,11 +140,13 @@
     <ClInclude Include="CustomShapes\ColumnShape.h" />
     <ClInclude Include="CustomShapes\Plotter.h" />
     <ClInclude Include="CustomShapes\SubCanvas.h" />
+    <ClInclude Include="HANDYManager.h" />
     <ClInclude Include="MyTools\MainHelper.h" />
     <ClInclude Include="MyTools\MyV.h" />
-    <ClInclude Include="MyTools\ObjectGroup.h" />
+    <ClInclude Include="MyTools\PointerVector.h" />
     <ClInclude Include="MyTools\RingBuffer.h" />
     <ClInclude Include="Populations.h" />
+    <ClInclude Include="test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

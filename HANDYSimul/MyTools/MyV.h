@@ -11,6 +11,7 @@ namespace lalg {
     struct ivec4 { int r, g, b, a; };
 
     // type conversion
+    vec4 make_vec4(float f1, float f2, float f3, float f4) { return { f1, f2, f3, f4 }; }
     vec4 to_vec4(const ivec4& v) { return { (float)v.r, (float)v.g, (float)v.b, (float)v.a }; }
     ivec4 to_ivec4(const vec4& v) { return { (int)v.r, (int)v.g, (int)v.b, (int)v.a }; }
 

@@ -66,6 +66,10 @@ public:
 		return *this;
 	}
 
+	ColumnShape& move(const sf::Vector2f shift) {
+		return setPosition(this->top->getPosition() + shift);
+	}
+
 	// set the color of the bare and base of the column, passing in a byte for each channel
 	ColumnShape& setColor(const uint8_t r, uint8_t g, uint8_t b) {
 		this->bar->setFillColor(sf::Color(r, g, b, 0xFF));

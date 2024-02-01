@@ -41,10 +41,16 @@
     <ClInclude Include="CustomShapes\Plotter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MyTools\ObjectGroup.h">
+    <ClInclude Include="MyTools\PointerVector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MyTools\MainHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HANDYManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

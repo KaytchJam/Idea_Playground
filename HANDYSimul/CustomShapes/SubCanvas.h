@@ -1,6 +1,6 @@
 #pragma once
 #include "SFML/Graphics.hpp"
-#include "../MyTools/ObjectGroup.h"
+#include "../MyTools/PointerVector.h"
 
 class SubCanvas : public sf::Drawable {
 private:
@@ -14,7 +14,7 @@ private:
 	int WINDOW_LENGTH;
 	int WINDOW_HEIGHT;
 
-	std::vector<ObjectGroup<sf::Drawable>*> drawList;
+	std::vector<PointerVector<sf::Drawable>*> drawList;
 	sf::Transform* projection;
 	
 	bool has_shadow;
@@ -39,7 +39,7 @@ public:
 	}
 
 	// provide a drawable to be projected onto this canvas
-	SubCanvas& link_group(ObjectGroup<sf::Drawable>* group) {
+	SubCanvas& link_group(PointerVector<sf::Drawable>* group) {
 		drawList.push_back(group);
 		return *this;
 	}
@@ -55,6 +55,15 @@ public:
 									0,                              0,     1);
 		background->setPosition(pos);
 		shadow->setPosition(pos);
+		return *this;
+	}
+
+	// move the canvas by some vector shift
+	SubCanvas& move(const sf::Vector2f shift) {
+		origin += shift;
+		projection->translate(shift);
+		background->setPosition(background->getPosition() + shift);
+		shadow->setPosition(background->getPosition() + shift);
 		return *this;
 	}
 
@@ -102,7 +111,7 @@ public:
 		target.draw(*background, states);
 		states.transform = *projection;
 
-		for (ObjectGroup<sf::Drawable>* og : drawList) {
+		for (PointerVector<sf::Drawable>* og : drawList) {
 			og->map_capture([&states, &target](sf::Drawable* t) { target.draw(*t, states); });
 		}
 	}

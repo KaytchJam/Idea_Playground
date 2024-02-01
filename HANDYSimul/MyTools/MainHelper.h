@@ -2,7 +2,7 @@
 #include "../Populations.h"
 #include "MyV.h"
 #include "RingBuffer.h"
-#include "ObjectGroup.h"
+#include "PointerVector.h"
 #include "../CustomShapes/ColumnShape.h"
 #include "../CustomShapes/Plotter.h"
 #include "../CustomShapes/SubCanvas.h"
@@ -69,7 +69,7 @@ static sf::Vector2f lalgToSf(const lalg::vec4& v) {
 	return { v.r, v.g };
 }
 
-void init_columns(ObjectGroup<sf::Drawable>& cg, float c_rad, float c_height, float c_spacing, uint32_t CCs[4], sf::Vector2f ref_pos) {
+void init_columns(PointerVector<sf::Drawable>& cg, float c_rad, float c_height, float c_spacing, uint32_t CCs[4], sf::Vector2f ref_pos) {
 	for (int i = 0; i < cg.size(); i++) {
 		ColumnShape* col_ptr = (ColumnShape*) cg.get(i);
 
@@ -81,7 +81,7 @@ void init_columns(ObjectGroup<sf::Drawable>& cg, float c_rad, float c_height, fl
 	}
 }
 
-void init_tris(ObjectGroup<sf::Drawable>& tris, ObjectGroup<sf::Drawable> cols, float rad, float spacing) {
+void init_tris(PointerVector<sf::Drawable>& tris, PointerVector<sf::Drawable> cols, float rad, float spacing) {
 	for (int i = 0; i < tris.size(); i++) {
 		sf::CircleShape* tri = (sf::CircleShape*) tris.get(i);
 		ColumnShape* curCol = (ColumnShape*) cols.get(i);
@@ -104,7 +104,7 @@ sf::Vector2f bind_mouse_position(sf::Vector2i local_pos, int WIN_LENGTH, int WIN
 		return std::fmaxf(0.f, std::fminf(f, ((float)WIN_LENGTH * !(call == 1)) + ((float)WIN_HEIGHT * (call++ == 1)))); }));
 }
 
-sf::Vector2f get_global_force(sf::Vector2f& local_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
+sf::Vector2f get_global_force(const sf::Vector2f& local_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
 	const lalg::mat4 bound_mouse_coords = 
 	   {{ 2.f / WIN_LENGTH, 0.f, -1.f, 0.f},
 		{ 0.f, 2.f / WIN_HEIGHT,  -1.f,  0.f },
@@ -115,7 +115,7 @@ sf::Vector2f get_global_force(sf::Vector2f& local_pos, int WIN_LENGTH, int WIN_H
 				return std::fmaxf(0, std::fminf(f, ((float)WIN_LENGTH * !(call == 1)) + (WIN_HEIGHT * (call++ == 1)))); }) * FORCE_MULTIPLIER);
 }
 
-sf::Vector2f get_global_force(sf::Vector2i& mouse_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
+sf::Vector2f get_global_force(const sf::Vector2i& mouse_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
 	sf::Vector2f local_pos = sf::Vector2f((float) mouse_pos.x, (float) mouse_pos.y);
 	return get_global_force(local_pos, WIN_LENGTH, WIN_HEIGHT, FORCE_MULTIPLIER);
 }

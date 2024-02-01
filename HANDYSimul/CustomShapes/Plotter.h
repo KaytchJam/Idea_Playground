@@ -2,10 +2,10 @@
 #include "SFML/Graphics.hpp"
 #include "../MyTools/RingBuffer.h"
 #include "../MyTools/MyV.h"
-#include "../MyTools/ObjectGroup.h"\
+#include "../MyTools/PointerVector.h"\
 
 #define THICKNESS 3.f
-#define THICKNESS_VECTOR sf::Vector2f(0, THICKNESS);
+#define THICKNESS_VECTOR sf::Vector2f(0, THICKNESS)
 #define VERTEX_OFFSET 4
 
 class Plotter : public sf::Drawable {
@@ -17,7 +17,7 @@ private:
 	sf::Vector2f m_origin;
 	sf::Color m_PLOT_COLOR;
 
-	sf::RectangleShape bg;
+	sf::RectangleShape* bg;
 	std::vector<sf::Vertex> m_vertices;
 	
 public:
@@ -25,15 +25,21 @@ public:
 		: m_LENGTH((int) size.x), m_HEIGHT((int) size.y), m_POINTS_TO_RENDER(0) {
 		m_vertices = std::vector<sf::Vertex>(NUMBER_OF_POINTS * VERTEX_OFFSET);
 		m_PLOT_COLOR = line_color;
-		bg = sf::RectangleShape(size);
-		bg.setFillColor(bg_color);
+		bg = new sf::RectangleShape(size + THICKNESS_VECTOR);
+		bg->setFillColor(bg_color);
 	}
 
 	~Plotter() {}
 
 	Plotter& setPosition(const sf::Vector2f& pos) {
 		m_origin = pos;
-		bg.setPosition(pos);
+		bg->setPosition(pos - THICKNESS_VECTOR);
+		return *this;
+	}
+
+	Plotter& move(const sf::Vector2f& shift) {
+		m_origin += shift;
+		bg->setPosition(bg->getPosition() - THICKNESS_VECTOR + shift);
 		return *this;
 	}
 
@@ -43,7 +49,7 @@ public:
 	}
 
 	Plotter& setBackgroundColor(const sf::Color& kalah) {
-		bg.setFillColor(kalah);
+		bg->setFillColor(kalah);
 		return *this;
 	}
 
@@ -83,12 +89,12 @@ public:
 			m_vertices[(size_t)current_vec.r].position = { OLD_MIDPOINT.x, m_origin.y + m_HEIGHT};//OLD_MIDPOINT + THICKNESS_VECTOR;// index . pos = ~~~
 			m_vertices[(size_t)current_vec.r + 1].position = OLD_MIDPOINT - THICKNESS_VECTOR;
 			m_vertices[(size_t)current_vec.r].color = m_PLOT_COLOR; // index . color = ~~~
-			m_vertices[(int)current_vec.r + 1].color = m_PLOT_COLOR;
+			m_vertices[(size_t)current_vec.r + 1].color = m_PLOT_COLOR;
 
-			m_vertices[(int)current_vec.r + 2].position = NEW_MIDPOINT - THICKNESS_VECTOR; // index + 1 . pos ~~~
-			m_vertices[(int)current_vec.r + 3].position = { NEW_MIDPOINT.x, m_origin.y + m_HEIGHT }; //NEW_MIDPOINT + THICKNESS_VECTOR;
-			m_vertices[(int)current_vec.r + 2].color = m_PLOT_COLOR; // index + 1 . color  = ~~~
-			m_vertices[(int)current_vec.r + 3].color = m_PLOT_COLOR; // index + 1 . color  = ~~~
+			m_vertices[(size_t)current_vec.r + 2].position = NEW_MIDPOINT - THICKNESS_VECTOR; // index + 1 . pos ~~~
+			m_vertices[(size_t)current_vec.r + 3].position = { NEW_MIDPOINT.x, m_origin.y + m_HEIGHT }; //NEW_MIDPOINT + THICKNESS_VECTOR;
+			m_vertices[(size_t)current_vec.r + 2].color = m_PLOT_COLOR; // index + 1 . color  = ~~~
+			m_vertices[(size_t)current_vec.r + 3].color = m_PLOT_COLOR; // index + 1 . color  = ~~~
 
 			current_vec.r += VERTEX_OFFSET; // update index
 			current_vec.b = current_vec.a; // update prev
@@ -99,33 +105,33 @@ public:
 	}
 
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
-		target.draw(bg, states);
+		target.draw(*bg, states);
 		target.draw(&m_vertices[0], m_POINTS_TO_RENDER, sf::Quads, states);
 	}
+
+	static void format_row(PointerVector<sf::Drawable>& plotGroup, const sf::Vector2f REFERENCE_POSITION, const float SPACING, const size_t START, const size_t END) {
+		for (size_t i = 0; i < END - START; i++) {
+			Plotter* cur_plot = (Plotter*)plotGroup.get(i + START);
+			const sf::Vector2f cur_size = cur_plot->getSize();
+			cur_plot->setPosition(REFERENCE_POSITION + sf::Vector2f(i * (SPACING + cur_size.x), 0));
+		}
+	}
+
+	static void format_col(PointerVector<Plotter>& plotGroup, const sf::Vector2f REFERENCE_POSITION, const float SPACING, const size_t START, const size_t END) {
+		for (size_t i = 0; i < END - START; i++) {
+			Plotter* cur_plot = plotGroup.get(i);
+			const sf::Vector2f cur_size = cur_plot->getSize();
+			cur_plot->setPosition(REFERENCE_POSITION + sf::Vector2f(0, i * (SPACING + cur_size.y)));
+		}
+	}
+
+	static void format_window(PointerVector<sf::Drawable>& plotGroup, sf::Vector2f REFERENCE_POSITION, const float SPACING_VERTICAL, const float SPACING_HORIZONTAL, const size_t NUM_ROWS) {
+		size_t DIVS = plotGroup.size() / NUM_ROWS;
+		size_t START = 0;
+		for (int r = 0; r < NUM_ROWS; r++) {
+			format_row(plotGroup, REFERENCE_POSITION + sf::Vector2f(0, r * (SPACING_VERTICAL + ((Plotter*)plotGroup.get(0))->getSize().y)), SPACING_HORIZONTAL, START, START + DIVS);
+			START += DIVS;
+		}
+	}
+
 };
-
-static void format_row(ObjectGroup<sf::Drawable>& plotGroup, const sf::Vector2f REFERENCE_POSITION, const float SPACING, const size_t START, const size_t END) {
-	for (size_t i = 0; i < END - START; i++) {
-		Plotter* cur_plot = (Plotter*) plotGroup.get(i + START);
-		const sf::Vector2f cur_size = cur_plot->getSize();
-		cur_plot->setPosition(REFERENCE_POSITION + sf::Vector2f(i * (SPACING + cur_size.x), 0));
-	}
-}
-
-static void format_col(ObjectGroup<Plotter>& plotGroup, const sf::Vector2f REFERENCE_POSITION, const float SPACING, const size_t START, const size_t END) {
-	for (size_t i = 0; i < END - START; i++) {
-		Plotter* cur_plot = plotGroup.get(i);
-		const sf::Vector2f cur_size = cur_plot->getSize();
-		cur_plot->setPosition(REFERENCE_POSITION + sf::Vector2f(0, i * (SPACING + cur_size.y)));
-	}
-}
-
-static void format_window(ObjectGroup<sf::Drawable>& plotGroup, sf::Vector2f REFERENCE_POSITION, const float SPACING_VERTICAL, const float SPACING_HORIZONTAL, const size_t NUM_ROWS) {
-	size_t DIVS = plotGroup.size() / NUM_ROWS;
-	size_t START = 0;
-	for (int r = 0; r < NUM_ROWS; r++) {
-		format_row(plotGroup, REFERENCE_POSITION + sf::Vector2f(0, r * (SPACING_VERTICAL + ((Plotter*)plotGroup.get(0))->getSize().y)), SPACING_HORIZONTAL, START, START + DIVS);
-		START += DIVS;
-	}
-}
-

@@ -281,8 +281,8 @@ int subcanvas_test() {
 	sf::RectangleShape t_recs({ 300, 300 });
 	t_recs.setPosition(mid - sf::Vector2f(150, 150));
 	t_recs.setFillColor(sf::Color(0x0000AAFF));
-	ObjectGroup<sf::Drawable> rect_group({ &t_recs });
-	// Add RectangleShape to ObjectGroup so I can bind it to our canvases ^^^
+	PointerVector<sf::Drawable> rect_group({ &t_recs });
+	// Add RectangleShape to PointerVector so I can bind it to our canvases ^^^
 
 	SubCanvas canva({ WIN_LENGTH / 3, WIN_HEIGHT / 3 }, { WIN_LENGTH, WIN_HEIGHT });
 	canva.setPosition({ 300, 300 });

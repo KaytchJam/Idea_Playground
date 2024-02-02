@@ -225,6 +225,8 @@ https://github.com/KaytchJam/Idea_Playground/assets/59188754/cc0c49d1-c8c8-4b03-
 Lots of changes though much of that went into refactoring as I mentioned above. Before the state was determined by initial conditions (the EQUILIBRIUM_STATE initially passed in)
 but now I'm actively keeping track of state (for the columns, elements, text, and so on) which allows for the switching as shown in the video.
 
+https://github.com/KaytchJam/Idea_Playground/assets/59188754/4201b3d0-7694-45f4-8524-c72b2202508b
+
 #### Additional Note
 
 Throughout `main.cpp` and other files there are calls to the namespace `lalg`, particularly the `lalg::vec4` and `lalg::mat4` structs. This is miniature linear algebra library (loosely) that I had made whilst getting carried away with another project and everything related to it is in the `MyTools/MyV.h` file. It's more or less there so I can have size 4 vectors (SFML only has size 2 vectors and size 3 x 3 tranformation matrices, and i was too lazy to link GLM) and implement functions like `diag()`, `map()`, `transpose()`, and retrieving matrix columns as vectors (`lalg::mat4` is implemented as a struct of row vectors).

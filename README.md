@@ -216,11 +216,14 @@ void setVertices(RingBuffer<lalg::vec4>& rb, unsigned int offset, const lalg::ve
 
 ### Changes as of January 15th, 2024
 
-First of all, happy new years. Most of the changes here are visual, and I went to refactor most of this later on & get better at making shaders so this is what I have for now.
+First of all, happy new years. Most of the changes here are visual, and I hope to refactor most of this later on & get better at making shaders so this is what I have for now.
 
 https://github.com/KaytchJam/Idea_Playground/assets/59188754/cc0c49d1-c8c8-4b03-9308-9b81912ae165
 
+### Changes as of February 1st, 2024
 
+Lots of changes though much of that went into refactoring as I mentioned above. Before the state was determined by initial conditions (the EQUILIBRIUM_STATE initially passed in)
+but now I'm actively keeping track of state (for the columns, elements, text, and so on) which allows for the switching as shown in the video.
 
 #### Additional Note
 

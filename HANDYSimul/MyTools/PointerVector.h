@@ -9,12 +9,15 @@
 template <typename Type>
 class PointerVector {
 	std::vector<Type*> list;
+	bool has_ownership = false;
 
 public:
 	PointerVector<Type>() {}
 	PointerVector<Type>(size_t size) { list = std::vector<Type*>(size); }
 	PointerVector<Type>(std::vector<Type*> li) { list = li; }
 	PointerVector<Type>(std::initializer_list<Type*> data) { list = std::vector<Type*>(data); }
+
+	~PointerVector() { if (this->has_ownership) this->delete_all(); }
 
 	// add a reference, its pointer is taken
 	PointerVector& add(Type& item) {
@@ -26,6 +29,14 @@ public:
 	PointerVector& add(Type* ptr) {
 		list.push_back(ptr);
 		return *this;
+	}
+
+	// Determines whether this PointerVector has ownership of the pointers it contains or not.
+	// If it does indeed have ownership, then upon PointerVector destruction, the pointers contained
+	// within will be destroyed as well.
+	PointerVector& set_ownership(bool owns) { 
+		this->has_ownership = owns; 
+		return *this; 
 	}
 
 	// add a bunch of item pointers via the initializer list

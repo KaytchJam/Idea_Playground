@@ -42,9 +42,14 @@
 // CANVAS
 #define CANV_LENGTH 960
 #define CANV_HEIGHT 540
-#define CANV_REF_POS sf::Vector2f(640.f, 360.f)
+#define CANV_REF_POS sf::Vector2f(640.f, 400.f)
 #define CANV_BACKGROUND_COLOR 0xFFFFFFFF
 #define CANV_OUTLINE_COLOR 0x000000FF
+
+// TEXT
+#define TEXT_REF_POS sf::Vector2f(130.f, 75.f)
+#define FONT_PATH_EQUILIBRIUM  "fonts/BebasNeue-Regular.ttf"
+#define POP_TEXT_COLOR 0xFFFFFFFF
 
 // POPULATION COLORS
 #define E_COLOR 0xBA0000FF
@@ -61,14 +66,15 @@ private:
 	lalg::vec4 pop_stock_maxes;
 	RingBuffer<lalg::vec4> data_stream;
 
-	// TODO
-	//sf::Text txt;
-	//sf::Font fnt;
+	// Font / Text
+	sf::Text* eq_txt;
+	sf::Font* eq_fnt;
 
 	// Pointer Vectors
 	PointerVector<ColumnShape> col_group;
 	PointerVector<Plotter> plot_group;
 	PointerVector<sf::CircleShape> tri_group;
+	PointerVector<sf::Text> pop_text_group;
 
 	// main canvas
 	SubCanvas* main_canvas;
@@ -110,13 +116,15 @@ private:
 	}
 
 	// initializes all our drawables in 1 iteration
-	static void init_drawables(PointerVector<ColumnShape>& col_g, PointerVector<sf::CircleShape>& tri_g, PointerVector<Plotter>& plt_g) {
+	static void init_drawables(PointerVector<ColumnShape>& col_g, PointerVector<sf::CircleShape>& tri_g,
+		PointerVector<Plotter>& plt_g, PointerVector<sf::Text>& pop_text_g, sf::Font& font) {
 
 		// params
 		const uint32_t colors[4] = { E_COLOR, C_COLOR, N_COLOR, W_COLOR };
 		const sf::Vector2f TRUE_REF_POS = COL_REF_POS - sf::Vector2f(COL_RAD * 2 * COL_SPACING_FACTOR * 2 - COL_RAD, COL_BASE_HEIGHT + COL_RAD * 3);
 		const float TRI_SPACING = COL_RAD * COL_SPACING_FACTOR * 3.f / 4.f;
 		const sf::Vector2f RAD_VECTOR = sf::Vector2f(COL_RAD, COL_RAD);
+		const char* POP_NAMES[4] = {"ELITES", "COMMONERS", "NATURE", "WEALTH"};
 
 		for (uint8_t index = 0; index < 4; index++) {
 			// column init
@@ -126,10 +134,19 @@ private:
 				.setHeight(COL_BASE_HEIGHT)
 				.set_column_type(ColumnShape::ColumnType::BAR)
 				.setColor(colors[index])
-			).get(index);
+			).set_ownership(true).get(index);
+
+			// pop text
+			sf::Text* pop_text = pop_text_g.add(new sf::Text()).set_ownership(true).get(index);
+			pop_text->setFont(font);
+			pop_text->setString(POP_NAMES[index]);
+			pop_text->setCharacterSize(48);
+			pop_text->setFillColor(sf::Color(POP_TEXT_COLOR));
+			pop_text->setPosition(col->getPosition() + sf::Vector2f(0.f, col->getHeight() + COL_RAD));
+			pop_text->rotate(-90.f);
 
 			// tri init
-			sf::CircleShape* tri = tri_g.add(new sf::CircleShape()).get(index);
+			sf::CircleShape* tri = tri_g.add(new sf::CircleShape()).set_ownership(true).get(index);
 			tri->setRadius(COL_RAD);
 			tri->setPointCount(3);
 			tri->setOrigin(RAD_VECTOR);
@@ -140,7 +157,7 @@ private:
 			plt_g.add((new Plotter({ PLT_LENGTH, PLT_HEIGHT }, BUFFER_SIZE))
 				->setColor(col->getColor())
 				.setBackgroundColor(sf::Color(PLT_BACKGROUND_COLOR))
-			);
+			).set_ownership(true);
 		}
 
 		// post loop
@@ -170,6 +187,21 @@ private:
 		}
 	}
 
+	static void init_equilibrium_equation_text(sf::Font*& eq_font, sf::Text*& eq_text, EQUILIBRIUM_STATES state) {
+		eq_font = new sf::Font();
+		if (!eq_font->loadFromFile(FONT_PATH_EQUILIBRIUM)) {
+			std::printf("Can't load the path %s for some arbitrary reason..., exiting.\n", FONT_PATH_EQUILIBRIUM);
+			exit(-1);
+		}
+
+		eq_text = new sf::Text();
+		eq_text->setFont(*eq_font);
+		eq_text->setPosition(TEXT_REF_POS);
+		eq_text->setCharacterSize(36);
+		eq_text->setString(EQUILIBRIUM_STATE_NAMES[state]);
+		eq_text->setFillColor(sf::Color(0x000000FF));
+	}
+
 
 	// TODO
 	static void reset_plotter() {
@@ -185,14 +217,16 @@ private:
 	HANDYManager(EQUILIBRIUM_STATES state) :
 		data_stream(BUFFER_SIZE), eq_state(state) {
 		init_populations(this->pops);
-		init_drawables(this->col_group, this->tri_group, this->plot_group);
+		init_equilibrium_equation_text(eq_fnt, eq_txt, (EQUILIBRIUM_STATES) this->eq_state);
+		init_drawables(this->col_group, this->tri_group, this->plot_group, this->pop_text_group, *this->eq_fnt);
 
 		init_canvas(this->main_canvas, {
 			&this->col_group.cast_inner<sf::Drawable>(),
 			&this->tri_group.cast_inner<sf::Drawable>(),
-			&this->plot_group.cast_inner<sf::Drawable>()
+			&this->plot_group.cast_inner<sf::Drawable>(),
+			&this->pop_text_group.cast_inner<sf::Drawable>()
 		});
-		
+
 		this->pop_stock_maxes = { 
 			BASE_COMMONER_POP * 10, 
 			BASE_COMMONER_POP * 10, 
@@ -211,10 +245,9 @@ public:
 	// Destructor
 	~HANDYManager() {
 		for (int i = 0; i < 4; i++) delete this->pops[i];
-		this->col_group.delete_all_and_empty();
-		this->plot_group.delete_all_and_empty();
-		this->tri_group.delete_all_and_empty();
 		delete this->main_canvas;
+		delete this->eq_txt;
+		delete this->eq_fnt;
 		std::cout << "Instance destroyed" << std::endl;
 	}
 
@@ -227,8 +260,10 @@ public:
 
 		setEquilibriumValues(this->eq_state);
 		set_population_values(ep, cp, ns, ws);
+
 		this->pop_stock_maxes = lalg::make_vec4(BASE_COMMONER_POP * 10, BASE_COMMONER_POP * 10, BASE_NATURE_CARRY_CAPACITY, 500.f);
 		this->data_stream.reset();
+		this->eq_txt->setString(EQUILIBRIUM_STATE_NAMES[(EQUILIBRIUM_STATES)this->eq_state]);
 
 		// clear ringbuffer
 		reset_columns(col_group);
@@ -288,8 +323,8 @@ public:
 
 	// updates the current maxes accoridng to the passed in data
 	HANDYManager& update_maxes(const lalg::vec4& pop_vec) {
-		this->pop_stock_maxes.r = std::fmaxf(this->pop_stock_maxes.g, (std::fmaxf(pop_vec.g, pop_vec.r)));
-		this->pop_stock_maxes.g = this->pop_stock_maxes.r; //std::fmaxf(pop_vec.g, this->pop_stock_maxes.g);
+		this->pop_stock_maxes.r = /*std::fmaxf(this->pop_stock_maxes.g, (std::fmaxf(pop_vec.g, pop_vec.r)));*/ std::fmaxf(pop_vec.r, this->pop_stock_maxes.r);
+		this->pop_stock_maxes.g = /*this->pop_stock_maxes.r;*/ std::fmaxf(pop_vec.g, this->pop_stock_maxes.g);
 		this->pop_stock_maxes.a = std::fmaxf(pop_vec.a, this->pop_stock_maxes.a);
 		return *this;
 	}
@@ -297,7 +332,7 @@ public:
 	// use euler's method of integration, compute the integral of each population for the current state
 	HANDYManager& compute_stocks() {
 		lalg::vec4 pop_vec = lalg::zeroVec();
-		for (size_t p = 0; p < 4; p++) lalg::set_index(pop_vec, (uint8_t) p, calcStock(*this->pops[p], 0, 1, true).stock);
+		for (size_t p = 0; p < 4; p++) lalg::set_index(pop_vec, (uint8_t) p, calcStock(*this->pops[p], 0, 0.5f, true).stock);
 
 		//pop_vec.b = fmaxf(-1.f, pop_vec.b);
 		//this->pops[3]->stock = pop_vec.b;
@@ -325,6 +360,10 @@ public:
 			ColumnShape& cur_col = *this->col_group.get(index);
 			cur_col.setHeight(lalg::getValue(nouveau_stock_heights, index))
 				.setPosition(cur_col.getPosition() - sf::Vector2f(0, lalg::getValue(diffs, index)));
+
+			// pop text
+			sf::Text& cur_pop_text = *this->pop_text_group.get(index);
+			cur_pop_text.setPosition(cur_col.getPosition() + sf::Vector2f(0.f, std::fminf(cur_col.getHeight() + COL_RAD, cur_pop_text.getLocalBounds().getSize().x + COL_RAD)));
 
 			// tri
 			population& cur = *(pops[index]);
@@ -396,17 +435,19 @@ public:
 		return *this->main_canvas;
 	}
 
+	sf::Text& get_eq_text() {
+		return *this->eq_txt;
+	}
+
 	// handles da events
 	HANDYManager& handle_events(sf::Event& event) {
 		if (event.type == sf::Event::KeyReleased) {
 			if (event.key.code == sf::Keyboard::Left) {
-				std::printf("<\n");
-				this->print_col_pos().print_flows().print_stocks().decrement_state().print_state();
+				this->print_col_pos().print_flows().print_stocks().decrement_state();
 			}
 
 			if (event.key.code == sf::Keyboard::Right) {
-				std::printf(">\n");
-				this->print_col_pos().print_flows().print_stocks().increment_state().print_state();
+				this->print_col_pos().print_flows().print_stocks().increment_state();
 			}
 
 			if (event.key.code == sf::Keyboard::Space) {

@@ -186,7 +186,7 @@ int HANDY_test() {
 	window.setFramerateLimit(30);
 	while (window.isOpen()) {
 		sf::Event event;
-		sf::Vector2f force = get_global_force(sf::Mouse::getPosition(window), WIN_LENGTH, WIN_HEIGHT, 10);
+		sf::Vector2f force = get_global_force(sf::Mouse::getPosition(window), window.getSize().x, window.getSize().y, 10);
 
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) window.close();
@@ -196,6 +196,7 @@ int HANDY_test() {
 		// rendering
 		window.clear(sf::Color(ALMOST_WHITE_BUT_COOLER));
 		window.draw(man.compute_flows().compute_stocks().update_drawables().get_canvas().pull(force));
+		window.draw(man.get_eq_text());
 		window.display();
 	}
 

@@ -2,6 +2,7 @@
 
 // standard library
 #include <iostream>
+#include <sstream>
 
 // HANDY Equations & Equilibrium states
 #include "Populations.h"
@@ -75,6 +76,7 @@ private:
 	PointerVector<Plotter> plot_group;
 	PointerVector<sf::CircleShape> tri_group;
 	PointerVector<sf::Text> pop_text_group;
+	PointerVector<sf::Text> col_text_group;
 
 	// main canvas
 	SubCanvas* main_canvas;
@@ -117,7 +119,7 @@ private:
 
 	// initializes all our drawables in 1 iteration
 	static void init_drawables(PointerVector<ColumnShape>& col_g, PointerVector<sf::CircleShape>& tri_g,
-		PointerVector<Plotter>& plt_g, PointerVector<sf::Text>& pop_text_g, sf::Font& font) {
+		PointerVector<Plotter>& plt_g, PointerVector<sf::Text>& pop_text_g, PointerVector<sf::Text>& col_text_g, sf::Font& font) {
 
 		// params
 		const uint32_t colors[4] = { E_COLOR, C_COLOR, N_COLOR, W_COLOR };
@@ -137,13 +139,21 @@ private:
 			).set_ownership(true).get(index);
 
 			// pop text
-			sf::Text* pop_text = pop_text_g.add(new sf::Text()).set_ownership(true).get(index);
-			pop_text->setFont(font);
-			pop_text->setString(POP_NAMES[index]);
-			pop_text->setCharacterSize(48);
-			pop_text->setFillColor(sf::Color(POP_TEXT_COLOR));
-			pop_text->setPosition(col->getPosition() + sf::Vector2f(0.f, col->getHeight() + COL_RAD));
-			pop_text->rotate(-90.f);
+			sf::Text& pop_text = *pop_text_g.add(new sf::Text()).set_ownership(true).get(index);
+			pop_text.setFont(font);
+			pop_text.setString(POP_NAMES[index]);
+			pop_text.setCharacterSize(48);
+			pop_text.setFillColor(sf::Color(POP_TEXT_COLOR));
+			pop_text.setPosition(col->getPosition() + sf::Vector2f(0.f, col->getHeight() + COL_RAD));
+			pop_text.rotate(-90.f);
+
+			//  col text
+			sf::Text& col_text = *col_text_g.add(new sf::Text()).set_ownership(true).get(index);
+			col_text.setFont(font);
+			col_text.setString("0");
+			col_text.setCharacterSize(24);
+			col_text.setPosition(col->getPosition() - sf::Vector2f(col_text.getLocalBounds().getSize().x / 2, COL_RAD * 2));
+			col_text.setFillColor(sf::Color(colors[index]));
 
 			// tri init
 			sf::CircleShape* tri = tri_g.add(new sf::CircleShape()).set_ownership(true).get(index);
@@ -187,6 +197,7 @@ private:
 		}
 	}
 
+	// initializes the equilibrium equation text
 	static void init_equilibrium_equation_text(sf::Font*& eq_font, sf::Text*& eq_text, EQUILIBRIUM_STATES state) {
 		eq_font = new sf::Font();
 		if (!eq_font->loadFromFile(FONT_PATH_EQUILIBRIUM)) {
@@ -218,13 +229,14 @@ private:
 		data_stream(BUFFER_SIZE), eq_state(state) {
 		init_populations(this->pops);
 		init_equilibrium_equation_text(eq_fnt, eq_txt, (EQUILIBRIUM_STATES) this->eq_state);
-		init_drawables(this->col_group, this->tri_group, this->plot_group, this->pop_text_group, *this->eq_fnt);
+		init_drawables(this->col_group, this->tri_group, this->plot_group, this->pop_text_group, this->col_text_group, *this->eq_fnt);
 
 		init_canvas(this->main_canvas, {
 			&this->col_group.cast_inner<sf::Drawable>(),
 			&this->tri_group.cast_inner<sf::Drawable>(),
 			&this->plot_group.cast_inner<sf::Drawable>(),
-			&this->pop_text_group.cast_inner<sf::Drawable>()
+			&this->pop_text_group.cast_inner<sf::Drawable>(),
+			&this->col_text_group.cast_inner<sf::Drawable>()
 		});
 
 		this->pop_stock_maxes = { 
@@ -341,6 +353,14 @@ public:
 		return update_maxes(pop_vec);
 	}
 
+	static std::string float_cutoff(const std::string& in, int decimal_points) {
+		int offset = 0;
+		char cur_char;
+		while (offset < in.size() && (cur_char = in[offset]) != '.') offset++;
+		//in[std::min((int)in.size(), offset + decimal_points + 1)] = '\0';
+		return in.substr(0, std::min((int)in.size(), offset + decimal_points + 1));
+	}
+
 	// Update all our drawable object groups to be ready for rendering
 	HANDYManager& update_drawables() {
 		const lalg::vec4 nouveau_stock_heights = lalg::diag(lalg::map(this->pop_stock_maxes, [](float f) {
@@ -364,6 +384,11 @@ public:
 			// pop text
 			sf::Text& cur_pop_text = *this->pop_text_group.get(index);
 			cur_pop_text.setPosition(cur_col.getPosition() + sf::Vector2f(0.f, std::fminf(cur_col.getHeight() + COL_RAD, cur_pop_text.getLocalBounds().getSize().x + COL_RAD)));
+
+			// col text
+			sf::Text& cur_col_text = *this->col_text_group.get(index);
+			cur_col_text.setString(float_cutoff(std::to_string(lalg::getValue(this->data_stream.peek(), index)), index < 2 ? -1 : 2));
+			cur_col_text.setPosition(cur_col.getPosition() - sf::Vector2f(cur_col_text.getLocalBounds().getSize().x / 2 - COL_RAD, COL_RAD * 2));
 
 			// tri
 			population& cur = *(pops[index]);

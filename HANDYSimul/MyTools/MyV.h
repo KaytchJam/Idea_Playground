@@ -35,7 +35,7 @@ namespace lalg {
 
     void set_index(const vec4& v, const uint8_t index, const float value) {
         if (index > 3) {
-            std::printf("You are a dumbass. Put an index between 0-3.\n");
+            std::printf("bro please put an index in the inclusive range 0 - 3.\n");
             return;
         }
 

@@ -225,7 +225,8 @@ https://github.com/KaytchJam/Idea_Playground/assets/59188754/cc0c49d1-c8c8-4b03-
 Lots of changes though much of that went into refactoring as I mentioned above. Before the state was determined by initial conditions (the EQUILIBRIUM_STATE initially passed in)
 but now I'm actively keeping track of state (for the columns, elements, text, and so on) which allows for the switching as shown in the video.
 
-https://github.com/KaytchJam/Idea_Playground/assets/59188754/4201b3d0-7694-45f4-8524-c72b2202508b
+https://github.com/KaytchJam/Idea_Playground/assets/59188754/2de6ff38-dfeb-477b-bfeb-e396e007db0d
+
 
 #### Additional Note
 

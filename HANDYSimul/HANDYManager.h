@@ -353,11 +353,11 @@ public:
 		return update_maxes(pop_vec);
 	}
 
-	static std::string float_cutoff(const std::string& in, int decimal_points) {
+	static std::string float_cutoff(const float fin, int decimal_points) {
 		int offset = 0;
 		char cur_char;
+		std::string in = std::to_string(fin);
 		while (offset < in.size() && (cur_char = in[offset]) != '.') offset++;
-		//in[std::min((int)in.size(), offset + decimal_points + 1)] = '\0';
 		return in.substr(0, std::min((int)in.size(), offset + decimal_points + 1));
 	}
 
@@ -387,7 +387,7 @@ public:
 
 			// col text
 			sf::Text& cur_col_text = *this->col_text_group.get(index);
-			cur_col_text.setString(float_cutoff(std::to_string(lalg::getValue(this->data_stream.peek(), index)), index < 2 ? -1 : 2));
+			cur_col_text.setString(float_cutoff(lalg::getValue(this->data_stream.peek(), index), index < 2 ? -1 : 2));
 			cur_col_text.setPosition(cur_col.getPosition() - sf::Vector2f(cur_col_text.getLocalBounds().getSize().x / 2 - COL_RAD, COL_RAD * 2));
 
 			// tri

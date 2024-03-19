@@ -227,6 +227,74 @@ but now I'm actively keeping track of state (for the columns, elements, text, an
 
 https://github.com/KaytchJam/Idea_Playground/assets/59188754/2de6ff38-dfeb-477b-bfeb-e396e007db0d
 
+The most prominent refactoring change is the transition from the previously procedural representation of the HANDY model to an object oriented representation of it. State is now
+managed in `HandyManager` class. It is a *singleton* class meaning only one instance of it exists, and is called through the function `HandyManager::get_instance()`. If an instance
+does not currently exist, a new one is created. Otherwise it will return an existing instance of the HandyManager class. The HandyManager class holds the following data types:
+
+```cpp
+class HandyManager {
+    // STATES & DATA
+    uint8_t eq_state;   // the current equilibrium state
+    population* pops[4] = {nullptr, nullptr, nullptr, nullptr}; // elites[0], commoners[1], nature[2], wealth[3];
+    lalg::vec4 pop_stock_maxes; // the stock maximums of each population held in a 4 element vector
+    RingBuffer<lalg::vec4> data_stream; // a ringbuffer for holding the calculated stocks 
+
+    // GRAPHICAL COMPONENTS
+    sf::Text* eq_txt;
+    sf::Text* eq_fnt;
+
+    PointerVector<ColumnShape> col_group;
+    PointerVector<Plotter> plot_group;
+    PointerVector<sf::CircleShape> tri_group;
+    PointerVector<sf::Text> pop_text_group, col_text_group;
+    
+    SubCanvas* main_canvas;
+}
+```
+
+The `PointerVector` class is essentially a std::vector wrapper that only holds pointers and is found in the `*/HANDYSimul/MyTools/PointerVector.h`. It was made for utility. Major function
+calls with the PointerVector as `map_cast()` and `cast_inner()` as shown below:
+
+```cpp
+// iterate through the list and apply a function 'call' on every item within the list, casted to 'temp_type'
+template <typename temp_type> PointerVector& map_cast(std::function<void(temp_type* tt)> call) {
+    for (size_t i = 0; i < list.size(); i++) call((temp_type*)list[i]);
+    return *this;
+}
+
+// return a pointer to this object group
+template <typename as_new> PointerVector<as_new>& cast_inner() {
+    return *(PointerVector<as_new>*) this;
+}
+```
+
+The HandyManager class is split between initialization functions called when an instance of a HandyManager is first constructed, update functions called during the render
+loop, and reset functions called upon changes in equilibrium state `eq_state`.
+
+```cpp
+// initialization functions -> Called upon construction
+static init_populations();
+static init_drawables();
+static init_canvas();
+static init_equilibrium_equation_text();
+
+// update functions -> Called during render loop
+HandyManager::update_maxes();
+HandyManager::compute_flows();
+HandyManager::compute_stocks();
+HandyManager::update_drawables();
+
+// reset functions -> Called when eq_state is changed
+static setEquilibriumValues();
+HandyManager::increment_state();
+HandyManager::decrement_state();
+HandyManager::set_population_values();
+HandyManager::reset_columns();
+HandyManager::reset_manager();
+```
+
+During the render loop, events are passed into the `HandyManager::handle_events()` function. Click left causes the state to decrement, whereas clicking right causes the state to 
+increment. State traversal is circular, so after a sufficient number of clicks in the same direction you will eventually end up at the same state you started in.
 
 #### Additional Note
 

@@ -31,6 +31,7 @@ namespace lalg {
     vec4 normalize(const vec4& v) { return v / magnitude(v); }
     float dot(const vec4& v1, const vec4& v2) { return v1.r * v2.r + v1.g * v2.g + v1.b * v2.b + v1.a * v2.a; }
     vec4 pow(const vec4& v, const float power) { return { powf(v.r, power), powf(v.g, power) , powf(v.b, power) , powf(v.a, power) }; }
+    vec4 project(const vec4& v, const vec4& onto) { return onto * (dot(v, onto) / dot(onto, onto)); }
     void printVec(const vec4& v) { std::printf("[%f, %f, %f, %f]\n", v.r, v.g, v.b, v.a); }
 
     void set_index(const vec4& v, const uint8_t index, const float value) {

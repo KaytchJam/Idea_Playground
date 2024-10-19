@@ -153,10 +153,10 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 		window.clear(sf::Color(ALMOST_WHITE_BUT_COOLER));
 		for (int i = 0; i < colGroup.size(); i++) {
 			ColumnShape* curCol = colGroup.get(i);
-			float max_value = lalg::getValue(max_vector, i);
+			float max_value = lalg::get_value(max_vector, i);
 
-			curCol->setHeight(lalg::getValue(stockHeights, i));
-			curCol->setPosition(curCol->getPosition() - sf::Vector2f(0, lalg::getValue(diffs, i)));
+			curCol->setHeight(lalg::get_value(stockHeights, i));
+			curCol->setPosition(curCol->getPosition() - sf::Vector2f(0, lalg::get_value(diffs, i)));
 			triGroup.get(i)->setRotation((abs(populist[i]->flow) == 0.f) * 90.f + (populist[i]->flow < 0) * 180.f);
 			plotGroup.get(i)->setVertices(rb, i, {(float)(RINGBUFFER_SIZE << 2), (float)(RINGBUFFER_SIZE << 2), max_value, max_value});
 		}

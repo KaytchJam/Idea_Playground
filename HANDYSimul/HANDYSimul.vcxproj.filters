@@ -53,5 +53,8 @@
     <ClInclude Include="HANDYManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MyTools\lalg4.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 #pragma once
 #include "SFML/Graphics.hpp"
 #include "../MyTools/RingBuffer.h"
-#include "../MyTools/MyV.h"
+#include "../MyTools/lalg4.hpp"
 #include "../MyTools/PointerVector.h"\
 
 #define THICKNESS 3.f
@@ -25,7 +25,7 @@ public:
 		: m_LENGTH((int) size.x), m_HEIGHT((int) size.y), m_POINTS_TO_RENDER(0) {
 		m_vertices = std::vector<sf::Vertex>(NUMBER_OF_POINTS * VERTEX_OFFSET);
 		m_PLOT_COLOR = line_color;
-		bg = new sf::RectangleShape(size + THICKNESS_VECTOR);
+		bg = new sf::RectangleShape(size + THICKNESS_VECTOR + THICKNESS_VECTOR);
 		bg->setFillColor(bg_color);
 	}
 
@@ -64,7 +64,7 @@ public:
 	// min_vec = zeroVec(); // { 0, 0, 0, 0}
 	// max_vec = { rb.size(), rb.size(), value_max, value_max };
 
-	void setVertices(RingBuffer<lalg::vec4>& rb, unsigned int offset, const lalg::vec4& MAX_VEC, const lalg::vec4& MIN_VEC = lalg::zeroVec()) {
+	void setVertices(RingBuffer<lalg::vec4>& rb, unsigned int offset, const lalg::vec4& MAX_VEC, const lalg::vec4& MIN_VEC = lalg::zero_vec()) {
 		using namespace lalg; // less typing 
 
 		mat4 coord_transform;
@@ -74,13 +74,13 @@ public:
 			coord_transform = diag(map(diagonal_inverse_vec, [](float f) {return 1.f / (f + 0.001f * (f == 0.0f));  })); // diag(vector^-1)
 		}
 
-		vec4 current_vec = { 0 /*prev index*/, 1 /*index + 1*/, getValue(rb.front(), offset) /*prev*/, 0 /*current*/ };
+		vec4 current_vec = { 0 /*prev index*/, 1 /*index + 1*/, get_value(rb.front(), offset) /*prev*/, 0 /*current*/ };
 
 		RingBuffer<vec4>::iterator it = rb.begin();
 		while (it != rb.end() && current_vec.r < m_vertices.size()) {
 
 			current_vec.g = (current_vec.r - VERTEX_OFFSET) * (current_vec.r != 0);
-			current_vec.a = getValue(it.m_data, offset); // current value
+			current_vec.a = get_value(it.m_data, offset); // current value
 			vec4 coords = coord_transform * (current_vec - MIN_VEC); // transformed coordinates
 
 			const sf::Vector2f OLD_MIDPOINT = m_origin + sf::Vector2f(coords.g, m_HEIGHT - coords.b);

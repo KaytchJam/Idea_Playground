@@ -10,7 +10,7 @@
 // Data Structures & Linear Algebra
 #include "MyTools/PointerVector.h"
 #include "MyTools/RingBuffer.h"
-#include "MyTools/MyV.h"
+#include "MyTools/lalg4.hpp"
 
 // Graphics components
 #include "CustomShapes/ColumnShape.h"
@@ -75,8 +75,7 @@ private:
 	PointerVector<ColumnShape> col_group;
 	PointerVector<Plotter> plot_group;
 	PointerVector<sf::CircleShape> tri_group;
-	PointerVector<sf::Text> pop_text_group;
-	PointerVector<sf::Text> col_text_group;
+	PointerVector<sf::Text> pop_text_group, col_text_group;
 
 	// main canvas
 	SubCanvas* main_canvas;
@@ -91,6 +90,20 @@ private:
 		init_human_pop(cp, BASE_COMMONER_POP, BASE_COMMONER_BIRTH_RATE, 1.f, BASE_TWPC, BASE_SSPC);
 		init_nature(ns, BASE_NATURE_STOCK, BASE_REGENERATION_RATE, BASE_DEPLETION_FACTOR, BASE_NATURE_CARRY_CAPACITY);
 		init_wealth(ws, BASE_WEALTH_STOCK, 0.0f);
+	}
+
+	// float equals function that accounts for error
+	static bool float_equals(const float v1, const float v2, const float epsilon) {
+		return std::fabsf(v1 - v2) < epsilon;
+	}
+
+	// Not really precision or anything, just cuts off a set number of values after the decimal point
+	static std::string float_cutoff(const float f_in, int decimal_points) {
+		int offset = 0;
+		char cur_char;
+		std::string s_in = std::to_string(f_in);
+		while (offset < s_in.size() && (cur_char = s_in[offset]) != '.') offset++;
+		return s_in.substr(0, std::min((int)s_in.size(), offset + decimal_points + 1));
 	}
 
 	/*sf::Font font;
@@ -329,7 +342,7 @@ public:
 	HANDYManager& update_maxes() {
 		uint8_t index = 0;
 		const lalg::vec4 current_stocks = data_stream.peek();
-		lalg::map_capture(this->pop_stock_maxes, [&current_stocks, &index](float f) { return std::fmaxf(f, lalg::getValue(current_stocks, index++)); });
+		lalg::map_capture(this->pop_stock_maxes, [&current_stocks, &index](float f) { return std::fmaxf(f, lalg::get_value(current_stocks, index++)); });
 		return *this;
 	}
 
@@ -343,7 +356,7 @@ public:
 
 	// use euler's method of integration, compute the integral of each population for the current state
 	HANDYManager& compute_stocks() {
-		lalg::vec4 pop_vec = lalg::zeroVec();
+		lalg::vec4 pop_vec = lalg::zero_vec();
 		for (size_t p = 0; p < 4; p++) lalg::set_index(pop_vec, (uint8_t) p, calcStock(*this->pops[p], 0, 0.5f, true).stock);
 
 		//pop_vec.b = fmaxf(-1.f, pop_vec.b);
@@ -353,13 +366,6 @@ public:
 		return update_maxes(pop_vec);
 	}
 
-	static std::string float_cutoff(const float fin, int decimal_points) {
-		int offset = 0;
-		char cur_char;
-		std::string in = std::to_string(fin);
-		while (offset < in.size() && (cur_char = in[offset]) != '.') offset++;
-		return in.substr(0, std::min((int)in.size(), offset + decimal_points + 1));
-	}
 
 	// Update all our drawable object groups to be ready for rendering
 	HANDYManager& update_drawables() {
@@ -378,8 +384,8 @@ public:
 		for (uint8_t index = 0; index < 4; index++) {
 			// column
 			ColumnShape& cur_col = *this->col_group.get(index);
-			cur_col.setHeight(lalg::getValue(nouveau_stock_heights, index))
-				.setPosition(cur_col.getPosition() - sf::Vector2f(0, lalg::getValue(diffs, index)));
+			cur_col.setHeight(lalg::get_value(nouveau_stock_heights, index))
+				.setPosition(cur_col.getPosition() - sf::Vector2f(0, lalg::get_value(diffs, index)));
 
 			// pop text
 			sf::Text& cur_pop_text = *this->pop_text_group.get(index);
@@ -387,15 +393,15 @@ public:
 
 			// col text
 			sf::Text& cur_col_text = *this->col_text_group.get(index);
-			cur_col_text.setString(float_cutoff(lalg::getValue(this->data_stream.peek(), index), index < 2 ? -1 : 2));
+			cur_col_text.setString(float_cutoff(lalg::get_value(this->data_stream.peek(), index), index < 2 ? -1 : 2));
 			cur_col_text.setPosition(cur_col.getPosition() - sf::Vector2f(cur_col_text.getLocalBounds().getSize().x / 2 - COL_RAD, COL_RAD * 2));
 
 			// tri
 			population& cur = *(pops[index]);
-			this->tri_group.get(index)->setRotation((abs(cur.flow) == 0.f) * 90.f + (cur.flow < 0) * 180.f);
+			this->tri_group.get(index)->setRotation(float_equals(cur.flow, 0.0f, 0.009f) * 90.f + (cur.flow < 0) * 180.f);
 
 			// plotter
-			const float POP_MAX_VAL = lalg::getValue(this->pop_stock_maxes, index);
+			const float POP_MAX_VAL = lalg::get_value(this->pop_stock_maxes, index);
 			plot_group.get(index)->setVertices(this->data_stream, index, {
 				TOTAL_VERTICES,
 				TOTAL_VERTICES,

@@ -1,6 +1,6 @@
 #pragma once
 #include "../Populations.h"
-#include "MyV.h"
+#include "lalg4.hpp"
 #include "RingBuffer.h"
 #include "PointerVector.h"
 #include "../CustomShapes/ColumnShape.h"
@@ -46,7 +46,7 @@ static float normalize(const float val, const sf::Vector2f RANGE) {
 }
 
 static lalg::vec4 normalize(const lalg::vec4& vals, const sf::Vector2f RANGE) {
-	return (vals - RANGE.x * lalg::onesVec()) / (RANGE.y - RANGE.x);
+	return (vals - RANGE.x * lalg::ones_vec()) / (RANGE.y - RANGE.x);
 }
 
 //static lalg::vec4 normalizeL(const lalg::vec4& vals, const lalg::vec4& maxes) {

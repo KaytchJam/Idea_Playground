@@ -141,6 +141,7 @@
     <ClInclude Include="CustomShapes\Plotter.h" />
     <ClInclude Include="CustomShapes\SubCanvas.h" />
     <ClInclude Include="HANDYManager.h" />
+    <ClInclude Include="MyTools\lalg4.hpp" />
     <ClInclude Include="MyTools\MainHelper.h" />
     <ClInclude Include="MyTools\MyV.h" />
     <ClInclude Include="MyTools\PointerVector.h" />

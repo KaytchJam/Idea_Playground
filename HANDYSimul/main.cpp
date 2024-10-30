@@ -16,6 +16,41 @@ const uint32_t NATURE_COLOR = 0x008800FF;
 const uint32_t WEALTH_COLOR = 0xDF8800FF;
 const char* HEADER_TEXT_FONT = "fonts/BebasNeue-Regular.ttf";
 
+int HANDY_test() {
+	const int WIN_LENGTH = 1280;
+	const int WIN_HEIGHT = 720;
+	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "Human and Nature Dynamics: Modelling Differential...");
+	HANDYManager& man = HANDYManager::get_instance();
+
+	window.setFramerateLimit(30);
+	while (window.isOpen()) {
+		sf::Event event;
+		sf::Vector2f force = get_global_force(sf::Mouse::getPosition(window), window.getSize().x, window.getSize().y, 10);
+
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed) window.close();
+			man.handle_events(event);
+		}
+
+		// rendering
+		window.clear(sf::Color(ALMOST_WHITE_BUT_COOLER));
+		window.draw(man.compute_flows().compute_stocks().update_drawables().get_canvas().pull(force));
+		window.draw(man.get_eq_text());
+		window.display();
+	}
+
+	return man.print_state().close_instance();
+}
+
+int main() {
+	std::cout << "Hello world" << std::endl;
+	HANDY_test();
+
+	//EQUILIBRIUM_STATES HANDY_STATE = EQUITABLE_CYCLES_AND_REVIVAL;
+	//setEquilibriumValues(HANDY_STATE);
+	//renderLoop(EQUILIBRIUM_STATE_NAMES[HANDY_STATE], BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
+}
+
 int renderLoop(const std::string STATE_NAME, float elite_total_pop, float commoner_total_pop, float nature_total_stock, float wealth_total_stock) {
 
 	// HANDY SIM INITIALIZATIONS
@@ -177,40 +212,6 @@ int renderLoop(const std::string STATE_NAME, float elite_total_pop, float common
 
 // refactoring?
 
-int HANDY_test() {
-	const int WIN_LENGTH = 1280;
-	const int WIN_HEIGHT = 720;
-	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "Human and Nature Dynamics: Modelling Differential...");
-	HANDYManager& man = HANDYManager::get_instance();
-
-	window.setFramerateLimit(30);
-	while (window.isOpen()) {
-		sf::Event event;
-		sf::Vector2f force = get_global_force(sf::Mouse::getPosition(window), window.getSize().x, window.getSize().y, 10);
-
-		while (window.pollEvent(event)) {
-			if (event.type == sf::Event::Closed) window.close();
-			man.handle_events(event);
-		}
-
-		// rendering
-		window.clear(sf::Color(ALMOST_WHITE_BUT_COOLER));
-		window.draw(man.compute_flows().compute_stocks().update_drawables().get_canvas().pull(force));
-		window.draw(man.get_eq_text());
-		window.display();
-	}
-
-	return man.print_state().close_instance();
-}
-
-int main() {
-	std::cout << "Hello world" << std::endl;
-	HANDY_test();
-
-	//EQUILIBRIUM_STATES HANDY_STATE = EQUITABLE_CYCLES_AND_REVIVAL;
-	//setEquilibriumValues(HANDY_STATE);
-	//renderLoop(EQUILIBRIUM_STATE_NAMES[HANDY_STATE], BASE_ELITE_POP, BASE_COMMONER_POP, BASE_NATURE_STOCK, BASE_WEALTH_STOCK);
-}
 
 //int pseudo_main() {
 //	std::unique_ptr<HANDYManager> h_man(initialize_instance()); 

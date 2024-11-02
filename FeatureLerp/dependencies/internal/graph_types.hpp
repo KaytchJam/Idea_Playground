@@ -9,12 +9,19 @@
 #include <functional>
 #include <limits>
 #include <queue>
+#include <stack>
+#include <ranges>
 
 #ifndef PROJECT_CHEST_PATH
 #define PROJECT_CHEST_PATH "chest.hpp"
 #endif
 
+#ifndef PROJECT_INTERVAL_SLICE_PATH
+#define PROJECT_INTERVAL_SLICE_PATH "interval_slice.h"
+#endif
+
 #include PROJECT_CHEST_PATH
+#include PROJECT_INTERVAL_SLICE_PATH
 
 struct UnequalLengthException : public std::exception {
     UnequalLengthException() {}
@@ -378,6 +385,26 @@ public:
         return connection_graph;
     }
 
+    static AbstractGraph<int, int> construct_with_list(const std::vector<int>& values, const std::unordered_map<int, std::vector<int>>& connections) {
+        AbstractGraph<int, int> connection_graph = AbstractGraph<int, int>::null(values, values);
+        const int edge_list_size = (int)connections.size();
+
+        for (int i : values) {
+            AbstractGraph<int,int>::Vertex& cur = connection_graph.m_vertices.at(i);
+            
+            std::unordered_map<int, std::vector<int>>::const_iterator conn = connections.find(i);
+            if (conn != connections.end()) {
+                for (int edge_target : conn->second) {
+                    cur.m_edges.insert(edge_target);
+                }
+            }
+        }
+
+        return connection_graph;
+    }
+
+
+
     struct GraphUpdateResults {
         AbstractGraph* updated_graph;
         int connects;
@@ -482,6 +509,24 @@ public:
 
         return edge_list;
     }
+
+    size_t count_edges() const {
+        std::unordered_map<Id, std::unordered_set<Id>> id_dict;
+        size_t edge_count = 0;
+
+        for (const std::pair<const Id, const Vertex> vpair : this->m_vertices) {
+            const Vertex& cur_v = vpair.second;
+            id_dict[cur_v.m_identifier] = std::unordered_set<Id>();
+
+            for (Id key : cur_v.m_edges) {
+                if (id_dict.count(key) == 0) {
+                    edge_count++;
+                }
+            }
+        }
+
+        return edge_count;
+    }
     
     // struct holding a bunch of degree related Graph Statistics
     // returned by Graph::get_degree_stats()
@@ -552,7 +597,9 @@ public:
     // Treats the graph as if it were a DIRECTED GRAPH
     // Time Complexity: O(N + M) -> (N: number of vertices, M: number of edges)
     AbstractGraph<Id, Element> reverse() const noexcept {
+        //std::cout << "Building reverse graph" << std::endl;
         AbstractGraph<Id, Element> reverse_graph = this->null();
+        //std::cout << "made new null graph" << std::endl;
 
         for (const std::pair<const Id, const Vertex>& vpair : this->m_vertices) {
             const Vertex& og_v = vpair.second;
@@ -562,6 +609,7 @@ public:
             }
         }
 
+        //std::cout << "returning reverse graph" << std::endl;
         return reverse_graph;
     }
 
@@ -594,6 +642,11 @@ public:
             ss << p.second.to_string() << "\n";
         }
         return ss.str();
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const AbstractGraph<Id, Element>& g) {
+        os << "AbstractGraph(V: " << g.size() << ", E: " << g.count_edges() << ")";
+        return os;
     }
 
     std::unordered_map<Id, bool> construct_visit_list() const {
@@ -646,6 +699,7 @@ public:
         return connected_count;
     }
 
+    // splits a graph into several connected components
     AbstractGraph<int, AbstractGraph<Id,Element>> split_graph() {
         std::unordered_map<Id, bool> visited = this->construct_visit_list();
         AbstractGraph<int, AbstractGraph<Id, Element>> connected_components;
@@ -678,20 +732,152 @@ public:
         return connected_components;
     }
 
-    // find sink node
-    // get post ordering
-    // dfs 
+    // Returns a post ordering of the vertices in the graph
+    std::vector<Id> post_order(Id start_vertex) const {
+        std::unordered_set<Id> visited;
+        std::vector<Id> postordering;
+        int iter = 1;
 
+        while (visited.size() < this->size()) {
+            std::stack<Id> id_stack;
+            id_stack.push(start_vertex);
+
+            while (!id_stack.empty()) {
+                Id top = id_stack.top();
+                if (visited.count(top) == 0) {
+                    visited.insert(top);
+                    for (const Id& neighbor : this->m_vertices.at(top).m_edges) {
+                        if (visited.count(neighbor) == 0) {
+                            id_stack.push(neighbor);
+                        }
+                    }
+                } else {
+                    postordering.push_back(top);
+                    id_stack.pop();
+                }
+            }
+
+            for (auto i = this->m_vertices.begin(); i != this->m_vertices.end(); i++) {
+                if (visited.count(i->first) == 0) {
+                    start_vertex = i->first;
+                }
+            }
+        }
+
+        return postordering;
+    }
+
+    // Returns the vertices in the input graph that are reachable from start_vertex
+    std::unordered_set<Id> dfs(Id start_vertex) const {
+        std::unordered_set<Id> visited;
+        std::stack<Id> id_stack;
+        id_stack.push(start_vertex);
+
+        while (!id_stack.empty()) {
+            Id top = id_stack.top();
+            id_stack.pop();
+
+            if (visited.count(top) == 0) {
+                visited.insert(top);
+                for (const Id& neighbor : this->m_vertices.at(top).m_edges) {
+                    id_stack.push(neighbor);
+                }
+            }
+        }
+
+        return visited;
+    }
     
+    static void print_path(const std::vector<int>& path) {
+        std::cout << path[0];
+        for (int i = 1; i < path.size(); i++) {
+            std::cout << " -> " << path[i];
+        }
+        std::cout << std::endl;
+    }
 
-    /*AbstractGraph<int, AbstractGraph<Id, Element>> strongly_connected_components() {
-        std::unordered_map<Id, bool> visited = this->construct_visit_list();
-        AbstractGraph<int, AbstractGraph<Id, Element>> strongly_connected_components;
-        AbstractGraph<Id, Element> reversed = this->reverse();
+    // Returns the Strongly Connected Components of the input graph
+    AbstractGraph<int, AbstractGraph<Id, Element>> find_sccs() {
+        std::vector<Id> postorder = this->reverse().post_order(this->m_vertices.begin()->first);
 
+        typedef std::pair<Id, int> scc_mapping;
 
-        return strongly_connected_components;
-    }*/
+        AbstractGraph<int, AbstractGraph<Id, Element>> scc_graph;
+        int scc_count = 0;
+
+        while (postorder.size() > 0) {
+            Id& sink = postorder.back();
+
+            std::unordered_set<Id> visited = this->dfs(sink/*.first*/);
+            std::vector<Id> connections;
+            AbstractGraph<Id, Element> scc;
+
+            std::vector<Id> new_postorder;
+
+            // TODO
+            // NUMBER ONE:
+            // Convert "postorder" into an array of <Id, int> pairs where the second value in the pair
+            // indicates the SCC the vertex is apart of
+            // NUMBER TWO:
+            // Implement the non-contiguous slice so we can decrease the size of our search space each iteration
+            for (const Id& p : postorder) {
+                if (visited.count(p) == 0) {
+                    new_postorder.push_back(p);
+                } else {
+                    scc.m_vertices.insert({ p, this->m_vertices.at(p) });
+                    for (const Id& outgoing : this->m_vertices.at(p).m_edges) {
+                        for (auto& prev_sccs : scc_graph.m_vertices) {
+                            if (prev_sccs.second.m_elem.m_vertices.count(outgoing) != 0) {
+                                connections.push_back(prev_sccs.first);
+                            }
+                        }
+                    }
+                }
+            }
+
+            postorder = std::move(new_postorder);
+            auto& newbie = scc_graph.add_vertex(scc_count, std::move(scc));
+            for (const Id& conn : connections) {
+                newbie.m_edges.insert(conn);
+            }
+            scc_count += 1;
+        }
+
+        return scc_graph;
+    }
+
+    struct scc_pair {
+        Id id;
+        int component_index;
+    };
+
+    std::vector<scc_pair> color_scc_vertices(size_t start_vertex) {
+        std::vector<scc_pair> postorder = this->reverse().post_order(start_vertex)
+            | std::views::transform([](Id id) { return scc_pair(id, -1); })
+            | std::ranges::to<std::vector<scc_pair>>();
+
+        NCSlice<scc_pair> postorder_view(postorder);
+        AbstractGraph<int, AbstractGraph<Id, Element>> scc_graph;
+        int scc_count = 0;
+
+        while (postorder_view.size() > 0) {
+            scc_pair& sink = postorder_view.back();
+            std::unordered_set<Id> visited = this->dfs(sink.id);
+            const size_t max_index = postorder_view.max_index();
+
+            for (size_t i = postorder_view.min_index(); i < max_index; i++) {
+                scc_pair& p = postorder[i];
+                if (visited.count(p.id) != 0) {
+                    p.component_index = scc_count;
+                    postorder_view.remove(i);
+                }
+            }
+
+            scc_count += 1;
+        }
+
+        return postorder;
+    }
     
     template <typename Key, typename Val>
     friend class AbstractGraph;
@@ -699,21 +885,22 @@ public:
     class AbstractGraphIterator {
     public:
         using Category = std::forward_iterator_tag;
-        using Distance = std::ptrdiff_t;
+        using difference_type = std::ptrdiff_t;
 
         using Pointer = typename std::unordered_map<Id, Vertex>::iterator;
-        using value_name = Element;
+        using value_type = Element;
         using Reference = Element&;
     private:
         Pointer m_ptr;
     public:
+        AbstractGraphIterator() : m_ptr() {}
         AbstractGraphIterator(Pointer iter) : m_ptr(iter) {}
 
         Reference operator*() const {
             return this->m_ptr->second.m_elem;
         }
 
-        value_name* operator->() const {
+        value_type* operator->() const {
             return &(this->m_ptr->second.m_elem);
         }
 
@@ -721,7 +908,7 @@ public:
         //     return this->m_ptr;
         // }
 
-        AbstractGraphIterator operator++() {
+        AbstractGraphIterator& operator++() {
             ++(this->m_ptr);
             return *this;
         }
@@ -751,6 +938,9 @@ public:
         return AbstractGraph<Id, Element>::iterator(this->m_vertices.end());
     }
 };
+
+static_assert(std::forward_iterator<AbstractGraph<int, int>::iterator>);
+static_assert(std::ranges::forward_range<AbstractGraph<int,int>>);
 
 // SELF NOTE # 1:
 // HERE I COUPLE TOGETHER VERTICES & EDGES IN THAT EACH VERTEX CONTAINS THE IDs OF THE VERTICES THAT IT IS CONNECTED TO.

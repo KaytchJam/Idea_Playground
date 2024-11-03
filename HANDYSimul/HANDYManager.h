@@ -484,6 +484,7 @@ public:
 			if (event.key.code == sf::Keyboard::Space) {
 				ColumnShape::ColumnType col_type = this->col_group.get(0)->get_column_type();
 
+				// INVERTS THE COLUMN TYPE
 				switch (col_type) {
 					case ColumnShape::ColumnType::BAR:
 						col_type = ColumnShape::ColumnType::PILLAR;

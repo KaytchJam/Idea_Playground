@@ -8,35 +8,79 @@
 #include <sstream>
 #include <print>
 
+// NOT MADE BY ME. COOL LIBRARIES MADE BY CLEVER PEOPLE
 #include "dependencies/external/json.hpp"
+
+// NEWER TOOLS
 #include "dependencies/internal/graph_types.hpp"
 #include "dependencies/internal/interval_slice.h"
 
-constexpr uint32_t ALMOST_WHITE_BUT_COOLER = 0xE1E1E1FF;
+// OLDER STUFF I MADE BUT IT STILL WORKS I GUESS LOL
+#include "dependencies/internal/PointerVector.h"
+#include "dependencies/internal/SubCanvas.h"
+#include "dependencies/internal/lalg4.hpp"
+
+//constexpr uint32_t ALMOST_WHITE_BUT_COOLER = 0xE1E1E1FF;
+constexpr uint32_t DARKISH_GOLD_COLOR = 0xB0A856FF;
+constexpr uint32_t CURRENT_LIGHT_YELLOW_COLOR = 0xFBF07BFF;
 constexpr uint32_t SELECTED_DARK_GRAY_COLOR = 0x242424FF;
-constexpr uint32_t UNSELECTED_LIGHT_GRAY_COLOR = 0x999999FF;
+constexpr uint32_t UNSELECTED_HOTTISH_DARK_PINK = 0x7C5295FF;
+//constexpr uint32_t UNSELECTED_LIGHT_GRAY_COLOR = 0x999999FF;
+//constexpr uint32_t CURRENT_SWEET_ORANGE = 0xFF8B3DFF;
 constexpr const char* HEADER_TEXT_FONT = "fonts/BebasNeue-Regular.ttf";
 constexpr float PADDING = 20.f;
+
+static sf::Vector2f lalgToSf(const lalg::vec4& v) {
+	return { v.r, v.g };
+}
+
+static lalg::vec4 sfToLalg(const sf::Vector2f& sfVec) {
+	return { sfVec.x, sfVec.y, 1, 1 };
+}
+
+sf::Vector2f get_global_force(const sf::Vector2f& local_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
+	const lalg::mat4 bound_mouse_coords =
+	{ { 2.f / WIN_LENGTH, 0.f, -1.f, 0.f},
+	 { 0.f, 2.f / WIN_HEIGHT,  -1.f,  0.f },
+	 { 0.f, 0.f,                1.f,  0.f },
+	 { 0.f, 0.f,                0.f,  1.f } };
+	float call = 0;
+	return lalgToSf(bound_mouse_coords * lalg::map_capture(sfToLalg({ (float)local_pos.x, (float)local_pos.y }), [&WIN_LENGTH, &WIN_HEIGHT, &call](float f) {
+		return std::fmaxf(0, std::fminf(f, ((float)WIN_LENGTH * !(call == 1)) + (WIN_HEIGHT * (call++ == 1)))); }) * FORCE_MULTIPLIER);
+}
+
+sf::Vector2f get_global_force(const sf::Vector2i& mouse_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
+	sf::Vector2f local_pos = sf::Vector2f((float)mouse_pos.x, (float)mouse_pos.y);
+	return get_global_force(local_pos, WIN_LENGTH, WIN_HEIGHT, FORCE_MULTIPLIER);
+}
 
 std::vector<sf::RectangleShape> make_rectangle_vector(float length, float width, float start_x, float start_y, size_t size) {
 	std::vector<sf::RectangleShape> rect_vec;
 	for (size_t i = 0; i < size; i++) {
 		rect_vec.push_back(sf::RectangleShape(sf::Vector2f(length, width)));
-		rect_vec[i].setFillColor(sf::Color(UNSELECTED_LIGHT_GRAY_COLOR));
+		rect_vec[i].setFillColor(sf::Color(UNSELECTED_HOTTISH_DARK_PINK));
 		rect_vec[i].setPosition(sf::Vector2f(start_x + i * width + PADDING * i, start_y));
 	}
-
 	return rect_vec;
 }
 
-int render_test() {
+template<typename T> 
+std::vector<T*> make_pointer_vec(std::vector<T>& v) {
+	std::vector<T*> v_ptrs;
+	for (T* ptr : v | std::views::transform([](auto& in) { return &in;  })) {
+		v_ptrs.push_back(ptr);
+	}
+	return v_ptrs;
+}
+
+int ncslice_demonstration() {
 	const int WIN_LENGTH = 1280;
 	const int WIN_HEIGHT = 720;
-	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "Feature Lerp");
+	sf::RenderWindow window(sf::VideoMode(WIN_LENGTH, WIN_HEIGHT), "Feature_Lerp");
 
-	constexpr float RECT_W = 40.f;
-	constexpr float RECT_H = 40.f;
-	constexpr size_t TOTAL_RECTS = 20;
+	constexpr const float RECT_W = 40.f;
+	constexpr const float RECT_H = 40.f;
+	constexpr const size_t TOTAL_RECTS = 20;
 
 	std::vector<sf::RectangleShape> rvec = make_rectangle_vector(
 		RECT_H, 
@@ -46,29 +90,94 @@ int render_test() {
 		TOTAL_RECTS
 	);
 
-	NCSlice<sf::RectangleShape> rvec_view(rvec);
-	rvec_view.remove_all({ 7, 12, 13, 3, 18 }); 
+	SubCanvas canva(sf::Vector2i(WIN_LENGTH, WIN_HEIGHT), sf::Vector2i(WIN_LENGTH, WIN_HEIGHT)); // sf::Vector2i((int) (rvec.back().getPosition().x - rvec.front().getPosition().x), RECT_H)
+
+	NCSlice<sf::RectangleShape> rvec_view(rvec); 
+	NCSlice<sf::RectangleShape>::iterator it = rvec_view.begin();
+
+	sf::Font my_font;
+	assert(my_font.loadFromFile(HEADER_TEXT_FONT) && "Was unable to load font.");
+
+	sf::Text my_text;
+	my_text.setFont(my_font);
+	my_text.setCharacterSize(36);
+	my_text.setPosition(rvec.front().getPosition() - sf::Vector2f(0, PADDING * 3 + my_text.getLocalBounds().getSize().y));
+	my_text.setFillColor(sf::Color(SELECTED_DARK_GRAY_COLOR));
+	my_text.setString("NCSlice<T> Demonstration");
+
+	sf::Text intervals_text;
+	intervals_text.setFont(my_font);
+	intervals_text.setCharacterSize(24);
+	intervals_text.setPosition(rvec.front().getPosition() + sf::Vector2f(0, PADDING * 2));
+	intervals_text.setFillColor(sf::Color(SELECTED_DARK_GRAY_COLOR));
+	intervals_text.setString("Internal Ranges = " + rvec_view.ranges_to_string());
+
+	sf::Text index_text;
+	index_text.setFont(my_font);
+	index_text.setCharacterSize(24);
+	index_text.setPosition(intervals_text.getPosition() + sf::Vector2f(0, PADDING));
+	index_text.setFillColor(sf::Color(SELECTED_DARK_GRAY_COLOR));
+	index_text.setString("Index = 0");
+
+	PointerVector<sf::RectangleShape> rptr(make_pointer_vec(rvec));
+	PointerVector<sf::Text> tptr({ &my_text, &intervals_text, &index_text });
+	canva.link_group(&rptr.cast_inner<sf::Drawable>())
+		.link_group(&tptr.cast_inner<sf::Drawable>())
+		.setBackgroundColor(sf::Color(DARKISH_GOLD_COLOR));
 
 	window.setFramerateLimit(30);
 	while (window.isOpen()) {
-
 		// event handling
 		sf::Event event;
+		sf::Vector2f force = get_global_force(sf::Mouse::getPosition(window), window.getSize().x, window.getSize().y, 10);
+
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) window.close();
+			if (event.type == sf::Event::KeyReleased && it != rvec_view.end()) {
+				if (event.key.code == sf::Keyboard::Left) { it = it == rvec_view.begin() ? rvec_view.rbegin() : --it; }
+				if (event.key.code == sf::Keyboard::Right) { it++; }
+				if (event.key.code == sf::Keyboard::Space) {
+					std::cout << "=============================" << std::endl;
+					std::cout << "Chosen Index: " << (*it).first << std::endl;
+					std::cout << "Before: ";
+					rvec_view.print_intervals();
+
+					it->setFillColor(sf::Color(UNSELECTED_HOTTISH_DARK_PINK));
+					it = rvec_view.remove((*it).first);
+					std::cout << "After: ";
+					rvec_view.print_intervals();
+					intervals_text.setString("Internal Ranges = " + rvec_view.ranges_to_string());
+				}
+
+
+				if (it != rvec_view.end()) {
+					index_text.setString("Index = " + std::to_string((*it).first));
+				} else if (rvec_view.begin() != rvec_view.end()) {
+					index_text.setString("Index = " + std::to_string((*rvec_view.begin()).first));
+				} else {
+					intervals_text.setString("Internal Ranges = NONE");
+					index_text.setString("Index = NONE");
+				}
+			}
 		}
 
+		// pre-render logic
+		if (it == rvec_view.end()) {
+			it = rvec_view.begin();
+		}
+
+		// all rendering
+		window.clear(sf::Color(DARKISH_GOLD_COLOR));
 		for (std::pair<size_t, sf::RectangleShape&> rp : rvec_view) {
 			rp.second.setFillColor(sf::Color(SELECTED_DARK_GRAY_COLOR));
-			window.draw(rp.second);
+		}
+
+		if (it != rvec_view.end()) {
+			it->setFillColor(sf::Color(CURRENT_LIGHT_YELLOW_COLOR));
 		}
 
 		// rendering
-		window.clear(sf::Color(ALMOST_WHITE_BUT_COOLER));
-		for (sf::RectangleShape& r : rvec) {
-			window.draw(r);
-		}
-
+		window.draw(canva.pull(force));
 		window.display();
 	}
 
@@ -276,6 +385,24 @@ void split_slice_test() {
 	}
 }
 
+void remove_in_for_loop_test() {
+	std::vector<int> V = { 1, 2, 3, 4, 5, 6 };
+	NCSlice<int> S(V);
+
+	// we will get an error? -> Yes we do
+	/*for (std::pair<size_t, int> si : S) {
+		std::print("{}\n", si.second);
+		S.remove(si.first);
+	}*/
+
+	for (NCSlice<int>::iterator it = S.begin(); it != S.end(); it++) {
+		std::print("{}\n", (*it).second);
+		it = S.remove((*it).first);
+	}
+
+	S.print_intervals();
+}
+
 int main() {
 	//static_assert(std::ranges::forward_range<AbstractGraph<int, int>>);
 	//ranges_test();
@@ -291,6 +418,7 @@ int main() {
 		iter++;
 	}*/
 	//post_ordering_test();
-	render_test();
+	ncslice_demonstration();
+	//remove_in_for_loop_test();
 	return 0;
 }

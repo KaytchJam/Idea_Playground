@@ -108,6 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -137,6 +138,10 @@
     <ClInclude Include="dependencies\external\json.hpp" />
     <ClInclude Include="dependencies\internal\chest.hpp" />
     <ClInclude Include="dependencies\internal\graph_types.hpp" />
+    <ClInclude Include="dependencies\internal\interval_slice.h" />
+    <ClInclude Include="dependencies\internal\lalg4.hpp" />
+    <ClInclude Include="dependencies\internal\PointerVector.h" />
+    <ClInclude Include="dependencies\internal\SubCanvas.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

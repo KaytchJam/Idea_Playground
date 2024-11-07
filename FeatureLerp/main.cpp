@@ -40,10 +40,10 @@ static lalg::vec4 sfToLalg(const sf::Vector2f& sfVec) {
 
 sf::Vector2f get_global_force(const sf::Vector2f& local_pos, int WIN_LENGTH, int WIN_HEIGHT, float FORCE_MULTIPLIER) {
 	const lalg::mat4 bound_mouse_coords =
-	{ { 2.f / WIN_LENGTH, 0.f, -1.f, 0.f},
+	{{ 2.f / WIN_LENGTH, 0.f,  -1.f,  0.f },
 	 { 0.f, 2.f / WIN_HEIGHT,  -1.f,  0.f },
 	 { 0.f, 0.f,                1.f,  0.f },
-	 { 0.f, 0.f,                0.f,  1.f } };
+	 { 0.f, 0.f,                0.f,  1.f }};
 	float call = 0;
 	return lalgToSf(bound_mouse_coords * lalg::map_capture(sfToLalg({ (float)local_pos.x, (float)local_pos.y }), [&WIN_LENGTH, &WIN_HEIGHT, &call](float f) {
 		return std::fmaxf(0, std::fminf(f, ((float)WIN_LENGTH * !(call == 1)) + (WIN_HEIGHT * (call++ == 1)))); }) * FORCE_MULTIPLIER);
@@ -129,41 +129,31 @@ int ncslice_demonstration() {
 	while (window.isOpen()) {
 		// event handling
 		sf::Event event;
-		sf::Vector2f force = get_global_force(sf::Mouse::getPosition(window), window.getSize().x, window.getSize().y, 10);
+		sf::Vector2f force = get_global_force(sf::Mouse::getPosition(window), window.getSize().x, window.getSize().y, 20);
 
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) window.close();
 			if (event.type == sf::Event::KeyReleased && it != rvec_view.end()) {
+				// Keyboard Input Events
 				if (event.key.code == sf::Keyboard::Left) { it = it == rvec_view.begin() ? rvec_view.rbegin() : --it; }
 				if (event.key.code == sf::Keyboard::Right) { it++; }
 				if (event.key.code == sf::Keyboard::Space) {
-					std::cout << "=============================" << std::endl;
-					std::cout << "Chosen Index: " << (*it).first << std::endl;
-					std::cout << "Before: ";
-					rvec_view.print_intervals();
-
 					it->setFillColor(sf::Color(UNSELECTED_HOTTISH_DARK_PINK));
 					it = rvec_view.remove((*it).first);
-					std::cout << "After: ";
-					rvec_view.print_intervals();
 					intervals_text.setString("Internal Ranges = " + rvec_view.ranges_to_string());
 				}
 
-
+				// Update the Index Text
 				if (it != rvec_view.end()) {
 					index_text.setString("Index = " + std::to_string((*it).first));
 				} else if (rvec_view.begin() != rvec_view.end()) {
-					index_text.setString("Index = " + std::to_string((*rvec_view.begin()).first));
+					it = rvec_view.begin();
+					index_text.setString("Index = " + std::to_string((*it).first));
 				} else {
 					intervals_text.setString("Internal Ranges = NONE");
 					index_text.setString("Index = NONE");
 				}
 			}
-		}
-
-		// pre-render logic
-		if (it == rvec_view.end()) {
-			it = rvec_view.begin();
 		}
 
 		// all rendering
@@ -417,8 +407,8 @@ int main() {
 		std::cout << *iter << std::endl;
 		iter++;
 	}*/
-	//post_ordering_test();
-	ncslice_demonstration();
+	post_ordering_test();
+	//ncslice_demonstration();
 	//remove_in_for_loop_test();
 	return 0;
 }

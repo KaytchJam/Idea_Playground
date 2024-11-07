@@ -851,6 +851,7 @@ public:
         int component_index;
     };
 
+    // Mark all vertices in the graph with an index indicating the strongly connected component that vertex is apart of
     std::vector<scc_pair> color_scc_vertices(size_t start_vertex) {
         std::vector<scc_pair> postorder = this->reverse().post_order(start_vertex)
             | std::views::transform([](Id id) { return scc_pair(id, -1); })
@@ -863,16 +864,17 @@ public:
         while (postorder_view.size() > 0) {
             scc_pair& sink = postorder_view.back();
             std::unordered_set<Id> visited = this->dfs(sink.id);
-            const size_t max_index = postorder_view.max_index();
 
-            for (size_t i = postorder_view.min_index(); i < max_index; i++) {
-                scc_pair& p = postorder[i];
+            for (auto it = postorder_view.begin(); it != postorder_view.end(); ) {
+                scc_pair& p = (*it).second;
                 if (visited.count(p.id) != 0) {
                     p.component_index = scc_count;
-                    postorder_view.remove(i);
+                    it = postorder_view.remove(std::move(it));
+                } else {
+                    it++;
                 }
-            }
 
+            }
             scc_count += 1;
         }
 

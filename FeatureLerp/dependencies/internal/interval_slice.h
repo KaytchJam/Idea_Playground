@@ -187,6 +187,10 @@ public:
 		NCSliceIterator(NonContiguousSlice<T>* parent, size_t start_interval, numeric_range::iterator iter) 
 			: m_parent(parent), m_interval_index(start_interval), m_nr_iter(iter) {}
 
+		size_t current_interval() const {
+			return this->m_interval_index;
+		}
+
 		Reference operator*() const {
 			return std::make_pair(
 				*this->m_nr_iter, 
@@ -195,7 +199,10 @@ public:
 		}
 
 		Pointer operator->() const {
-			return &this->m_parent->m_buffer[*this->m_nr_iter];
+			return return std::make_pair(
+				*this->m_nr_iter,
+				std::ref(this->m_parent->m_buffer[*(this->m_nr_iter)])
+			);
 		}
 
 		NCSliceIterator& operator++() {
@@ -261,6 +268,51 @@ public:
 		return this->m_intervals.size() > 0
 			? NCSliceIterator(this, this->m_intervals.size() - 1, --this->m_intervals[this->m_intervals.size() - 1].end())
 			: NCSliceIterator(this, 0, numeric_range::iterator());
+	}
+
+	NonContiguousSlice<T>::iterator remove(NonContiguousSlice<T>::iterator&& iter) {
+		NonContiguousSlice<T>::iterator it = this->end();
+		const size_t index = (*iter).first;
+
+		if (iter != this->end()) {
+			const size_t target_idx = iter.current_interval();
+			const numeric_range nr = this->m_intervals[target_idx];
+
+			// could do some branchless checks instead for the (index == nr.max() - 1 || index == nr.min())
+			// anything outside these conditions means you are out of range
+			if (index == nr.min() && index == nr.max() - 1) {
+				this->m_intervals.erase(this->m_intervals.begin() + target_idx);
+				this->m_total_indices--;
+
+				if (target_idx < this->m_intervals.size()) {
+					it = NCSliceIterator(this, target_idx);
+				}
+
+			} else if (index == nr.min()) {
+				std::vector<numeric_range>::iterator after = this->m_intervals.erase(this->m_intervals.begin() + target_idx);
+				after = this->m_intervals.insert(after, numeric_range(index + 1, nr.max()));
+				this->m_total_indices--;
+				it = NCSliceIterator(this, target_idx);
+
+			} else if (index == nr.max() - 1) {
+				std::vector<numeric_range>::iterator after = this->m_intervals.erase(this->m_intervals.begin() + target_idx);
+				after = this->m_intervals.insert(after, numeric_range(nr.min(), index));
+				this->m_total_indices--;
+
+				if (target_idx + 1 < this->m_intervals.size()) {
+					it = NCSliceIterator(this, target_idx + 1);
+				}
+
+			} else if (index > nr.min()) {
+				std::vector<numeric_range>::iterator after = this->m_intervals.erase(this->m_intervals.begin() + target_idx);
+				after = this->m_intervals.insert(after, numeric_range(nr.min(), index));
+				this->m_intervals.insert(after + 1, numeric_range(index + 1, nr.max()));
+				this->m_total_indices--;
+				it = NCSliceIterator(this, target_idx + 1);
+			}
+		}
+
+		return it;
 	}
 
 	// remove an index from the range

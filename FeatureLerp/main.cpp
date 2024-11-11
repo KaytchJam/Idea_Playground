@@ -135,7 +135,7 @@ int ncslice_demonstration() {
 			if (event.type == sf::Event::Closed) window.close();
 			if (event.type == sf::Event::KeyReleased && it != rvec_view.end()) {
 				// Keyboard Input Events
-				if (event.key.code == sf::Keyboard::Left) { it = it == rvec_view.begin() ? rvec_view.rbegin() : --it; }
+				if (event.key.code == sf::Keyboard::Left)  { it = it == rvec_view.begin() ? rvec_view.rbegin() : --it; }
 				if (event.key.code == sf::Keyboard::Right) { it++; }
 				if (event.key.code == sf::Keyboard::Space) {
 					it->setFillColor(sf::Color(UNSELECTED_HOTTISH_DARK_PINK));

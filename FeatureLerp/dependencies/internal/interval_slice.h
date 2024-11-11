@@ -169,7 +169,7 @@ public:
 		}
 
 	public:
-		using Category = std::forward_iterator_tag;
+		using Category = std::bidirectional_iterator_tag;
 		using difference_type = std::ptrdiff_t;
 		using Pointer = T*;
 		using value_type = std::pair<size_t, T>;
@@ -199,10 +199,7 @@ public:
 		}
 
 		Pointer operator->() const {
-			return return std::make_pair(
-				*this->m_nr_iter,
-				std::ref(this->m_parent->m_buffer[*(this->m_nr_iter)])
-			);
+			return &(this->m_parent->m_buffer[*(this->m_nr_iter)]);
 		}
 
 		NCSliceIterator& operator++() {

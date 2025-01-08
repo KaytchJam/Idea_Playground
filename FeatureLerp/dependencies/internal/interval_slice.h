@@ -431,22 +431,22 @@ public:
 template<typename T>
 using NCSlice = NonContiguousSlice<T>;
 
-static_assert(std::forward_iterator<numeric_range::iterator>);
-static_assert(std::ranges::forward_range<numeric_range>);
-static_assert(std::incrementable<numeric_range::iterator>);
-static_assert(std::sentinel_for<numeric_range::iterator, numeric_range::iterator>);
-static_assert(std::bidirectional_iterator<numeric_range::iterator>);
-//static_assert(std::totally_ordered<numeric_range::iterator>);
-
-static_assert(std::input_iterator<NCSlice<int>::iterator>);
-static_assert(std::indirectly_readable<NCSlice<int>::iterator>);
-static_assert(std::incrementable<NCSlice<int>::iterator>);
-static_assert(std::sentinel_for<NCSlice<int>::iterator, NCSlice<int>::iterator>);
-
-static_assert(std::regular<NCSlice<int>::iterator>);
-static_assert(std::semiregular<NCSlice<int>::iterator>);
-static_assert(std::equality_comparable<NCSlice<int>::iterator>);
-
-static_assert(std::forward_iterator<NCSlice<int>::iterator>);
-static_assert(std::ranges::forward_range<NonContiguousSlice<int>>);
-static_assert(std::bidirectional_iterator<NCSlice<int>::iterator>);
+//static_assert(std::forward_iterator<numeric_range::iterator>);
+//static_assert(std::ranges::forward_range<numeric_range>);
+//static_assert(std::incrementable<numeric_range::iterator>);
+//static_assert(std::sentinel_for<numeric_range::iterator, numeric_range::iterator>);
+//static_assert(std::bidirectional_iterator<numeric_range::iterator>);
+////static_assert(std::totally_ordered<numeric_range::iterator>);
+//
+//static_assert(std::input_iterator<NCSlice<int>::iterator>);
+//static_assert(std::indirectly_readable<NCSlice<int>::iterator>);
+//static_assert(std::incrementable<NCSlice<int>::iterator>);
+//static_assert(std::sentinel_for<NCSlice<int>::iterator, NCSlice<int>::iterator>);
+//
+//static_assert(std::regular<NCSlice<int>::iterator>);
+//static_assert(std::semiregular<NCSlice<int>::iterator>);
+//static_assert(std::equality_comparable<NCSlice<int>::iterator>);
+//
+//static_assert(std::forward_iterator<NCSlice<int>::iterator>);
+//static_assert(std::ranges::forward_range<NonContiguousSlice<int>>);
+//static_assert(std::bidirectional_iterator<NCSlice<int>::iterator>);

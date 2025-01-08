@@ -596,7 +596,7 @@ public:
     // Returns a graph where all its edges are in the reverse direction of the initial graph
     // Treats the graph as if it were a DIRECTED GRAPH
     // Time Complexity: O(N + M) -> (N: number of vertices, M: number of edges)
-    AbstractGraph<Id, Element> reverse() const noexcept {
+    AbstractGraph<Id, Element> transpose() const noexcept {
         //std::cout << "Building reverse graph" << std::endl;
         AbstractGraph<Id, Element> reverse_graph = this->null();
         //std::cout << "made new null graph" << std::endl;
@@ -798,7 +798,7 @@ public:
 
     // Returns the Strongly Connected Components of the input graph
     AbstractGraph<int, AbstractGraph<Id, Element>> find_sccs() {
-        std::vector<Id> postorder = this->reverse().post_order(this->m_vertices.begin()->first);
+        std::vector<Id> postorder = this->transpose().post_order(this->m_vertices.begin()->first);
 
         typedef std::pair<Id, int> scc_mapping;
 
@@ -853,7 +853,7 @@ public:
 
     // Mark all vertices in the graph with an index indicating the strongly connected component that vertex is apart of
     std::vector<scc_pair> color_scc_vertices(size_t start_vertex) {
-        std::vector<scc_pair> postorder = this->reverse().post_order(start_vertex)
+        std::vector<scc_pair> postorder = this->transpose().post_order(start_vertex)
             | std::views::transform([](Id id) { return scc_pair(id, -1); })
             | std::ranges::to<std::vector<scc_pair>>();
 
@@ -873,7 +873,6 @@ public:
                 } else {
                     it++;
                 }
-
             }
             scc_count += 1;
         }

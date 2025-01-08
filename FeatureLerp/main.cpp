@@ -258,7 +258,7 @@ int graph_test() {
 	std::vector<std::vector<int>> connections = { {1, 5} ,{2, 7},{0, 4},{0},{3, 1},{6},{7},{5, 8},{} };
 
 	AbstractGraph<int,int> G = AbstractGraph<int, int>::construct_with_list(nums, connections);
-	AbstractGraph<int,int> R = G.reverse();
+	AbstractGraph<int,int> R = G.transpose();
 
 	std::cout << G.to_string() << std::endl;
 	std::cout << R.to_string() << std::endl;

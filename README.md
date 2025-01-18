@@ -317,6 +317,20 @@ Abstract: There are widespread concerns that current trends in resource-use are 
 
 Keywords: Human–nature dynamics; Societal collapse; Carrying capacity; Overshoot vs. sustainability; Economic inequality; Ecological strain
 ___
+## Feature Lerp
+
+### January 18, 2025 Update
+
+Name admittedly doesn't fit for what the project currently is. As it is now it's a mish mash of different data structures I've wanted to play around with, including a Graph Data Structure and
+a Non-Contiguous Slice (NCSlice) data structure. In the Graph Data Structure I played around with implementations of DFS, BFS, Dijkstra's Algorithm, and Strongly Connected Component finding, among
+other things. It also provided an opportunity to make data structures compatible with C++ views & ranges, which the graph & NCSlice are.
+
+Right now main shows an interactive demonstration of the NCSlice, where the slice provides a view over an underlying contiguous buffer. Indices can be removed from the slice, whereas the
+underlying buffer is unaffected by removals. The motivation here was to be able to "remove" items from a list temporarily whilst keeping iteration simple.
+
+![NCSlice Demo](content/NCSlice_Demo.mp4)
+
+___
 ## JJK Domains
 
 The gist of this project is modelling a construct called "Domains" from a show called [Jujutsu Kaisen](https://en.wikipedia.org/wiki/Jujutsu_Kaisen). To focus squarely on domains; they're spherical constructs created by a special kind of energy generated and manipulated by characaters in the series called Cursed Energy. A barrier has 3 main components to be recognized as complete: **a barrier**, an associated **innate domain**, and an **imbued technique**. 

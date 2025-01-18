@@ -328,7 +328,7 @@ other things. It also provided an opportunity to make data structures compatible
 Right now main shows an interactive demonstration of the NCSlice, where the slice provides a view over an underlying contiguous buffer. Indices can be removed from the slice, whereas the
 underlying buffer is unaffected by removals. The motivation here was to be able to "remove" items from a list temporarily whilst keeping iteration simple.
 
-![NCSlice Demo](content/NCSlice_Demo.mp4)
+https://github.com/user-attachments/assets/2ead03db-5d02-4760-94b0-9dcdb35dabef
 
 ___
 ## JJK Domains

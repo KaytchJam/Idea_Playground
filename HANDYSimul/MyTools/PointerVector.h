@@ -2,10 +2,10 @@
 #include <vector>
 #include <functional>
 
-// Vector wrapper that holds only pointers of some type 'Type', has a bunch of map and cast functions.
-// Note that this data structure does NOT take ownership of the pointers it stores, so on deallocation
-// the pointers are not deleted. Such an action will require manually calling 'delete items' or iterating
-// through yourself.
+/// Vector wrapper that holds only pointers of some type 'Type', has a bunch of map and cast functions.
+/// Note that this data structure does NOT take ownership of the pointers it stores, so on deallocation
+/// the pointers are not deleted. Such an action will require manually calling 'delete items' or iterating
+/// through yourself.
 template <typename Type>
 class PointerVector {
 	std::vector<Type*> list;

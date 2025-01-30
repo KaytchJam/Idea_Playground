@@ -407,8 +407,8 @@ int main() {
 		std::cout << *iter << std::endl;
 		iter++;
 	}*/
-	post_ordering_test();
-	//ncslice_demonstration();
+	//post_ordering_test();
+	ncslice_demonstration();
 	//remove_in_for_loop_test();
 	return 0;
 }
